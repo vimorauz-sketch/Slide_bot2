@@ -1,0 +1,50 @@
+{
+  "code": "14",
+  "name": "Notebook",
+  "category": "Maktab • Talaba • Konspekt • Til o‘rganish",
+  "tagline": "Daftar varag‘i, yopishqoq qog‘ozlar va qo‘lyozma sarlavhalar",
+  "mode": "light",
+  "fonts": {
+    "title": "caveat",
+    "body": "pt-sans"
+  },
+  "pptx_fonts": {
+    "title": "Calibri",
+    "body": "Calibri"
+  },
+  "palette": {
+    "bg": "#FDFCF7",
+    "bg2": "#FFF3B8",
+    "surface": "#FFFFFF",
+    "text": "#1D2B4F",
+    "muted": "#56607A",
+    "primary": "#2457C5",
+    "secondary": "#7FA6E8",
+    "accent": "#E85A5A",
+    "on_primary": "#FFFFFF",
+    "ink": "#1D2B4F"
+  },
+  "art": "doodle",
+  "cover_variant": "split",
+  "cards_variant": "row",
+  "image_style": "hand-drawn sketch doodle illustration on notebook paper",
+  "writing_tone": "Like neat study notes: key terms, short definitions, examples, memory tips.",
+  "recipe": {
+    "type": "light",
+    "seeds": "light",
+    "kwargs": {
+      "tint": 0.008,
+      "bg_L": 0.99,
+      "prim_L": 0.48,
+      "prim_C": 0.15
+    }
+  },
+  "tags": [
+    "school",
+    "language",
+    "notes"
+  ],
+  "sticker_style": "diecut",
+  "sticker_place": "both",
+  "art_sticker": true
+}

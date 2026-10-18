@@ -1,0 +1,25 @@
+{%- macro t(text, tag='p', cls='') -%}
+{%- if text -%}<{{tag}}{% if cls %} class="{{cls}}"{% endif %} data-t>{{ text|rich }}</{{tag}}>{%- endif -%}
+{%- endmacro -%}
+
+{%- macro head(s, lead=True) -%}
+<header class="s-head">
+  {%- if s.section %}<div class="eyebrow" data-t>{{ s.section|rich }}</div>{% endif %}
+  {{ t(s.title, 'h2', 's-title') }}
+  {%- if lead and s.lead %}{{ t(s.lead, 'p', 's-lead') }}{% endif %}
+</header>
+{%- endmacro -%}
+
+{%- macro media(img, cls='') -%}
+{%- if img -%}
+<div class="media {{cls}}{% if img.is_art %} is-art{% endif %}"><img src="{{ img.src }}" alt="">{% if img.credit and not img.is_art %}<span class="credit">{{ img.credit }}</span>{% endif %}</div>
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro foot(deck, n, total) -%}
+<footer class="s-foot"><span data-t>{{ deck.footer_text|rich }}</span><span class="pg" data-t>{{ '%02d'|format(n) }} / {{ '%02d'|format(total) }}</span></footer>
+{%- endmacro -%}
+
+{%- macro icon_badge(name, text='', stk='') -%}
+{%- if stk %}<div class="icon-badge stk-badge">{{ stk|safe }}</div>{% else %}<div class="icon-badge">{{ name|icon(text) }}</div>{% endif -%}
+{%- endmacro -%}

@@ -1,0 +1,2522 @@
+{
+ "tektur": {
+  "files": [
+   {
+    "file": "tektur-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "tektur-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "inter": {
+  "files": [
+   {
+    "file": "inter-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "inter-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "inter-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "inter-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "inter-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "inter-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "inter-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "inter-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "inter-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "inter-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "inter-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "inter-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "inter-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "inter-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "inter-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "source-serif-4": {
+  "files": [
+   {
+    "file": "source-serif-4-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-latin-400-italic.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "source-serif-4-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-latin-ext-400-italic.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "source-serif-4-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-cyrillic-400-italic.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "source-serif-4-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "source-serif-4-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "source-sans-3": {
+  "files": [
+   {
+    "file": "source-sans-3-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "source-sans-3-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "unbounded": {
+  "files": [
+   {
+    "file": "unbounded-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "unbounded-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "onest": {
+  "files": [
+   {
+    "file": "onest-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "onest-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "onest-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "onest-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "onest-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "onest-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "onest-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "onest-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "onest-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "onest-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "onest-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "onest-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "onest-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "onest-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "onest-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "playfair-display": {
+  "files": [
+   {
+    "file": "playfair-display-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-latin-400-italic.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "playfair-display-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-latin-ext-400-italic.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "playfair-display-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-cyrillic-400-italic.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "playfair-display-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "playfair-display-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "lora": {
+  "files": [
+   {
+    "file": "lora-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "lora-latin-400-italic.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "lora-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "lora-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "lora-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "lora-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "lora-latin-ext-400-italic.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "lora-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "lora-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "lora-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "lora-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "lora-cyrillic-400-italic.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "lora-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "lora-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "lora-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "comfortaa": {
+  "files": [
+   {
+    "file": "comfortaa-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "comfortaa-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "comfortaa-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "comfortaa-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "comfortaa-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "comfortaa-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "comfortaa-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "comfortaa-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "comfortaa-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "comfortaa-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "comfortaa-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "comfortaa-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "nunito": {
+  "files": [
+   {
+    "file": "nunito-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "nunito-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "montserrat": {
+  "files": [
+   {
+    "file": "montserrat-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "montserrat-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "ibm-plex-sans": {
+  "files": [
+   {
+    "file": "ibm-plex-sans-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "ibm-plex-sans-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "ibm-plex-sans-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "ibm-plex-sans-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "ibm-plex-sans-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "ibm-plex-sans-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "ibm-plex-sans-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "ibm-plex-sans-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "ibm-plex-sans-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "ibm-plex-sans-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "ibm-plex-sans-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "ibm-plex-sans-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "oswald": {
+  "files": [
+   {
+    "file": "oswald-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "oswald-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "oswald-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "oswald-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "oswald-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "oswald-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "oswald-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "oswald-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "oswald-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "oswald-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "oswald-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "oswald-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "fira-sans": {
+  "files": [
+   {
+    "file": "fira-sans-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "fira-sans-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "merriweather": {
+  "files": [
+   {
+    "file": "merriweather-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-latin-400-italic.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "merriweather-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-latin-ext-400-italic.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "merriweather-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-cyrillic-400-italic.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "merriweather-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "merriweather-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "cormorant-garamond": {
+  "files": [
+   {
+    "file": "cormorant-garamond-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "cormorant-garamond-latin-400-italic.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "cormorant-garamond-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "cormorant-garamond-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "cormorant-garamond-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "cormorant-garamond-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "cormorant-garamond-latin-ext-400-italic.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "cormorant-garamond-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "cormorant-garamond-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "cormorant-garamond-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "cormorant-garamond-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "cormorant-garamond-cyrillic-400-italic.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "cormorant-garamond-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "cormorant-garamond-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "cormorant-garamond-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "alegreya": {
+  "files": [
+   {
+    "file": "alegreya-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-latin-400-italic.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "alegreya-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-latin-ext-400-italic.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "alegreya-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-cyrillic-400-italic.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "italic"
+   },
+   {
+    "file": "alegreya-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "alegreya-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "exo-2": {
+  "files": [
+   {
+    "file": "exo-2-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "exo-2-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "raleway": {
+  "files": [
+   {
+    "file": "raleway-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "raleway-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "caveat": {
+  "files": [
+   {
+    "file": "caveat-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "caveat-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "caveat-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "caveat-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "caveat-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "caveat-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "caveat-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "caveat-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "caveat-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "caveat-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "caveat-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "caveat-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "yeseva-one": {
+  "files": [
+   {
+    "file": "yeseva-one-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "yeseva-one-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "yeseva-one-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "rubik": {
+  "files": [
+   {
+    "file": "rubik-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "rubik-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "manrope": {
+  "files": [
+   {
+    "file": "manrope-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "manrope-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "jetbrains-mono": {
+  "files": [
+   {
+    "file": "jetbrains-mono-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "jetbrains-mono-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "golos-text": {
+  "files": [
+   {
+    "file": "golos-text-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-latin-500-normal.woff2",
+    "subset": "latin",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-latin-600-normal.woff2",
+    "subset": "latin",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-latin-800-normal.woff2",
+    "subset": "latin",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-latin-ext-500-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-latin-ext-600-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-latin-ext-800-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 800,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-cyrillic-500-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 500,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-cyrillic-600-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 600,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "golos-text-cyrillic-800-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 800,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "pt-serif": {
+  "files": [
+   {
+    "file": "pt-serif-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "pt-serif-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "pt-serif-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "pt-serif-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "pt-serif-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "pt-serif-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "pt-sans": {
+  "files": [
+   {
+    "file": "pt-sans-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "pt-sans-latin-700-normal.woff2",
+    "subset": "latin",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "pt-sans-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "pt-sans-latin-ext-700-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 700,
+    "style": "normal"
+   },
+   {
+    "file": "pt-sans-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "pt-sans-cyrillic-700-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 700,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ },
+ "russo-one": {
+  "files": [
+   {
+    "file": "russo-one-latin-400-normal.woff2",
+    "subset": "latin",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "russo-one-latin-ext-400-normal.woff2",
+    "subset": "latin-ext",
+    "weight": 400,
+    "style": "normal"
+   },
+   {
+    "file": "russo-one-cyrillic-400-normal.woff2",
+    "subset": "cyrillic",
+    "weight": 400,
+    "style": "normal"
+   }
+  ],
+  "ranges": {
+   "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+   "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+   "cyrillic": "U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116"
+  }
+ }
+}

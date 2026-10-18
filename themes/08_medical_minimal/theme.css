@@ -1,0 +1,23 @@
+:root {
+  --bg: #F7FBFC; --bg2: #E3F2F4; --surface: #FFFFFF; --text: #12384A; --muted: #5A7A87;
+  --primary: #0E7C86; --secondary: #3BA7C8; --accent: #7AD9D3; --on-primary: #FFFFFF; --ink: #0C3442;
+  --border: color-mix(in srgb, var(--primary) 12%, #fff); --rule: color-mix(in srgb, var(--primary) 15%, transparent);
+  --c4: #F28B82;
+  --title-weight: 700; --title-tracking: -0.015em; --title-lh: 1.14; --item-weight: 600; --num-weight: 700;
+  --num-font: var(--font-body);
+  --fs-title: 62px; --fs-cover: 92px; --fs-item: 34px;
+  --radius: 22px; --img-radius: 28px; --icon-radius: 50%;
+  --card-border: 1px solid var(--border); --card-shadow: 0 14px 36px color-mix(in srgb, var(--primary) 8%, transparent);
+  --icon-bg: color-mix(in srgb, var(--primary) 11%, #fff);
+  --takeaway-bg: linear-gradient(135deg, var(--primary), var(--secondary));
+}
+.slide { background: radial-gradient(1000px 600px at 100% 100%, var(--bg2) 0%, transparent 65%), var(--bg); }
+.media-bleed { top: 0; bottom: 0; right: 0; border-radius: 220px 0 0 0; }
+.media-bleed.left { left: 0; right: auto; border-radius: 0 0 220px 0; }
+.icon-badge { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--primary) 20%, #fff); }
+.bullets li .mk { background: transparent; border: 3px solid var(--primary); width: 14px; height: 14px; }
+.stat .val { font-weight: 300; color: var(--primary); letter-spacing: -0.04em; }
+.step .dot { background: var(--surface); color: var(--primary); border: 3px solid var(--primary); box-shadow: 0 0 0 10px var(--bg); }
+.step:not(:last-child)::after { background: color-mix(in srgb, var(--primary) 25%, #fff); }
+.decor .wave { position: absolute; left: 0; right: 0; bottom: 0; height: 120px; }
+.decor .wave .w1 { fill: var(--accent); fill-opacity: .14; } .decor .wave .w2 { fill: var(--secondary); fill-opacity: .10; }

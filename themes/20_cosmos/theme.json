@@ -1,0 +1,51 @@
+{
+  "code": "20",
+  "name": "Cosmos",
+  "category": "Astronomiya • Fizika • Fantastika • Kelajak",
+  "tagline": "Koinot: yulduzlar, tumanliklar va sayyoralar",
+  "mode": "dark",
+  "fonts": {
+    "title": "russo-one",
+    "body": "golos-text"
+  },
+  "pptx_fonts": {
+    "title": "Arial",
+    "body": "Arial"
+  },
+  "palette": {
+    "bg": "#05061A",
+    "bg2": "#11133A",
+    "surface": "#0E1033",
+    "text": "#F4F5FF",
+    "muted": "#A9AED6",
+    "primary": "#8E7BFF",
+    "secondary": "#3FD0FF",
+    "accent": "#FF9E5E",
+    "on_primary": "#FFFFFF",
+    "ink": "#05061A"
+  },
+  "art": "cosmos",
+  "cover_variant": "full",
+  "cards_variant": "grid",
+  "pdf_mode": "raster",
+  "image_style": "deep space photography, nebula, galaxies, planets, NASA style",
+  "writing_tone": "Awe-inspiring but scientific: scales, distances, discoveries.",
+  "recipe": {
+    "type": "dark",
+    "seeds": "dark",
+    "kwargs": {
+      "bg_L": 0.13,
+      "bg_C": 0.05,
+      "prim_L": 0.78,
+      "prim_C": 0.16
+    }
+  },
+  "tags": [
+    "science",
+    "space",
+    "tech"
+  ],
+  "sticker_style": "glass",
+  "sticker_place": "corner",
+  "art_sticker": true
+}

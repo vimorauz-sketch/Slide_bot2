@@ -1,0 +1,589 @@
+import json
+import os
+import logging
+from aiogram import Router, F
+from aiogram.types import Message, CallbackQuery, FSInputFile, InputMediaPhoto
+from aiogram.exceptions import TelegramBadRequest
+from aiogram.fsm.context import FSMContext
+from config import settings
+from database.connection import AsyncSessionLocal
+from database import repository
+from bot.states.forms import PresentationForm
+from bot.utils import escape_html
+from bot.keyboards.inline import (
+    get_template_selection_inline_keyboard, get_confirmation_inline_keyboard,
+    get_payment_inline_keyboard, get_production_payment_inline_keyboard, get_outline_inline_keyboard,
+    get_gallery_categories_keyboard, get_gallery_list_keyboard, get_gallery_colors_keyboard
+)
+from bot.keyboards.reply import get_level_keyboard, get_course_keyboard, get_language_keyboard, get_cancel_keyboard, get_webapp_keyboard
+from services import ai_service
+from services.presentation import build_presentation
+from services.deck import themes
+from services import gallery
+
+logger = logging.getLogger(__name__)
+router = Router()
+
+_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+SUBJECT_PROMPT = "📚 <b>Fan nomini kiriting:</b>\n\n(Masalan: <i>Biologiya, Fizika, Tarix, Menejment</i>)"
+
+
+_PLACEHOLDER_HOSTS = {"domeningiz", "your-domain", "your-domain.uz", "example.com", "domain.uz", "localhost"}
+_webapp_disabled = False
+
+
+def webapp_url() -> str:
+    """WEBAPP_URL if it can work as a Telegram Mini App address (public https URL), else ""."""
+    from urllib.parse import urlparse
+    url = (settings.WEBAPP_URL or "").strip()
+    if not url or _webapp_disabled:
+        return ""
+    u = urlparse(url)
+    host = (u.hostname or "").lower()
+    if u.scheme != "https" or "." not in host or host in _PLACEHOLDER_HOSTS or host.startswith("127.") or host.endswith(".local"):
+        logger.warning("WEBAPP_URL=%r ishlatilmaydi: Mini App uchun haqiqiy https:// manzil kerak (masalan https://bot.sizning-domen.uz/webapp/).", url)
+        return ""
+    return url if url.endswith("/") else url + "/"
+
+
+async def webapp_link(bot) -> str:
+    """Mini App URL with the bot's username (lets the page hand a choice back via t.me deep link)."""
+    url = webapp_url()
+    if not url:
+        return ""
+    try:
+        me = await bot.me()
+        if getattr(me, "username", None):
+            url += ("&" if "?" in url else "?") + "bot=" + me.username
+    except Exception:  # noqa: BLE001 - the link works without it
+        pass
+    return url
+
+
+def _picker_caption(with_webapp: bool) -> str:
+    n = len(themes.list_theme_ids())
+    lines = [f"🖼 <b>{n} TA SHABLON — HAR BIRIDA 10 XIL RANG</b>\n",
+             "Har bir shablonning tuzilishi, rasmlari va shriftlari o‘ziga xos.\n"]
+    if with_webapp:
+        lines.append("🎨 <b>Dizayn laboratoriyasi</b>da shablonga kirib, slaydlarini va barcha ranglarini ko‘ring.\n")
+    lines.append(f"👉 Yoki <b>shablon raqamini</b> yuboring (<code>1</code> – <code>{n}</code>), yoki kategoriyalar bo‘yicha ko‘ring:")
+    return "\n".join(lines)
+
+
+async def apply_template_choice(bot, chat_id: int, state: FSMContext, key) -> bool:
+    """Saves the chosen template/colour and moves the wizard on. Shared by buttons, typed numbers,
+    the Mini App and /start deep links."""
+    key = str(key or "").strip().replace("--", themes.COLOR_SEP)
+    if not themes.is_known_theme(key):
+        return False
+    tid = themes.resolve_theme_id(key)
+    t = themes.get_theme(tid)
+    current = await state.get_state()
+    current = getattr(current, "state", current)
+    label = f"№ {int(t.get('code') or 0)} · {escape_html(t.get('name', tid))} · {escape_html(t.get('color_name', ''))}"
+    if current in (None, PresentationForm.template_selection.state, PresentationForm.custom_design_prompt.state):
+        if current is None:
+            await state.set_data({})
+        await state.update_data(template_id=tid)
+        await state.set_state(PresentationForm.subject)
+        started = True
+        text = f"✅ <b>{label}</b> tanlandi!\n\n{SUBJECT_PROMPT}"
+    else:
+        await state.update_data(template_id=tid)
+        started = False
+        text = f"🎨 <b>Dizayn o‘zgartirildi:</b> {label}"
+    thumb = gallery.cover_thumb(tid)
+    if thumb and hasattr(bot, "send_photo"):
+        try:
+            await bot.send_photo(chat_id, FSInputFile(thumb), caption=text, parse_mode="HTML",
+                                 reply_markup=get_cancel_keyboard() if started else None)
+            return True
+        except Exception:  # noqa: BLE001 - fall back to text
+            logger.exception("cover preview could not be sent")
+    await bot.send_message(chat_id, text, parse_mode="HTML",
+                           reply_markup=get_cancel_keyboard() if started else None)
+    return True
+
+
+@router.message(F.text.in_([
+    "🎨 Presentation yaratish", "🎨 Создать презентацию", "🎨 Create Presentation",
+    "🖼 Shablonlar", "🖼 Шаблоны", "🖼 Templates",
+    "📄 Referat yaratish", "📄 Создать реферат", "📄 Create Paper"
+]))
+async def start_pres_wizard(message: Message, state: FSMContext):
+    await state.clear()
+    await state.set_state(PresentationForm.template_selection)
+
+    global _webapp_disabled
+    overview_path = os.path.join(_ROOT, "themes", "overview.jpg")
+
+    async def send_picker(url: str) -> None:
+        markup = get_template_selection_inline_keyboard(url)
+        if os.path.exists(overview_path):
+            await message.answer_photo(photo=FSInputFile(overview_path), caption=_picker_caption(bool(url)),
+                                       reply_markup=markup, parse_mode="HTML")
+        else:
+            await message.answer(_picker_caption(bool(url)), reply_markup=markup, parse_mode="HTML")
+
+    url = await webapp_link(message.bot)
+    try:
+        await send_picker(url)
+    except TelegramBadRequest as e:
+        if not url or "web app" not in str(e).lower():
+            raise
+        # Telegram rejected the Mini App address: keep the bot usable with the inline gallery.
+        logger.error("Telegram WEBAPP_URL=%r ni qabul qilmadi (%s). Mini App tugmasi o‘chirildi; .env dagi WEBAPP_URL ni tuzating.", settings.WEBAPP_URL, e)
+        _webapp_disabled = True
+        await send_picker("")
+        return
+    if url:
+        await message.answer("👇 Galereyani pastdagi tugma orqali ham ochishingiz mumkin.",
+                             reply_markup=get_webapp_keyboard(url))
+
+
+# ---------------------------------------------------------------- inline gallery (works without the Mini App)
+PAGE_SIZE = 8
+
+
+def _category_ids(category: str) -> list:
+    if category == "all":
+        return themes.list_theme_ids()
+    return [t["id"] for t in themes.catalog() if category in t["categories"]]
+
+
+async def _show_photo(callback: CallbackQuery, path: str, caption: str, markup) -> None:
+    """Replaces the gallery message's photo (or sends a new one if that is not possible)."""
+    try:
+        await callback.message.edit_media(InputMediaPhoto(media=FSInputFile(path), caption=caption, parse_mode="HTML"),
+                                          reply_markup=markup)
+    except Exception:  # noqa: BLE001 - not a photo message / too old
+        await callback.message.answer_photo(FSInputFile(path), caption=caption, reply_markup=markup, parse_mode="HTML")
+
+
+async def _edit_markup(callback: CallbackQuery, markup) -> None:
+    try:
+        await callback.message.edit_reply_markup(reply_markup=markup)
+    except Exception:  # noqa: BLE001 - message too old / unchanged
+        await callback.message.answer("👇", reply_markup=markup)
+
+
+@router.callback_query(F.data == "gal_noop")
+async def gallery_noop(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
+
+
+@router.callback_query(F.data == "gal_home")
+async def gallery_home(callback: CallbackQuery, state: FSMContext):
+    url = await webapp_link(callback.bot)
+    overview_path = os.path.join(_ROOT, "themes", "overview.jpg")
+    markup = get_template_selection_inline_keyboard(url)
+    if os.path.exists(overview_path) and getattr(callback.message, "photo", None):
+        await _show_photo(callback, overview_path, _picker_caption(bool(url)), markup)
+    else:
+        await _edit_markup(callback, markup)
+    await callback.answer()
+
+
+@router.callback_query(F.data == "gal_cats")
+async def gallery_categories(callback: CallbackQuery, state: FSMContext):
+    counts = {}
+    for t in themes.catalog():
+        for c in t["categories"]:
+            counts[c] = counts.get(c, 0) + 1
+    cats = [(k, label, e, counts.get(k, 0)) for k, label, e, _ in themes.CATEGORIES if counts.get(k)]
+    await _edit_markup(callback, get_gallery_categories_keyboard(cats))
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("gal_l:"))
+async def gallery_list(callback: CallbackQuery, state: FSMContext):
+    try:
+        _, category, page = callback.data.split(":")
+        page = int(page)
+    except ValueError:
+        await callback.answer()
+        return
+    ids = _category_ids(category)
+    pages = max(1, (len(ids) + PAGE_SIZE - 1) // PAGE_SIZE)
+    page = min(max(page, 0), pages - 1)
+    chunk = ids[page * PAGE_SIZE:(page + 1) * PAGE_SIZE]
+    items = []
+    for tid in chunk:
+        t = themes.get_theme(tid)
+        items.append((tid, t["code"], t["name"]))
+    if await state.get_state() is None:
+        await state.set_state(PresentationForm.template_selection)
+    label = next((f"{e} {lbl}" for k, lbl, e, _ in themes.CATEGORIES if k == category), "🗂 Barcha shablonlar")
+    caption = (f"<b>{label}</b> — {len(ids)} ta shablon\n"
+               f"Shablonni bosing: uning 10 xil rangi ko‘rinadi.")
+    markup = get_gallery_list_keyboard(items, category, page, pages)
+    sheet = gallery.list_sheet(chunk, f"{category}_{page}")
+    if sheet:
+        await _show_photo(callback, sheet, caption, markup)
+    else:
+        await _edit_markup(callback, markup)
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("gal_t:"))
+async def gallery_template(callback: CallbackQuery, state: FSMContext):
+    tid = callback.data.split(":", 1)[1]
+    if tid not in themes.list_theme_ids():
+        await callback.answer("Topilmadi", show_alert=True)
+        return
+    if await state.get_state() is None:
+        await state.set_state(PresentationForm.template_selection)
+    t = themes.get_theme(tid)
+    colors = [(c["key"], i + 1, c["name"]) for i, c in enumerate(themes.theme_colors(tid))]
+    caption = (f"<b>№ {int(t['code'])}. {escape_html(t['name'])}</b>\n{escape_html(t.get('tagline', ''))}\n"
+               f"<i>{escape_html(t.get('category', ''))}</i>\n\n🎨 Rangni tanlang ({len(colors)} ta variant):")
+    markup = get_gallery_colors_keyboard(colors)
+    sheet = gallery.colors_sheet(tid)
+    if sheet:
+        await callback.message.answer_photo(FSInputFile(sheet), caption=caption, reply_markup=markup, parse_mode="HTML")
+    else:
+        await callback.message.answer(caption, reply_markup=markup, parse_mode="HTML")
+    await callback.answer()
+
+
+@router.callback_query(F.data == "gal_close")
+async def gallery_close(callback: CallbackQuery, state: FSMContext):
+    try:
+        await callback.message.delete()
+    except Exception:  # noqa: BLE001
+        pass
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("tpl_"))
+async def process_template_selection(callback: CallbackQuery, state: FSMContext):
+    tpl_code = callback.data.replace("tpl_", "")
+
+    if tpl_code == "ai_custom":
+        await state.set_state(PresentationForm.custom_design_prompt)
+        await callback.message.answer("🤖 <b>AI Custom Design:</b>\n\nQanday ko'rinishdagi presentation xohlaysiz?\n\n<i>Misol: Ko'k va oq rangli, universitet uchun professional, minimalistik va zamonaviy dizayn.</i>", parse_mode="HTML")
+        await callback.answer()
+        return
+
+    if tpl_code == "ocr_photo":
+        await state.set_state(PresentationForm.ocr_photo_upload)
+        await callback.message.answer("📸 <b>Topshiriq rasmini yuborish:</b>\n\nO'qituvchi bergan topshiriq yoki talablar yozilgan vedomost rasmini yuboring.", parse_mode="HTML")
+        await callback.answer()
+        return
+
+    if not await apply_template_choice(callback.bot, callback.message.chat.id, state, tpl_code):
+        await callback.answer("Bu shablon topilmadi", show_alert=True)
+        return
+    await callback.answer()
+
+
+@router.message(F.web_app_data)
+async def process_webapp_choice(message: Message, state: FSMContext):
+    try:
+        key = json.loads(message.web_app_data.data).get("theme", "")
+    except (ValueError, AttributeError):
+        key = message.web_app_data.data
+    if not await apply_template_choice(message.bot, message.chat.id, state, key):
+        await message.answer("⚠️ Shablon topilmadi, qaytadan tanlang.")
+
+
+@router.message(PresentationForm.template_selection, F.text)
+async def process_template_number_text(message: Message, state: FSMContext):
+    text = message.text.strip().lstrip("#№ ").strip()
+    if text.isdigit() and await apply_template_choice(message.bot, message.chat.id, state, str(int(text))):
+        return
+    n = len(themes.list_theme_ids())
+    await message.answer(f"⚠️ Iltimos, <b>1 dan {n} gacha</b> shablon raqamini yuboring (masalan: <code>5</code>, <code>37</code>, <code>142</code>) yoki tugmalardan tanlang.", parse_mode="HTML")
+
+
+@router.message(PresentationForm.custom_design_prompt)
+async def process_custom_design_prompt(message: Message, state: FSMContext):
+    prompt_text = message.text
+    design_spec = await ai_service.generate_custom_design_spec(prompt_text)
+    await state.update_data(template_id="custom_ai", custom_design_spec=design_spec)
+    await state.set_state(PresentationForm.subject)
+    await message.answer("📚 <b>Fan nomini kiriting:</b>\n\n(Masalan: <i>Biologiya, Fizika, Tarix</i>)", parse_mode="HTML")
+
+@router.message(PresentationForm.subject)
+async def process_subject(message: Message, state: FSMContext):
+    await state.update_data(subject=message.text)
+    await state.set_state(PresentationForm.topic)
+    await message.answer("📌 <b>Prezentatsiya mavzusini kiriting:</b>\n\n(Masalan: <i>Fotosintez jarayoni va uning ahamiyati</i>)", parse_mode="HTML")
+
+@router.message(PresentationForm.topic)
+async def process_topic(message: Message, state: FSMContext):
+    await state.update_data(topic=message.text)
+    await state.set_state(PresentationForm.slide_count)
+
+    async with AsyncSessionLocal() as session:
+        min_slides = int(await repository.get_setting(session, "min_slides", str(settings.MIN_SLIDES_PER_ORDER)))
+        price_per_slide = int(await repository.get_setting(session, "price_per_slide", str(settings.DEFAULT_PRICE_PER_SLIDE)))
+
+    await message.answer(
+        f"📑 <b>Nechta slayd bo'lishini xohlaysiz?</b>\n\n"
+        f"Minimum: {min_slides} slayd\n"
+        f"Narxi: 1 slayd = {price_per_slide} so'm\n\n"
+        f"<i>Raqam ko'rinishida kiriting (Masalan: 10):</i>",
+        parse_mode="HTML"
+    )
+
+@router.message(PresentationForm.slide_count)
+async def process_slide_count(message: Message, state: FSMContext):
+    if not message.text.isdigit():
+        await message.answer("⚠️ Iltimos, faqat raqam kiriting (Masalan: 10):")
+        return
+
+    slide_count = int(message.text)
+    async with AsyncSessionLocal() as session:
+        min_slides = int(await repository.get_setting(session, "min_slides", str(settings.MIN_SLIDES_PER_ORDER)))
+        max_slides = int(await repository.get_setting(session, "max_slides", str(settings.MAX_SLIDES_PER_ORDER)))
+
+    if slide_count < min_slides:
+        await message.answer(f"⚠️ Minimum buyurtma miqdori: {min_slides} ta slayd. Qayta kiriting:")
+        return
+
+    if slide_count > max_slides:
+        await message.answer(f"⚠️ Maksimum buyurtma miqdori: {max_slides} ta slayd. Qayta kiriting:")
+        return
+
+    await state.update_data(slide_count=slide_count)
+    await state.set_state(PresentationForm.author_name)
+    await message.answer("👤 <b>Ism va familiyangizni kiriting:</b>\n\n(Masalan: <i>Doniyorbek Normurodov</i>)", parse_mode="HTML")
+
+@router.message(PresentationForm.author_name)
+async def process_author_name(message: Message, state: FSMContext):
+    await state.update_data(author_name=message.text)
+    await state.set_state(PresentationForm.institution)
+    await message.answer("🏫 <b>Ta'lim muassasangiz nomini kiriting:</b>\n\n(Masalan: <i>Toshkent Davlat Axborot Texnologiyalari Universiteti</i>)", parse_mode="HTML")
+
+@router.message(PresentationForm.institution)
+async def process_institution(message: Message, state: FSMContext):
+    await state.update_data(institution=message.text)
+    await state.set_state(PresentationForm.level)
+    await message.answer("🎓 <b>Ta'lim darajasini tanlang:</b>", reply_markup=get_level_keyboard(), parse_mode="HTML")
+
+@router.message(PresentationForm.level)
+async def process_level(message: Message, state: FSMContext):
+    level_text = message.text
+    await state.update_data(level=level_text)
+
+    if level_text == "Universitet":
+        await state.set_state(PresentationForm.course)
+        await message.answer("🎓 <b>Qaysi kursda o'qiysiz?</b>", reply_markup=get_course_keyboard(), parse_mode="HTML")
+    else:
+        await state.set_state(PresentationForm.teacher_name)
+        await message.answer("👨‍🏫 <b>O'qituvchingiz ismi-familiyasi (ixtiyoriy, o'tkazib yuborish uchun - deb yuboring):</b>", reply_markup=get_cancel_keyboard(), parse_mode="HTML")
+
+@router.message(PresentationForm.course)
+async def process_course(message: Message, state: FSMContext):
+    await state.update_data(course=message.text)
+    await state.set_state(PresentationForm.teacher_name)
+    await message.answer("👨‍🏫 <b>O'qituvchingiz ismi-familiyasi (ixtiyoriy, o'tkazib yuborish uchun - deb yuboring):</b>", reply_markup=get_cancel_keyboard(), parse_mode="HTML")
+
+@router.message(PresentationForm.teacher_name)
+async def process_teacher_name(message: Message, state: FSMContext):
+    teacher = message.text if message.text != "-" else ""
+    await state.update_data(teacher_name=teacher)
+    await state.set_state(PresentationForm.language)
+    await message.answer("🌐 <b>Prezentatsiya tilini tanlang:</b>", reply_markup=get_language_keyboard(), parse_mode="HTML")
+
+@router.message(PresentationForm.language)
+async def process_language(message: Message, state: FSMContext):
+    lang_map = {"🇺🇿 O'zbekcha": "uz", "🇷🇺 Русский": "ru", "🇬🇧 English": "en"}
+    lang_code = lang_map.get(message.text, "uz")
+    await state.update_data(language=lang_code)
+    await state.set_state(PresentationForm.additional_notes)
+    await message.answer("📝 <b>Qo'shimcha talablaringiz bormi?</b>\n\n(Masalan: <i>'Rasmlar ko'p bo'lsin', 'Qisqa va loqin bo'lsin' yoki - yuboring</i>)", parse_mode="HTML")
+
+@router.message(PresentationForm.additional_notes)
+async def process_additional_notes(message: Message, state: FSMContext):
+    notes = message.text if message.text != "-" else ""
+    await state.update_data(additional_notes=notes)
+
+    data = await state.get_data()
+    async with AsyncSessionLocal() as session:
+        price_per_slide = int(await repository.get_setting(session, "price_per_slide", str(settings.DEFAULT_PRICE_PER_SLIDE)))
+
+    slide_count = int(data.get("slide_count", 10))
+    total_price = slide_count * price_per_slide
+    await state.update_data(total_price=total_price)
+
+    summary_text = (
+        f"📊 <b>BUYURTMA TASDIQLASH:</b>\n\n"
+        f"📚 <b>Fan:</b> {escape_html(data.get('subject'))}\n"
+        f"📌 <b>Mavzu:</b> {escape_html(data.get('topic'))}\n"
+        f"📑 <b>Slaydlar soni:</b> {slide_count} ta\n"
+        f"👤 <b>Muallif:</b> {escape_html(data.get('author_name'))}\n"
+        f"🏫 <b>Muassasa:</b> {escape_html(data.get('institution'))}\n"
+        f"🌐 <b>Til:</b> {escape_html(data.get('language'))}\n"
+        f"💰 <b>Jami narx:</b> {total_price} so'm\n\n"
+        f"Prezentatsiyani generatsiya qilishni tasdiqlaysizmi?"
+    )
+
+    order_id = "temp_order"
+    await state.set_state(PresentationForm.confirmation)
+    await message.answer(summary_text, reply_markup=get_confirmation_inline_keyboard(order_id), parse_mode="HTML")
+
+def _project_root() -> str:
+    return os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+
+
+async def _send_outline(message: Message, outline: dict, data: dict) -> None:
+    lang = data.get("language", "uz")
+    plan = escape_html(ai_service.outline_to_text(outline, lang))
+    text = (
+        "📋 <b>TAQDIMOT REJASI</b>\n\n"
+        f"<b>{escape_html(outline.get('title', ''))}</b>\n\n"
+        f"{plan}\n\n"
+        "Reja ma’qul bo‘lsa, tasdiqlang. Har bir slayd shu reja asosida yoziladi va chiziladi.\n"
+        "<i>O‘zgartirish kerak bo‘lsa, «✏️ O‘zgartirish kiritish» tugmasini bosing va nimani o‘zgartirishni yozing.</i>"
+    )
+    await message.answer(text, reply_markup=get_outline_inline_keyboard(), parse_mode="HTML")
+
+
+@router.callback_query(PresentationForm.confirmation, F.data.startswith("confirm_pres_"))
+async def confirm_and_show_outline(callback: CallbackQuery, state: FSMContext):
+    try:
+        await callback.answer("🧠 Reja tuzilmoqda...")
+    except Exception:
+        pass
+    data = await state.get_data()
+    await callback.message.edit_text("🧠 <b>AI taqdimot rejasini tuzmoqda...</b>\n\nBu odatda 10–20 soniya oladi.", parse_mode="HTML")
+    outline = await ai_service.generate_outline(data)
+    await state.update_data(outline=outline)
+    await state.set_state(PresentationForm.outline_review)
+    await _send_outline(callback.message, outline, data)
+
+
+@router.callback_query(PresentationForm.outline_review, F.data == "outline_regen")
+async def regenerate_outline(callback: CallbackQuery, state: FSMContext):
+    try:
+        await callback.answer("🔄 Yangi reja tuzilmoqda...")
+    except Exception:
+        pass
+    data = await state.get_data()
+    outline = await ai_service.generate_outline(data, previous=data.get("outline"))
+    await state.update_data(outline=outline)
+    await _send_outline(callback.message, outline, data)
+
+
+@router.callback_query(PresentationForm.outline_review, F.data == "outline_edit")
+async def ask_outline_changes(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(PresentationForm.outline_edit)
+    await callback.message.answer(
+        "✏️ <b>Rejada nimani o‘zgartiraylik?</b>\n\n"
+        "<i>Masalan: «4-slaydni olib tashla», «Kalvin sikli haqida alohida slayd qo‘sh», «tarixiy qismni qisqartir».</i>",
+        parse_mode="HTML")
+    try:
+        await callback.answer()
+    except Exception:
+        pass
+
+
+@router.message(PresentationForm.outline_edit)
+async def apply_outline_changes(message: Message, state: FSMContext):
+    data = await state.get_data()
+    wait = await message.answer("🧠 Reja yangilanmoqda...")
+    outline = await ai_service.generate_outline(data, feedback=message.text or "", previous=data.get("outline"))
+    await state.update_data(outline=outline)
+    await state.set_state(PresentationForm.outline_review)
+    try:
+        await wait.delete()
+    except Exception:
+        pass
+    await _send_outline(message, outline, data)
+
+
+_PROGRESS = {
+    "write": "✍️ <b>AI slaydlar matnini yozmoqda…</b> (1/2)\n\nHar bir slayd reja asosida alohida yozilmoqda.",
+    "render": "🎨 <b>Rasmlar tanlanmoqda va slaydlar chizilmoqda…</b> (2/2)\n\nPowerPoint va PDF tayyorlanmoqda.",
+}
+
+
+@router.callback_query(PresentationForm.outline_review, F.data == "outline_ok")
+async def generate_and_preview_presentation(callback: CallbackQuery, state: FSMContext):
+    try:
+        await callback.answer("⚡️ Prezentatsiya tayyorlanmoqda...")
+    except Exception:
+        pass
+
+    data = await state.get_data()
+    status = await callback.message.answer(_PROGRESS["write"], parse_mode="HTML")
+
+    async def progress(stage: str) -> None:
+        if stage in _PROGRESS:
+            await status.edit_text(_PROGRESS[stage], parse_mode="HTML")
+
+    import uuid
+    order_uuid = str(uuid.uuid4())
+    storage_dir = os.path.join(_project_root(), "storage", order_uuid)
+    tpl_id = data.get("template_id", "05_nature_organic")
+    slide_count = int(data.get("slide_count", 10))
+
+    try:
+        result = await build_presentation(data, storage_dir, outline=data.get("outline"), progress=progress)
+    except Exception:
+        logger.exception("Presentation build failed")
+        await callback.message.answer(
+            "⚠️ Taqdimotni yaratishda xatolik yuz berdi. Iltimos, birozdan so‘ng qayta urinib ko‘ring.")
+        return
+
+    async with AsyncSessionLocal() as session:
+        order = await repository.create_presentation_order(
+            session=session,
+            user_id=callback.from_user.id,
+            topic=data.get("topic", ""),
+            subject=data.get("subject", ""),
+            slide_count=slide_count,
+            template_id=tpl_id,
+            total_price=data.get("total_price", 3500),
+            pptx_path=result.pptx_path,
+            pdf_path=result.pdf_path
+        )
+        order_id = order.id
+
+    try:
+        await status.delete()
+    except Exception:
+        pass
+
+    media_group = []
+    for idx, p_path in enumerate(result.previews):
+        media_group.append(InputMediaPhoto(
+            media=FSInputFile(p_path),
+            caption="🔍 Namuna slaydlar (SLIDELAB • PREVIEW)" if idx == 0 else ""
+        ))
+    if result.overview:
+        media_group.append(InputMediaPhoto(media=FSInputFile(result.overview)))
+    if media_group:
+        await callback.message.answer_media_group(media=media_group)
+
+    total_price = data.get("total_price", 3500)
+    warning_text = (
+        f"⚠️ <b>Preview haqida</b>\n\n"
+        f"Yuqorida ikki namuna slayd va barcha {slide_count} ta slaydning kichik ko‘rinishi berildi. "
+        f"Ularda <code>SLIDELAB • PREVIEW • @SlideLabBot</code> belgisi bor.\n\n"
+        f"💳 <b>To‘lov amalga oshirilgandan so‘ng:</b>\n"
+        f"• barcha {slide_count} ta slayd to‘liq sifatda ochiladi;\n"
+        f"• belgilar olib tashlanadi;\n"
+        f"• PowerPoint (.pptx, matnini tahrirlash mumkin) va PDF fayllar beriladi.\n\n"
+        f"📊 <b>Slaydlar soni:</b> {slide_count} ta\n"
+        f"💰 <b>Narxi:</b> {total_price} so'm"
+    )
+    payment_keyboard = (
+        get_production_payment_inline_keyboard(order_id, total_price)
+        if settings.PAYMENT_ENV.upper() == "PRODUCTION"
+        else get_payment_inline_keyboard(order_id, total_price)
+    )
+    await callback.message.answer(warning_text, reply_markup=payment_keyboard, parse_mode="HTML")
+    await state.clear()
+
+
+@router.callback_query(F.data == "cancel_pres")
+async def cancel_presentation_creation(callback: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await callback.message.edit_text("❌ Prezentatsiya yaratish bekor qilindi.", parse_mode="HTML")
+    try:
+        await callback.answer()
+    except Exception:
+        pass

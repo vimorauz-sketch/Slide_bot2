@@ -1,0 +1,6 @@
+{%- if s.image %}{{ m.media(s.image, 'media-bleed ' ~ side) }}{% endif %}
+<div class="q-wrap">
+  <div class="mark">&ldquo;</div>
+  <blockquote data-t>{{ s.quote|rich }}</blockquote>
+  <div class="who">{{ m.t('— ' ~ s.author if s.author else '', 'div', 'a') }}{{ m.t(s.role, 'div', 'r') }}</div>
+</div>

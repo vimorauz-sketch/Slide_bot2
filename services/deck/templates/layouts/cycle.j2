@@ -1,0 +1,14 @@
+<div class="cycle-wrap">
+  <div class="cycle-diagram">
+    {{ s.cycle_svg|safe }}
+    {%- if s.center %}<div class="cycle-center" style="left:{{ s.cycle_geo.cx - s.cycle_geo.inner }}px;top:{{ s.cycle_geo.cy - s.cycle_geo.inner }}px;width:{{ s.cycle_geo.inner*2 }}px;height:{{ s.cycle_geo.inner*2 }}px;font-size:{{ s.cycle_geo.center_fs }}px"><span data-t>{{ s.center|rich }}</span></div>{% endif %}
+  </div>
+  <div class="s-body">
+    {{ m.head(s, lead=False) }}
+    <ol class="cycle-list">
+      {%- for st in s.stages %}
+      <li><span class="n" data-t>{{ loop.index }}</span><div>{{ m.t(st.title, 'h3') }}{{ m.t(st.text) }}</div></li>
+      {%- endfor %}
+    </ol>
+  </div>
+</div>

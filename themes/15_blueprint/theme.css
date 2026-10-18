@@ -1,0 +1,40 @@
+:root {
+  --bg: #0D3563; --bg2: #124A85; --surface: #0F3F72; --text: #F2F8FF; --muted: #B8CDE6;
+  --primary: #FFFFFF; --secondary: #7CC4FF; --accent: #FFD166; --on-primary: #0D3563; --ink: #082445;
+  --border: color-mix(in srgb, var(--text) 55%, transparent); --rule: color-mix(in srgb, var(--text) 35%, transparent);
+  --c1: var(--secondary); --c2: var(--accent); --c3: var(--text);
+  --title-weight: 800; --title-tracking: -0.02em; --title-lh: 1.04; --item-weight: 700;
+  --num-font: "JetBrains Mono", monospace; --num-weight: 700;
+  --radius: 0px; --radius-sm: 0px; --img-radius: 0px; --icon-radius: 0px;
+  --card-bg: color-mix(in srgb, var(--bg) 70%, transparent); --card-border: 2px solid var(--border); --card-shadow: none;
+  --icon-bg: transparent; --icon-fg: var(--text);
+  --eyebrow-color: var(--accent); --num-color: var(--accent); --title-color: var(--text);
+  --th-bg: transparent; --th-fg: var(--accent); --takeaway-bg: transparent; --takeaway-fg: var(--text);
+  --formula-bg: transparent; --cycle-fill: transparent;
+}
+.slide { background:
+  linear-gradient(color-mix(in srgb, var(--text) 9%, transparent) 1px, transparent 1px) 0 0 / 24px 24px,
+  linear-gradient(90deg, color-mix(in srgb, var(--text) 9%, transparent) 1px, transparent 1px) 0 0 / 24px 24px,
+  linear-gradient(color-mix(in srgb, var(--text) 18%, transparent) 2px, transparent 2px) 0 0 / 120px 120px,
+  linear-gradient(90deg, color-mix(in srgb, var(--text) 18%, transparent) 2px, transparent 2px) 0 0 / 120px 120px, var(--bg); }
+.eyebrow, .s-foot, .tbl th { font-family: "JetBrains Mono", monospace; letter-spacing: .14em; }
+.eyebrow::before { width: 40px; height: 2px; }
+.icon-badge { border: 2px solid var(--text); }
+.card::after { content: "A-0" counter(c); counter-increment: c; position: absolute; top: 12px; right: 16px; font: 500 15px "JetBrains Mono", monospace; color: var(--accent); }
+.cards { counter-reset: c; }
+.stat .val { font-family: "JetBrains Mono", monospace; letter-spacing: -0.04em; color: var(--accent); }
+.step .dot { background: var(--bg); color: var(--accent); border: 2px solid var(--text); border-radius: 0; box-shadow: none; font-family: "JetBrains Mono", monospace; }
+.step:not(:last-child)::after { background: repeating-linear-gradient(90deg, var(--text) 0 12px, transparent 12px 20px); height: 2px; }
+.bullets li .mk { border-radius: 0; background: transparent; border: 2px solid var(--accent); width: 14px; height: 14px; }
+.takeaway, .formula-box, .tbl-wrap, .verdict { border: 2px solid var(--border); }
+.tl::before { background: var(--text); height: 2px; } .tl .pin { border-radius: 0; border: 3px solid var(--accent); background: var(--bg); }
+.media-bleed { top: 80px; bottom: 80px; right: 80px; width: calc(44% - 80px); border: 2px solid var(--text); outline: 1px dashed color-mix(in srgb, var(--text) 50%, transparent); outline-offset: 16px; }
+.media-bleed.left { left: 80px; right: auto; }
+.media-bleed:not(.is-art) img { filter: grayscale(1) contrast(1.2); mix-blend-mode: screen; opacity: .85; }
+.with-bleed.media-right { padding-right: calc(44% + 100px); }
+.with-bleed.media-left { padding-left: calc(44% + 110px); }
+.with-bleed.media-left .s-foot { left: calc(44% + 110px); }
+.with-bleed.media-right .s-foot { right: calc(44% + 100px); }
+.cmp .vs { border-radius: 0; background: var(--bg); border: 2px solid var(--accent); color: var(--accent); font-family: "JetBrains Mono", monospace; }
+.checks li .ck { border-radius: 0; background: transparent; border: 2px solid var(--accent); color: var(--accent); }
+.decor .stamp { position: absolute; right: 70px; bottom: 60px; border: 2px solid var(--border); padding: 10px 18px; font: 500 14px/1.5 "JetBrains Mono", monospace; color: var(--muted); letter-spacing: .1em; }

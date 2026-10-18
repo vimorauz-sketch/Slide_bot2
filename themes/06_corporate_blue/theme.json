@@ -1,0 +1,50 @@
+{
+  "code": "06",
+  "name": "Corporate Blue",
+  "category": "Biznes • Moliya • Menejment • Hisobotlar • Kompaniya",
+  "tagline": "Ishonchli ko‘k, aniq tuzilma, KPI va grafiklar",
+  "mode": "light",
+  "fonts": {
+    "title": "montserrat",
+    "body": "ibm-plex-sans"
+  },
+  "pptx_fonts": {
+    "title": "Arial",
+    "body": "Arial"
+  },
+  "palette": {
+    "bg": "#F5F8FC",
+    "bg2": "#E3ECF8",
+    "surface": "#FFFFFF",
+    "text": "#0B1F44",
+    "muted": "#566A88",
+    "primary": "#1E40AF",
+    "secondary": "#2D8CFF",
+    "accent": "#F59E0B",
+    "on_primary": "#FFFFFF",
+    "ink": "#0B1F44"
+  },
+  "art": "corporate",
+  "cover_variant": "split",
+  "cards_variant": "grid",
+  "image_style": "modern corporate photography, glass office buildings, blue sky, professional, clean",
+  "writing_tone": "Confident, concise business language. Outcome-oriented statements and clear figures.",
+  "recipe": {
+    "type": "light",
+    "seeds": "light",
+    "kwargs": {
+      "tint": 0.01,
+      "bg_L": 0.98,
+      "prim_L": 0.42,
+      "prim_C": 0.17
+    }
+  },
+  "tags": [
+    "business",
+    "finance",
+    "economics"
+  ],
+  "sticker_style": "flat",
+  "sticker_place": "cards",
+  "art_sticker": true
+}

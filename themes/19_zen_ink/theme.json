@@ -1,0 +1,51 @@
+{
+  "code": "19",
+  "name": "Zen Ink",
+  "category": "Falsafa • Adabiyot • Psixologiya • Sharq madaniyati",
+  "tagline": "Sharqona sokinlik: siyoh, ko‘p bo‘sh joy, qizil muhr",
+  "mode": "light",
+  "fonts": {
+    "title": "pt-serif",
+    "body": "pt-sans"
+  },
+  "pptx_fonts": {
+    "title": "Cambria",
+    "body": "Calibri"
+  },
+  "palette": {
+    "bg": "#F7F3EA",
+    "bg2": "#ECE5D6",
+    "surface": "#FBF8F1",
+    "text": "#1C1B19",
+    "muted": "#5F5B53",
+    "primary": "#B3261E",
+    "secondary": "#4A4A46",
+    "accent": "#B3261E",
+    "on_primary": "#FFFFFF",
+    "ink": "#1C1B19"
+  },
+  "art": "ink",
+  "cover_variant": "split",
+  "cards_variant": "row",
+  "image_style": "japanese ink wash painting, sumi-e, minimal, calm, misty mountains",
+  "writing_tone": "Calm, reflective and precise. Few words, each one meaningful.",
+  "recipe": {
+    "type": "cream",
+    "seeds": "cream",
+    "kwargs": {
+      "prim_L": 0.45,
+      "prim_C": 0.16,
+      "bg_h": 85,
+      "bg_C": 0.015,
+      "accent_gold": false
+    }
+  },
+  "tags": [
+    "philosophy",
+    "literature",
+    "minimal"
+  ],
+  "sticker_style": "mono",
+  "sticker_place": "cards",
+  "art_sticker": true
+}

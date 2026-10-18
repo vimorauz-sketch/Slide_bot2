@@ -1,0 +1,89 @@
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import List
+from dotenv import load_dotenv, find_dotenv
+
+# Force load .env file so that values in .env override any existing OS environment variables
+load_dotenv(find_dotenv(), override=True)
+
+class Settings(BaseSettings):
+    BOT_TOKEN: str = "7548392011:AAExampleTokenForSlideLabBotString"
+    ADMIN_IDS: str = "123456789"
+    DATABASE_URL: str = "sqlite+aiosqlite:///slidelab.db"
+    PAYMENT_ENV: str = "DEMO"  # "DEMO" (MockPaymentProvider) or "PRODUCTION" (Click/Payme)
+    OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-5.6-sol"
+    OPENAI_VISION_MODEL: str = "gpt-5.6-sol"
+    DEFAULT_PRICE_PER_SLIDE: int = 350
+    MIN_SLIDES_PER_ORDER: int = 5
+    MAX_SLIDES_PER_ORDER: int = 30
+    DEFAULT_LANGUAGE: str = "uz"
+
+    # Slide images (services/deck/images.py). Providers without a key are skipped; when none
+    # finds a picture, the theme's generated art is used instead.
+    IMAGE_PROVIDERS: str = "pexels,unsplash,wikimedia,openai"
+    PEXELS_API_KEY: str = ""          # https://www.pexels.com/api/ (free)
+    UNSPLASH_ACCESS_KEY: str = ""     # https://unsplash.com/developers (free)
+    WIKIMEDIA_ENABLED: bool = True    # no key needed; good for science/history pictures
+    AI_IMAGES_ENABLED: bool = False   # OpenAI image generation (paid per image)
+    OPENAI_IMAGE_MODEL: str = "gpt-image-1"
+    OPENAI_IMAGE_QUALITY: str = "medium"
+
+    # Click Shop API (https://docs.click.uz) -- required only for PAYMENT_ENV=PRODUCTION
+    CLICK_SERVICE_ID: str = ""
+    CLICK_MERCHANT_ID: str = ""
+    CLICK_SECRET_KEY: str = ""
+
+    # Payme Merchant API (https://developer.help.paycom.uz) -- required only for PAYMENT_ENV=PRODUCTION
+    PAYME_MERCHANT_ID: str = ""
+    PAYME_SECRET_KEY: str = ""
+
+    # Local bind address for the payment webhook HTTP server (bot/webhook_app.py).
+    # Put a reverse proxy (nginx + TLS) in front of this in production -- Click and
+    # Payme both require HTTPS callback URLs.
+    WEBHOOK_HOST: str = "0.0.0.0"
+    WEBHOOK_PORT: int = 8080
+
+    # Public HTTPS address of the template gallery Mini App (served by the same server at /webapp/,
+    # e.g. https://your-domain.uz/webapp/). Empty = gallery is browsed with inline buttons only.
+    WEBAPP_URL: str = ""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
+
+    @property
+    def admin_id_list(self) -> List[int]:
+        if not self.ADMIN_IDS:
+            return []
+        return [int(x.strip()) for x in self.ADMIN_IDS.split(",") if x.strip().isdigit()]
+
+settings = Settings()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,50 @@
+{
+  "code": "05",
+  "name": "Nature Organic",
+  "category": "Biologiya • Ekologiya • Tibbiyot • Qishloq xo‘jaligi",
+  "tagline": "Yumshoq yashil ranglar, organik shakllar, tabiat suratlari",
+  "mode": "light",
+  "fonts": {
+    "title": "comfortaa",
+    "body": "nunito"
+  },
+  "pptx_fonts": {
+    "title": "Calibri",
+    "body": "Calibri"
+  },
+  "palette": {
+    "bg": "#F6F5EE",
+    "bg2": "#E8EEDD",
+    "surface": "#FFFFFF",
+    "text": "#1E3526",
+    "muted": "#5D6E60",
+    "primary": "#2F6B3E",
+    "secondary": "#7EA84E",
+    "accent": "#E0B03A",
+    "on_primary": "#FFFFFF",
+    "ink": "#16301F"
+  },
+  "art": "botanical",
+  "cover_variant": "split",
+  "cards_variant": "row",
+  "image_style": "soft natural daylight, fresh green tones, botanical, calm and clean composition",
+  "writing_tone": "Warm, clear and human. Calm sentences, concrete examples from nature and everyday life.",
+  "recipe": {
+    "type": "light",
+    "seeds": "light",
+    "kwargs": {
+      "tint": 0.02,
+      "bg_L": 0.97,
+      "prim_L": 0.45,
+      "prim_C": 0.11
+    }
+  },
+  "tags": [
+    "biology",
+    "nature",
+    "medicine"
+  ],
+  "sticker_style": "diecut",
+  "sticker_place": "corner",
+  "art_sticker": true
+}

@@ -1,0 +1,50 @@
+{
+  "code": "09",
+  "name": "Uzbek Heritage",
+  "category": "Tarix • Madaniyat • Adabiyot • An’analar • O‘zbekiston",
+  "tagline": "Bordo va oltin, girih naqshlari, ravoq shaklidagi rasmlar",
+  "mode": "light",
+  "fonts": {
+    "title": "cormorant-garamond",
+    "body": "alegreya"
+  },
+  "pptx_fonts": {
+    "title": "Cambria",
+    "body": "Cambria"
+  },
+  "palette": {
+    "bg": "#F4EBDD",
+    "bg2": "#F4E3C3",
+    "surface": "#FBF5EA",
+    "text": "#3B2119",
+    "muted": "#7A5E4E",
+    "primary": "#6E1423",
+    "secondary": "#1F6F64",
+    "accent": "#C49A4A",
+    "on_primary": "#FBF5EA",
+    "ink": "#4A0C18"
+  },
+  "art": "ikat",
+  "cover_variant": "center",
+  "cards_variant": "row",
+  "image_style": "Uzbek heritage: Samarkand and Bukhara architecture, turquoise tiles, warm golden light, historic",
+  "writing_tone": "Dignified and respectful, rich but clear Uzbek literary style; dates and names are precise.",
+  "recipe": {
+    "type": "cream",
+    "seeds": "cream",
+    "kwargs": {
+      "prim_L": 0.33,
+      "prim_C": 0.12,
+      "bg_h": 75,
+      "bg_C": 0.03
+    }
+  },
+  "tags": [
+    "history",
+    "culture",
+    "uzbek"
+  ],
+  "sticker_style": "badge",
+  "sticker_place": "cards",
+  "art_sticker": true
+}

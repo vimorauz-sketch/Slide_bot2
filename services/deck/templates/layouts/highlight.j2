@@ -1,0 +1,6 @@
+{{ m.media(s.image, 'bg-media') }}
+<div class="hl">
+  {%- if s.eyebrow %}<div class="eyebrow" data-t>{{ s.eyebrow|rich }}</div>{% endif %}
+  {{ m.t(s.statement, 'h2', 'statement') }}
+  {{ m.t(s.text) }}
+</div>

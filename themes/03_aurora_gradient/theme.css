@@ -1,0 +1,44 @@
+:root {
+  --bg: #0B0F2E; --bg2: #1A1650; --surface: #1C1C4A; --text: #FFFFFF; --muted: #C3CBF5;
+  --primary: #8B5CF6; --secondary: #38BDF8; --accent: #F472B6; --on-primary: #FFFFFF; --ink: #0B0F2E;
+  --border: rgba(255, 255, 255, .16); --rule: rgba(255, 255, 255, .16);
+  --c1: color-mix(in srgb, var(--primary) 70%, #fff);
+  --title-weight: 600; --title-tracking: -0.03em; --title-lh: 1.08; --item-weight: 600; --num-weight: 600;
+  --fs-title: 64px; --fs-cover: 100px;
+  --radius: 30px; --img-radius: 34px; --icon-radius: 18px;
+  --card-bg: rgba(255, 255, 255, .07); --card-border: 1px solid rgba(255, 255, 255, .16);
+  --card-shadow: 0 30px 60px color-mix(in srgb, var(--ink) 60%, transparent), inset 0 1px 0 rgba(255, 255, 255, .12);
+  --icon-bg: linear-gradient(135deg, color-mix(in srgb, var(--primary) 60%, transparent), color-mix(in srgb, var(--secondary) 50%, transparent)); --icon-fg: #FFFFFF;
+  --cycle-fill: color-mix(in srgb, var(--primary) 25%, var(--bg));
+  --eyebrow-color: color-mix(in srgb, var(--secondary) 70%, #fff); --num-color: color-mix(in srgb, var(--primary) 50%, #fff); --title-color: #FFFFFF;
+  --overlay: linear-gradient(180deg, color-mix(in srgb, var(--ink) 25%, transparent) 0%, color-mix(in srgb, var(--ink) 80%, transparent) 100%);
+  --th-bg: color-mix(in srgb, var(--primary) 45%, transparent); --th-fg: #FFFFFF;
+  --takeaway-bg: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 40%, var(--secondary)) 60%, var(--secondary)); --takeaway-fg: #FFFFFF;
+  --formula-bg: rgba(255, 255, 255, .07);
+}
+.slide {
+  background:
+    radial-gradient(900px 700px at 0% 0%, color-mix(in srgb, var(--primary) 55%, transparent) 0%, transparent 60%),
+    radial-gradient(900px 650px at 100% 15%, color-mix(in srgb, var(--secondary) 35%, transparent) 0%, transparent 60%),
+    radial-gradient(800px 600px at 70% 110%, color-mix(in srgb, var(--accent) 32%, transparent) 0%, transparent 60%),
+    var(--bg);
+}
+.card, .stat, .side, .step-card, .chart-card, .tbl-wrap, .term, .formula-box { backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+.eyebrow::before { height: 8px; width: 8px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+.s-title, .layout-cover .c-title, .sec-title, .statement, .cl-title {
+  background: linear-gradient(100deg, #FFFFFF 30%, color-mix(in srgb, var(--primary) 25%, #fff) 60%, color-mix(in srgb, var(--secondary) 30%, #fff) 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.media-bleed { top: 60px; bottom: 60px; right: 60px; width: calc(44% - 60px); border-radius: 34px; box-shadow: 0 30px 80px color-mix(in srgb, var(--primary) 35%, transparent); outline: 1px solid rgba(255, 255, 255, .2); outline-offset: -1px; }
+.media-bleed.left { left: 60px; right: auto; }
+.with-bleed.media-right { padding-right: calc(44% + 60px); }
+.with-bleed.media-left { padding-left: calc(44% + 60px); }
+.with-bleed.media-left .s-foot { left: calc(44% + 60px); }
+.with-bleed.media-right .s-foot { right: calc(44% + 60px); }
+.stat .val { background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 45%, #fff), color-mix(in srgb, var(--secondary) 55%, #fff)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.step .dot { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; box-shadow: 0 10px 30px color-mix(in srgb, var(--primary) 50%, transparent); }
+.step:not(:last-child)::after { background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 90%, transparent), color-mix(in srgb, var(--secondary) 30%, transparent)); }
+.bullets li .mk { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+.tl .pin { border-color: var(--primary); background: var(--bg); }
+.cmp .vs { background: var(--bg2); border-color: rgba(255, 255, 255, .25); color: #fff; }
+.layout-cover.v-center .c-title { font-size: calc(108px * var(--fit)); }
+.layout-cover .bg-media.is-art::after, .layout-closing .bg-media.is-art::after { background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--ink) 55%, transparent), color-mix(in srgb, var(--ink) 20%, transparent) 70%); }

@@ -1,0 +1,29 @@
+:root {
+  --bg: #F5F8FC; --bg2: #E3ECF8; --surface: #FFFFFF; --text: #0B1F44; --muted: #566A88;
+  --primary: #1E40AF; --secondary: #2D8CFF; --accent: #F59E0B; --on-primary: #FFFFFF; --ink: #0B1F44;
+  --border: color-mix(in srgb, var(--primary) 10%, #fff); --rule: color-mix(in srgb, var(--primary) 14%, transparent);
+  --c3: color-mix(in srgb, var(--secondary) 45%, #fff); --c4: var(--accent);
+  --title-weight: 700; --title-tracking: -0.02em; --title-lh: 1.08; --item-weight: 700; --num-weight: 800;
+  --fs-title: 66px;
+  --radius: 14px; --radius-sm: 10px; --img-radius: 0px; --icon-radius: 12px;
+  --card-border: 1px solid var(--border); --card-shadow: 0 10px 30px color-mix(in srgb, var(--primary) 8%, transparent);
+  --icon-bg: color-mix(in srgb, var(--primary) 9%, #fff);
+  --eyebrow-color: var(--secondary);
+  --overlay: linear-gradient(90deg, color-mix(in srgb, var(--ink) 92%, transparent) 0%, color-mix(in srgb, var(--ink) 65%, transparent) 50%, color-mix(in srgb, var(--ink) 10%, transparent) 100%);
+  --takeaway-bg: linear-gradient(135deg, var(--primary), var(--secondary));
+}
+.slide { background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 70%, var(--bg)) 0%, var(--bg) 100%); }
+.slide:not(.layout-cover):not(.layout-highlight):not(.layout-closing)::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 16px; background: linear-gradient(180deg, var(--primary), var(--secondary)); z-index: 1; }
+.s-foot { border-top: 1px solid var(--border); padding-top: 14px; bottom: 30px; }
+.eyebrow { letter-spacing: .18em; font-weight: 700; }
+.eyebrow::before { width: 24px; height: 4px; border-radius: 0; }
+.media-bleed { clip-path: polygon(14% 0, 100% 0, 100% 100%, 0 100%); }
+.media-bleed.left { clip-path: polygon(0 0, 100% 0, 86% 100%, 0 100%); }
+.media-bleed:not(.is-art)::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, color-mix(in srgb, var(--primary) 35%, transparent) 100%); }
+.card { border-top: 4px solid var(--primary); border-radius: 8px; }
+.cards.grid-2x2 .card { border-top: 0; border-left: 4px solid var(--primary); }
+.stat { border-radius: 8px; background: linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--surface) 94%, var(--primary))); }
+.step .dot { border-radius: 12px; }
+.bullets li .mk { border-radius: 2px; width: 12px; height: 12px; background: var(--secondary); }
+.layout-cover .c-title { letter-spacing: -0.03em; }
+.layout-cover .kicker { color: var(--secondary); }

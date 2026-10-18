@@ -1,0 +1,34 @@
+:root {
+  --ov: color-mix(in srgb, var(--primary) 55%, var(--ink));
+  --bg: #FBF1DE; --bg2: #F6DEB4; --surface: #FFF9EE; --text: #3A1F14; --muted: #7A5444;
+  --primary: #D9512C; --secondary: #E89B2D; --accent: #F2C94C; --on-primary: #FFFFFF; --ink: #3A1F14;
+  --title-weight: 800; --title-tracking: -0.03em; --title-lh: 1.0; --item-weight: 700; --num-weight: 800;
+  --fs-title: 78px; --fs-cover: 124px;
+  --radius: 28px; --img-radius: 28px; --icon-radius: 50%;
+  --card-bg: var(--surface); --card-border: 3px solid var(--text); --card-shadow: none;
+  --icon-bg: var(--primary); --icon-fg: var(--on-primary);
+  --eyebrow-color: var(--primary);
+  --th-bg: var(--text); --th-fg: var(--bg);
+}
+.slide { background: var(--bg); }
+.slide:not(.layout-cover):not(.layout-highlight):not(.layout-closing)::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 30px; z-index: 1;
+  background: linear-gradient(180deg, var(--accent) 0 33%, var(--secondary) 33% 66%, var(--primary) 66%); }
+.s-foot { bottom: 50px; }
+.card:nth-child(2) { --icon-bg: var(--secondary); } .card:nth-child(3) { --icon-bg: var(--accent); --icon-fg: var(--text); }
+.stat, .step .step-card, .cmp .side, .term, .tbl-wrap, .chart-card { border: 3px solid var(--text); box-shadow: none; }
+.stat .val { color: var(--primary); }
+.step .dot { background: var(--primary); border: 3px solid var(--text); box-shadow: 0 0 0 8px var(--bg); }
+.step:nth-child(2) .dot { background: var(--secondary); } .step:nth-child(3) .dot { background: var(--accent); color: var(--text); }
+.step:not(:last-child)::after { background: var(--text); height: 3px; }
+.bullets li .mk { width: 18px; height: 18px; background: radial-gradient(circle, var(--accent) 0 40%, var(--primary) 41%); }
+.media-bleed { top: 60px; bottom: 90px; right: 60px; width: calc(44% - 60px); border-radius: 400px 400px 28px 28px; border: 4px solid var(--text); }
+.media-bleed.left { left: 60px; right: auto; }
+.media-bleed img { filter: sepia(.25) saturate(1.15); }
+.media-bleed.is-art img { filter: none; }
+.with-bleed.media-right { padding-right: calc(44% + 70px); }
+.with-bleed.media-left { padding-left: calc(44% + 70px); }
+.with-bleed.media-left .s-foot { left: calc(44% + 70px); }
+.with-bleed.media-right .s-foot { right: calc(44% + 70px); }
+.takeaway { border: 3px solid var(--text); background: var(--primary); }
+.cmp .vs { background: var(--accent); border: 3px solid var(--text); color: var(--text); }
+.tl .pin { border-color: var(--primary); background: var(--accent); }

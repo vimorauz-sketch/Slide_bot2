@@ -1,0 +1,51 @@
+{
+  "code": "18",
+  "name": "Retro Sunset",
+  "category": "Ijod • Musiqa • Turizm • Tarix (XX asr)",
+  "tagline": "70-yillar uslubi: quyosh chiziqlari, iliq ranglar",
+  "mode": "light",
+  "fonts": {
+    "title": "rubik",
+    "body": "rubik"
+  },
+  "pptx_fonts": {
+    "title": "Arial",
+    "body": "Arial"
+  },
+  "palette": {
+    "bg": "#FBF1DE",
+    "bg2": "#F6DEB4",
+    "surface": "#FFF9EE",
+    "text": "#3A1F14",
+    "muted": "#7A5444",
+    "primary": "#D9512C",
+    "secondary": "#E89B2D",
+    "accent": "#F2C94C",
+    "on_primary": "#FFFFFF",
+    "ink": "#3A1F14"
+  },
+  "art": "retro",
+  "cover_variant": "split",
+  "cards_variant": "row",
+  "image_style": "retro 1970s photography, warm film grain, sunset colors, vintage",
+  "writing_tone": "Warm and storytelling, with a nostalgic touch, still factual.",
+  "recipe": {
+    "type": "cream",
+    "seeds": "cream",
+    "kwargs": {
+      "prim_L": 0.55,
+      "prim_C": 0.17,
+      "bg_h": 75,
+      "bg_C": 0.04,
+      "accent_gold": false
+    }
+  },
+  "tags": [
+    "creative",
+    "history",
+    "travel"
+  ],
+  "sticker_style": "riso",
+  "sticker_place": "corner",
+  "art_sticker": true
+}

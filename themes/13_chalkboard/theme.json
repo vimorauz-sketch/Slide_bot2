@@ -1,0 +1,51 @@
+{
+  "code": "13",
+  "name": "Chalkboard",
+  "category": "Maktab • Matematika • Fizika • Dars ishlanmasi",
+  "tagline": "Sinf doskasi: bo‘r yozuvlar, qo‘lda chizilgan chiziqlar",
+  "mode": "dark",
+  "fonts": {
+    "title": "caveat",
+    "body": "nunito"
+  },
+  "pptx_fonts": {
+    "title": "Calibri",
+    "body": "Calibri"
+  },
+  "palette": {
+    "bg": "#1E3A2F",
+    "bg2": "#2A4D3E",
+    "surface": "#24443A",
+    "text": "#F3F1E7",
+    "muted": "#C9CDBF",
+    "primary": "#FFE27A",
+    "secondary": "#8FD3FF",
+    "accent": "#FF9FB6",
+    "on_primary": "#1E1E1E",
+    "ink": "#14271F"
+  },
+  "art": "chalk",
+  "cover_variant": "split",
+  "cards_variant": "row",
+  "pdf_mode": "raster",
+  "image_style": "chalk drawing style illustration on blackboard",
+  "writing_tone": "Like a good teacher at the board: clear explanations, steps, examples and rules.",
+  "recipe": {
+    "type": "dark",
+    "seeds": "dark",
+    "kwargs": {
+      "bg_L": 0.3,
+      "bg_C": 0.035,
+      "prim_L": 0.9,
+      "prim_C": 0.12
+    }
+  },
+  "tags": [
+    "school",
+    "science",
+    "math"
+  ],
+  "sticker_style": "doodle",
+  "sticker_place": "corner",
+  "art_sticker": true
+}

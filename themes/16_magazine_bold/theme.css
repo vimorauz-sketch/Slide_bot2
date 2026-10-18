@@ -1,0 +1,34 @@
+:root {
+  --bg: #FAF8F5; --bg2: #EFEAE3; --surface: #FFFFFF; --text: #121212; --muted: #5A5650;
+  --primary: #D7263D; --secondary: #1B998B; --accent: #F4D35E; --on-primary: #FFFFFF; --ink: #121212;
+  --title-weight: 400; --title-tracking: -0.02em; --title-lh: 1.0; --item-weight: 700; --num-weight: 400;
+  --fs-title: 90px; --fs-cover: 150px;
+  --radius: 0px; --radius-sm: 0px; --img-radius: 0px; --icon-radius: 50%;
+  --card-bg: transparent; --card-border: 0; --card-shadow: none; --card-pad: 28px;
+  --icon-bg: var(--text); --icon-fg: var(--bg);
+  --eyebrow-color: var(--primary); --num-color: var(--primary);
+  --th-bg: var(--text); --th-fg: var(--bg); --takeaway-bg: var(--text); --takeaway-fg: var(--bg);
+  --formula-bg: var(--bg2);
+}
+.slide { background: var(--bg); }
+.slide:not(.layout-cover):not(.layout-highlight):not(.layout-closing)::before { content: ""; position: absolute; right: 0; top: 0; width: 120px; height: 100%; background: var(--primary); z-index: 1; }
+.slide:not(.layout-cover):not(.layout-highlight):not(.layout-closing) { padding-right: 220px; }
+.slide:not(.layout-cover):not(.layout-highlight):not(.layout-closing) .s-foot { right: 220px; }
+.eyebrow { font-weight: 800; letter-spacing: .3em; }
+.eyebrow::before { width: 60px; height: 6px; border-radius: 0; }
+.card, .stat, .step .step-card, .cmp .side { border-top: 2px solid var(--text); border-radius: 0; padding-left: 0; padding-right: 0; }
+.card h3, .step h3, .ilist h3, .stat .lbl, .cmp .side h3, .tl h3, .cycle-list h3 { font-family: var(--font-body); font-weight: 800; text-transform: uppercase; letter-spacing: .03em; font-size: calc(var(--fs-item) * var(--fit) * .8); }
+.stat .val, .agenda-list .n, .tl .date, .layout-section .sec-num { font-family: var(--font-title); }
+.stat .val { font-size: calc(140px * var(--fit)); }
+.step .dot { background: var(--text); color: var(--bg); box-shadow: 0 0 0 10px var(--bg); font-family: var(--font-title); }
+.step:not(:last-child)::after { background: var(--text); height: 2px; }
+.bullets li .mk { border-radius: 0; width: 26px; height: 4px; background: var(--primary); margin-top: .7em; }
+.slide.with-bleed .media-bleed { right: 120px; width: calc(42% - 120px); }
+.slide.with-bleed .media-bleed.left { left: 0; right: auto; width: 40%; }
+html .slide.slide.with-bleed.media-right { padding-right: calc(42% + 70px); }
+html .slide.slide.with-bleed.media-right .s-foot { right: calc(42% + 70px); }
+.media-bleed img { filter: grayscale(1) contrast(1.15); }
+.media-bleed.is-art img { filter: none; }
+.layout-cover .c-title, .layout-highlight .statement, .layout-closing .cl-title { font-size: calc(var(--fs-cover) * var(--fit)); line-height: .95; }
+.cmp .vs { background: var(--primary); color: var(--on-primary); border: 0; font-family: var(--font-title); }
+.layout-quote blockquote { font-size: calc(72px * var(--fit)); line-height: 1.1; }

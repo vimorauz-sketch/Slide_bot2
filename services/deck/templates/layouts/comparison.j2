@@ -1,0 +1,13 @@
+{{ m.head(s, lead=False) }}
+<div class="s-body">
+  <div class="cmp">
+    {%- for key in ['left', 'right'] %}{% set sd = s[key] %}
+    <div class="side {{ 'a' if key == 'left' else 'b' }}">
+      <h3><span class="bar"></span><span data-t>{{ sd.title|rich }}</span></h3>
+      <ul>{% for p in sd.points %}<li>{{ ('circle-check' if key == 'left' else 'circle-dot')|icon }}<span data-t>{{ p|rich }}</span></li>{% endfor %}</ul>
+    </div>
+    {%- endfor %}
+    <div class="vs">VS</div>
+  </div>
+  {%- if s.verdict %}<div class="verdict">{{ 'scale'|icon }}<span data-t>{{ s.verdict|rich }}</span></div>{% endif %}
+</div>

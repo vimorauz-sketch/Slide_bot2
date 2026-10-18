@@ -1,0 +1,50 @@
+{
+  "code": "04",
+  "name": "Editorial Luxury",
+  "category": "Adabiyot • San’at • Madaniyat • Tarix • Premium biznes",
+  "tagline": "Krem qog‘oz, nafis serif, oltin chiziqlar, jurnal uslubi",
+  "mode": "light",
+  "fonts": {
+    "title": "playfair-display",
+    "body": "lora"
+  },
+  "pptx_fonts": {
+    "title": "Cambria",
+    "body": "Cambria"
+  },
+  "palette": {
+    "bg": "#F6F1E7",
+    "bg2": "#ECE2D0",
+    "surface": "#FBF8F1",
+    "text": "#27231E",
+    "muted": "#6F6457",
+    "primary": "#5C2E14",
+    "secondary": "#A67E48",
+    "accent": "#C9A24A",
+    "on_primary": "#FBF8F1",
+    "ink": "#2A1A10"
+  },
+  "art": "editorial",
+  "cover_variant": "split",
+  "cards_variant": "row",
+  "image_style": "warm editorial photography, film grain, soft golden light, classic architecture or art, elegant",
+  "writing_tone": "Elegant, literary and reflective, yet clear. Measured sentences, no marketing jargon.",
+  "recipe": {
+    "type": "cream",
+    "seeds": "cream",
+    "kwargs": {
+      "prim_L": 0.34,
+      "prim_C": 0.09,
+      "bg_h": 80,
+      "bg_C": 0.02
+    }
+  },
+  "tags": [
+    "literature",
+    "history",
+    "art"
+  ],
+  "sticker_style": "mono",
+  "sticker_place": "corner",
+  "art_sticker": true
+}

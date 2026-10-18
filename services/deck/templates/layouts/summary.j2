@@ -1,0 +1,9 @@
+<div class="sum-wrap">
+  <div>
+    {{ m.head(s, lead=False) }}
+    {%- if s.takeaway %}<div class="takeaway" data-t>{{ s.takeaway|rich }}</div>{% endif %}
+  </div>
+  <ul class="checks">
+    {%- for p in s.points %}<li><span class="ck">{{ 'check'|icon }}</span><span class="t" data-t>{{ p|rich }}</span></li>{% endfor %}
+  </ul>
+</div>

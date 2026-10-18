@@ -1,0 +1,51 @@
+{
+  "code": "01",
+  "name": "Midnight Tech",
+  "category": "IT • Sun’iy intellekt • Dasturlash • Muhandislik",
+  "tagline": "To‘q ko‘k fon, neon-moviy chiziqlar, texnologik to‘r",
+  "mode": "dark",
+  "fonts": {
+    "title": "tektur",
+    "body": "inter"
+  },
+  "pptx_fonts": {
+    "title": "Arial",
+    "body": "Arial"
+  },
+  "palette": {
+    "bg": "#050D1F",
+    "bg2": "#0C1C3A",
+    "surface": "#0B1D3B",
+    "text": "#EAF4FF",
+    "muted": "#8FB0CC",
+    "primary": "#19E6FF",
+    "secondary": "#3B82F6",
+    "accent": "#20E3B2",
+    "on_primary": "#04111F",
+    "ink": "#050D1F"
+  },
+  "art": "circuit",
+  "cover_variant": "split",
+  "cards_variant": "row",
+  "image_style": "futuristic, dark navy background, cyan neon light accents, clean high-tech, cinematic",
+  "writing_tone": "Precise and modern. Short, confident statements; concrete facts and numbers.",
+  "pdf_mode": "raster",
+  "recipe": {
+    "type": "dark",
+    "seeds": "dark",
+    "kwargs": {
+      "bg_L": 0.16,
+      "bg_C": 0.05,
+      "prim_L": 0.86,
+      "prim_C": 0.15
+    }
+  },
+  "tags": [
+    "tech",
+    "it",
+    "dark"
+  ],
+  "sticker_style": "glass",
+  "sticker_place": "cards",
+  "art_sticker": true
+}

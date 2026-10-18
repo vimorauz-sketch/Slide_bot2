@@ -1,0 +1,50 @@
+{
+  "code": "16",
+  "name": "Magazine Bold",
+  "category": "Media • Adabiyot • San’at • Moda • Jurnalistika",
+  "tagline": "Jurnal muqovasi: ulkan serif sarlavhalar va rang bloklari",
+  "mode": "light",
+  "fonts": {
+    "title": "yeseva-one",
+    "body": "golos-text"
+  },
+  "pptx_fonts": {
+    "title": "Cambria",
+    "body": "Calibri"
+  },
+  "palette": {
+    "bg": "#FAF8F5",
+    "bg2": "#EFEAE3",
+    "surface": "#FFFFFF",
+    "text": "#121212",
+    "muted": "#5A5650",
+    "primary": "#D7263D",
+    "secondary": "#1B998B",
+    "accent": "#F4D35E",
+    "on_primary": "#FFFFFF",
+    "ink": "#121212"
+  },
+  "art": "magazine",
+  "cover_variant": "full",
+  "cards_variant": "row",
+  "image_style": "editorial magazine photography, bold, fashion, high contrast",
+  "writing_tone": "Editorial and confident: strong headlines, vivid short paragraphs.",
+  "recipe": {
+    "type": "light",
+    "seeds": "light",
+    "kwargs": {
+      "tint": 0.005,
+      "bg_L": 0.98,
+      "prim_L": 0.52,
+      "prim_C": 0.19
+    }
+  },
+  "tags": [
+    "creative",
+    "literature",
+    "media"
+  ],
+  "sticker_style": "chunky",
+  "sticker_place": "cards",
+  "art_sticker": true
+}

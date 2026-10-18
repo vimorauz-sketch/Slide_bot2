@@ -1,0 +1,40 @@
+:root {
+  --bg: #030716; --bg2: #0E1A44; --surface: #0C1638; --text: #F5F8FF; --muted: #A3B3D4;
+  --primary: #4F7CFF; --secondary: #22D3EE; --accent: #A855F7; --on-primary: #FFFFFF; --ink: #030716;
+  --border: color-mix(in srgb, var(--primary) 22%, transparent); --rule: color-mix(in srgb, var(--muted) 18%, transparent);
+  --title-weight: 700; --title-tracking: -0.01em; --title-lh: 1.06; --item-weight: 700; --num-weight: 800;
+  --radius: 26px; --img-radius: 30px; --icon-radius: 18px;
+  --card-bg: linear-gradient(var(--surface), var(--surface)) padding-box, linear-gradient(135deg, color-mix(in srgb, var(--primary) 90%, transparent), color-mix(in srgb, var(--accent) 60%, transparent), color-mix(in srgb, var(--secondary) 50%, transparent)) border-box;
+  --card-border: 1.5px solid transparent;
+  --card-shadow: 0 30px 70px rgba(0, 0, 0, .5), 0 0 60px color-mix(in srgb, var(--primary) 12%, transparent);
+  --icon-bg: linear-gradient(135deg, var(--primary), var(--accent)); --icon-fg: #FFFFFF;
+  --cycle-fill: color-mix(in srgb, var(--primary) 22%, var(--bg));
+  --eyebrow-color: var(--secondary); --num-color: color-mix(in srgb, var(--primary) 60%, #fff); --title-color: #FFFFFF;
+  --overlay: linear-gradient(90deg, color-mix(in srgb, var(--ink) 92%, transparent) 0%, color-mix(in srgb, var(--ink) 60%, transparent) 50%, color-mix(in srgb, var(--ink) 5%, transparent) 100%);
+  --th-bg: color-mix(in srgb, var(--primary) 40%, var(--bg)); --th-fg: #FFFFFF;
+  --takeaway-bg: linear-gradient(135deg, var(--primary), var(--accent)); --takeaway-fg: #FFFFFF;
+  --formula-bg: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+.slide {
+  background:
+    radial-gradient(800px 600px at 92% 8%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 60%),
+    radial-gradient(900px 700px at 5% 100%, color-mix(in srgb, var(--primary) 30%, transparent), transparent 60%),
+    radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.6), transparent), radial-gradient(2px 2px at 70% 20%, rgba(255,255,255,.5), transparent),
+    radial-gradient(1.5px 1.5px at 40% 80%, rgba(255,255,255,.5), transparent), radial-gradient(1.5px 1.5px at 85% 60%, rgba(255,255,255,.4), transparent),
+    var(--bg);
+}
+.eyebrow::before { width: 34px; height: 3px; background: linear-gradient(90deg, var(--secondary), var(--accent)); }
+.s-title, .layout-cover .c-title { background: linear-gradient(95deg, #FFFFFF 40%, color-mix(in srgb, var(--primary) 35%, #fff) 75%, color-mix(in srgb, var(--accent) 35%, #fff)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.media-bleed { top: 60px; bottom: 60px; right: 60px; width: calc(44% - 60px); border-radius: 30px; box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--primary) 45%, transparent), 0 40px 90px color-mix(in srgb, var(--primary) 35%, transparent); }
+.media-bleed.left { left: 60px; right: auto; }
+.with-bleed.media-right { padding-right: calc(44% + 60px); }
+.with-bleed.media-left { padding-left: calc(44% + 60px); }
+.with-bleed.media-left .s-foot { left: calc(44% + 60px); }
+.with-bleed.media-right .s-foot { right: calc(44% + 60px); }
+.stat .val { background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 55%, #fff), var(--secondary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.step .dot { background: linear-gradient(135deg, var(--primary), var(--accent)); box-shadow: 0 0 0 10px var(--bg), 0 0 40px color-mix(in srgb, var(--primary) 60%, transparent); }
+.step:not(:last-child)::after { background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--accent) 20%, transparent)); }
+.bullets li .mk { background: linear-gradient(135deg, var(--secondary), var(--accent)); box-shadow: 0 0 12px color-mix(in srgb, var(--secondary) 60%, transparent); }
+.tl .pin { border-color: var(--secondary); background: var(--bg); box-shadow: 0 0 18px color-mix(in srgb, var(--secondary) 60%, transparent); }
+.cmp .vs { background: var(--bg2); border-color: color-mix(in srgb, var(--primary) 50%, transparent); color: #fff; }
+.layout-cover.v-full .c-title { font-size: calc(116px * var(--fit)); }

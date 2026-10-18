@@ -1,0 +1,50 @@
+{
+  "code": "02",
+  "name": "Clean Academic",
+  "category": "Ta’lim • Fan • Ilmiy ish • Universitet • Maktab",
+  "tagline": "Oq fon, to‘q ko‘k serif sarlavhalar, ilmiy jurnal uslubi",
+  "mode": "light",
+  "fonts": {
+    "title": "source-serif-4",
+    "body": "source-sans-3"
+  },
+  "pptx_fonts": {
+    "title": "Cambria",
+    "body": "Calibri"
+  },
+  "palette": {
+    "bg": "#FBFCFE",
+    "bg2": "#EAF0F8",
+    "surface": "#FFFFFF",
+    "text": "#0F1E3D",
+    "muted": "#56657F",
+    "primary": "#1D3F9E",
+    "secondary": "#3B82F6",
+    "accent": "#C8A24A",
+    "on_primary": "#FFFFFF",
+    "ink": "#0F1E3D"
+  },
+  "art": "academic",
+  "cover_variant": "split",
+  "cards_variant": "row",
+  "image_style": "clean scientific illustration or academic photography, bright, neutral background, precise",
+  "writing_tone": "Formal academic Uzbek/Russian/English. Objective, precise terminology, no slang.",
+  "recipe": {
+    "type": "light",
+    "seeds": "light",
+    "kwargs": {
+      "tint": 0.008,
+      "bg_L": 0.99,
+      "prim_L": 0.42,
+      "prim_C": 0.14
+    }
+  },
+  "tags": [
+    "science",
+    "education",
+    "academic"
+  ],
+  "sticker_style": "line",
+  "sticker_place": "corner",
+  "art_sticker": true
+}

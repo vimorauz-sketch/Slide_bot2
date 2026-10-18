@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Dizayn laboratoriyasi</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root {
+  --bg: var(--tg-theme-bg-color, #0f1117);
+  --bg2: var(--tg-theme-secondary-bg-color, #181b24);
+  --text: var(--tg-theme-text-color, #f3f4f8);
+  --hint: var(--tg-theme-hint-color, #8b90a3);
+  --accent: var(--tg-theme-button-color, #6c5cff);
+  --on-accent: var(--tg-theme-button-text-color, #ffffff);
+  --card: color-mix(in srgb, var(--bg2) 80%, var(--text) 4%);
+  --line: color-mix(in srgb, var(--text) 10%, transparent);
+  --r: 16px;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.4 -apple-system, "SF Pro Text", "Segoe UI", Roboto, Inter, sans-serif; }
+body { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
+img { display: block; }
+
+header { padding: 18px 16px 6px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; font-size: 22px;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 40%, #ff7ab6)); color: #fff; }
+h1 { margin: 0; font-size: 21px; letter-spacing: -.02em; }
+.sub { color: var(--hint); font-size: 13px; margin-top: 2px; }
+
+.sticky { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: 10px 16px 8px; }
+.search { display: flex; align-items: center; gap: 8px; background: var(--bg2); border-radius: 12px; padding: 0 12px; height: 42px; }
+.search input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--text); font: inherit; height: 100%; }
+.search svg { flex: none; opacity: .55; }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 10px 16px 2px; scrollbar-width: none; margin: 0 -16px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; height: 34px; padding: 0 14px; border-radius: 999px; background: var(--bg2); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.chip.on { background: var(--accent); color: var(--on-accent); }
+.chip small { opacity: .65; font-weight: 500; margin-left: 4px; }
+
+.count { color: var(--hint); font-size: 12.5px; padding: 6px 16px 0; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 10px 16px 16px; }
+@media (min-width: 640px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 980px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.card { text-align: left; background: var(--card); border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); transition: transform .15s; }
+.card:active { transform: scale(.97); }
+.thumb { position: relative; aspect-ratio: 16 / 9; background: var(--bg2); }
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.code { position: absolute; right: 7px; bottom: 7px; background: rgba(0,0,0,.66); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: 7px; }
+.meta { padding: 9px 10px 11px; }
+.name { font-weight: 650; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 6px; }
+.dots { display: flex; align-items: center; }
+.dots i { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--card); margin-left: -4px; }
+.dots i:first-child { margin-left: 0; }
+.dots span { font-size: 11px; color: var(--hint); margin-left: 5px; }
+.tag { color: var(--hint); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.empty { text-align: center; color: var(--hint); padding: 60px 20px; grid-column: 1 / -1; }
+
+/* detail */
+#detail { position: fixed; inset: 0; z-index: 20; background: var(--bg); overflow-y: auto; transform: translateY(100%); transition: transform .28s cubic-bezier(.2,.8,.2,1); }
+#detail.open { transform: none; }
+.d-top { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.d-top .back { width: 36px; height: 36px; flex: none; border-radius: 50%; background: var(--bg2); display: grid; place-items: center; font-size: 18px; }
+.d-top .t { font-weight: 700; font-size: 16px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.carousel { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 10px; padding: 0 16px; scrollbar-width: none; }
+.carousel::-webkit-scrollbar { display: none; }
+.slot { flex: none; width: calc(100% - 8px); max-width: 860px; aspect-ratio: 16/9; border-radius: 14px; scroll-snap-align: center; background: var(--bg2) center / cover no-repeat;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25); position: relative; overflow: hidden; }
+.slot img { width: 100%; height: 100%; object-fit: cover; transition: opacity .25s; }
+.slot.loading::after { content: ""; position: absolute; left: 50%; top: 50%; width: 28px; height: 28px; margin: -14px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.35); border-top-color: #fff; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.pager { display: flex; justify-content: center; gap: 6px; padding: 12px 0 2px; }
+.pager i { width: 6px; height: 6px; border-radius: 3px; background: var(--hint); opacity: .4; transition: all .2s; }
+.pager i.on { width: 18px; opacity: 1; background: var(--accent); }
+.info { padding: 8px 16px 0; }
+.info h2 { margin: 4px 0 4px; font-size: 22px; letter-spacing: -.02em; }
+.info p { margin: 0 0 6px; color: var(--hint); }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--bg2); margin: 4px 4px 0 0; }
+.sect { display: flex; align-items: baseline; justify-content: space-between; padding: 18px 16px 10px; }
+.sect b { font-size: 16px; }
+.sect span { color: var(--hint); font-size: 12.5px; }
+.colors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 16px; }
+@media (min-width: 640px) { .colors { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 980px) { .colors { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.ctile { text-align: left; border-radius: 13px; overflow: hidden; background: var(--card); border: 2px solid transparent; position: relative; }
+.ctile.on { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent); }
+.ctile img { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: var(--bg2); }
+.ctile .cl { display: flex; align-items: center; gap: 7px; padding: 7px 9px 8px; font-size: 12.5px; font-weight: 600; }
+.ctile .sw { width: 14px; height: 14px; border-radius: 50%; flex: none; box-shadow: 0 0 0 1.5px var(--line); }
+.ctile .ck { position: absolute; right: 7px; top: 7px; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--on-accent);
+  display: none; place-items: center; font-size: 14px; font-weight: 800; }
+.ctile.on .ck { display: grid; }
+.choose { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom)); display: none; margin: 18px 16px 0; width: calc(100% - 32px); height: 52px; border-radius: 14px;
+  background: var(--accent); color: var(--on-accent); font-weight: 700; font-size: 16px; box-shadow: 0 10px 30px color-mix(in srgb, var(--accent) 40%, transparent); }
+body.web .choose { display: block; }
+.toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: rgba(20,20,26,.94); color: #fff; padding: 10px 16px; border-radius: 12px;
+  font-size: 14px; z-index: 40; display: none; max-width: 90vw; text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">🎨</div><div><h1>Dizayn laboratoriyasi</h1><div class="sub" id="sub">Shablonlar yuklanmoqda…</div></div></div>
+</header>
+<div class="sticky">
+  <label class="search">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="Qidirish: nom, fan yoki raqam" autocomplete="off">
+  </label>
+  <div class="chips" id="chips"></div>
+</div>
+<div class="count" id="count"></div>
+<main class="grid" id="grid"></main>
+
+<section id="detail" aria-hidden="true">
+  <div class="d-top"><button class="back" id="back" aria-label="Orqaga">←</button><div class="t" id="d-title"></div></div>
+  <div class="carousel" id="car"></div>
+  <div class="pager" id="pager"></div>
+  <div class="info" id="info"></div>
+  <div class="sect"><b>Ranglar</b><span id="ccount"></span></div>
+  <div class="colors" id="colors"></div>
+  <button class="choose" id="choose">Tanlash</button>
+  <div style="height:28px"></div>
+</section>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+  var tg = window.Telegram && window.Telegram.WebApp;
+  var inTg = !!(tg && (tg.initData || (tg.platform && tg.platform !== "unknown")));
+  if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+  if (!inTg) document.body.classList.add("web");
+  var params = new URLSearchParams(location.search);
+  var BOT = (params.get("bot") || "").replace(/[^\w]/g, "");
+
+  var S = { themes: [], cats: [], cat: "", q: "", cur: null, color: 0 };
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function thumb(id, n) { return "thumbs/" + encodeURIComponent(id) + "/" + (n || 0) + ".webp"; }
+  function colorCover(t, c, i) { return i === 0 ? thumb(t.id, 0) : "thumbs/" + encodeURIComponent(t.id) + "/c/" + encodeURIComponent(c.slug) + ".webp"; }
+  function slideSrc(t, i, n) { return i === 0 ? thumb(t.id, n) : "preview/" + encodeURIComponent(t.colors[i].key) + "/" + n + ".webp"; }
+  function haptic() { try { tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged(); } catch (e) {} }
+  function toast(msg, ms) { var t = $("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(function () { t.style.display = "none"; }, ms || 2600); }
+  function norm(s) { return String(s || "").toLowerCase().replace(/[‘’ʻʼ'`]/g, ""); }
+
+  function renderChips() {
+    var html = '<button class="chip' + (S.cat ? "" : " on") + '" data-c="">Hammasi<small>' + S.themes.length + "</small></button>";
+    S.cats.forEach(function (c) {
+      if (c.count) html += '<button class="chip' + (S.cat === c.key ? " on" : "") + '" data-c="' + esc(c.key) + '">' + esc(c.emoji + " " + c.label) + "<small>" + c.count + "</small></button>";
+    });
+    $("chips").innerHTML = html;
+  }
+
+  function filtered() {
+    var q = norm(S.q).trim();
+    return S.themes.filter(function (t) {
+      if (S.cat && t.categories.indexOf(S.cat) < 0) return false;
+      if (!q) return true;
+      if (/^\d+$/.test(q)) return String(t.code) === String(parseInt(q, 10));
+      return norm([t.name, t.category, t.tagline].join(" ")).indexOf(q) >= 0;
+    });
+  }
+
+  function renderGrid() {
+    var list = filtered();
+    $("count").textContent = list.length + " ta shablon · har birida " + (S.themes[0] ? S.themes[0].colors.length : 10) + " xil rang";
+    if (!list.length) { $("grid").innerHTML = '<div class="empty">Hech narsa topilmadi 🙈<br><small>Boshqa so‘z bilan qidirib ko‘ring</small></div>'; return; }
+    $("grid").innerHTML = list.map(function (t) {
+      var dots = t.colors.slice(0, 5).map(function (c) { return '<i style="background:' + esc(c.swatch[1]) + '"></i>'; }).join("");
+      return '<button class="card" data-id="' + esc(t.id) + '"><div class="thumb"><img loading="lazy" decoding="async" src="' + thumb(t.id) + '" alt="">' +
+        '<span class="code">№ ' + t.code + '</span></div><div class="meta"><div class="name">' + esc(t.name) +
+        '</div><div class="row"><span class="tag">' + esc((t.category || "").split("•")[0]) + '</span><span class="dots">' + dots + "<span>+" + (t.colors.length - 5) + "</span></span></div></div></button>";
+    }).join("");
+  }
+
+  function renderSlides() {
+    var t = S.cur, i = S.color, n = Math.max(1, t.previews || 1), html = "", dots = "";
+    for (var k = 0; k < n; k++) {
+      var poster = k === 0 ? colorCover(t, t.colors[i], i) : thumb(t.id, k);
+      html += '<div class="slot' + (i ? " loading" : "") + '" style="background-image:url(\'' + poster + '\')"><img alt="" ' + (k > 1 ? 'loading="lazy" ' : "") +
+        'style="opacity:0" src="' + slideSrc(t, i, k) + '"></div>';
+      dots += "<i" + (k ? "" : ' class="on"') + "></i>";
+    }
+    var car = $("car"), left = car.scrollLeft;
+    car.innerHTML = html; $("pager").innerHTML = dots; car.scrollLeft = left;
+    Array.prototype.forEach.call(car.querySelectorAll("img"), function (im) {
+      im.onload = function () { im.style.opacity = 1; im.parentNode.classList.remove("loading"); };
+      im.onerror = function () { im.parentNode.classList.remove("loading"); im.remove(); };
+    });
+    onScroll();
+  }
+
+  function renderColors() {
+    var t = S.cur;
+    $("ccount").textContent = t.colors.length + " ta variant";
+    $("colors").innerHTML = t.colors.map(function (c, i) {
+      return '<button class="ctile' + (i === S.color ? " on" : "") + '" data-i="' + i + '"><img loading="lazy" src="' + colorCover(t, c, i) + '" alt=""><span class="ck">✓</span>' +
+        '<div class="cl"><i class="sw" style="background:linear-gradient(135deg,' + esc(c.swatch[0]) + ' 50%,' + esc(c.swatch[1]) + ' 50%)"></i>' + esc(c.name) + "</div></button>";
+    }).join("");
+  }
+
+  function updateChoose() {
+    var t = S.cur, c = t.colors[S.color];
+    var label = "✅ Tanlash — № " + t.code + " · " + c.name;
+    $("choose").textContent = label;
+    $("d-title").textContent = "№ " + t.code + " · " + t.name;
+    if (inTg) tg.MainButton.setParams({ text: label, is_visible: true, is_active: true });
+  }
+
+  function openDetail(id, colorIdx) {
+    var t = S.themes.filter(function (x) { return x.id === id; })[0];
+    if (!t) return;
+    S.cur = t; S.color = colorIdx || 0;
+    var cats = t.categories.map(function (k) { var c = S.cats.filter(function (x) { return x.key === k; })[0]; return c ? '<span class="pill">' + esc(c.emoji + " " + c.label) + "</span>" : ""; }).join("");
+    $("info").innerHTML = "<h2>" + esc(t.name) + "</h2><p>" + esc(t.tagline) + "</p><p style=\"font-size:13px\">" + esc(t.category) + "</p>" + cats;
+    $("car").scrollLeft = 0;
+    renderSlides(); renderColors(); updateChoose();
+    $("detail").scrollTop = 0;
+    $("detail").classList.add("open"); $("detail").setAttribute("aria-hidden", "false");
+    if (inTg) tg.BackButton.show();
+  }
+
+  function selectColor(i) {
+    if (i === S.color) return;
+    S.color = i; haptic();
+    renderSlides(); renderColors(); updateChoose();
+    $("car").scrollTo({ left: 0, behavior: "smooth" });
+    $("detail").scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function closeDetail() {
+    $("detail").classList.remove("open"); $("detail").setAttribute("aria-hidden", "true");
+    S.cur = null;
+    if (inTg) { tg.BackButton.hide(); tg.MainButton.hide(); }
+  }
+
+  function deepLink(key) { return BOT ? "https://t.me/" + BOT + "?start=tpl_" + key.replace("~", "--") : ""; }
+
+  function choose() {
+    var t = S.cur; if (!t) return;
+    var key = t.colors[S.color].key, link = deepLink(key);
+    try { tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
+    if (!inTg) {                                     // opened in a normal browser: hand over to the bot chat
+      if (link) { location.href = link; return; }
+      toast("Botga shablon raqamini yuboring: " + t.code, 4000); return;
+    }
+    var viaInline = !!(tg.initDataUnsafe && tg.initDataUnsafe.query_id);
+    if (!viaInline) {                                // opened from the keyboard button: sendData answers in the chat
+      try { tg.sendData(JSON.stringify({ theme: key })); return; } catch (e) {}
+    }
+    tg.MainButton.showProgress();
+    fetch("api/select", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ init_data: tg.initData, theme: key }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return r.ok && j.ok; }); })
+      .then(function (ok) {
+        tg.MainButton.hideProgress();
+        if (ok) { tg.close(); return; }
+        if (link) { tg.openTelegramLink(link); tg.close(); } else tg.showAlert("Botga shablon raqamini yuboring: " + t.code);
+      })
+      .catch(function () {
+        tg.MainButton.hideProgress();
+        if (link) { tg.openTelegramLink(link); tg.close(); } else tg.showAlert("Botga shablon raqamini yuboring: " + t.code);
+      });
+  }
+
+  function onScroll() {
+    var car = $("car"), first = car.children[0];
+    if (!first) return;
+    var i = Math.round(car.scrollLeft / (first.offsetWidth + 10));
+    Array.prototype.forEach.call($("pager").children, function (d, k) { d.classList.toggle("on", k === i); });
+  }
+
+  $("q").addEventListener("input", function (e) { S.q = e.target.value; renderGrid(); });
+  $("chips").addEventListener("click", function (e) { var b = e.target.closest(".chip"); if (!b) return; S.cat = b.getAttribute("data-c"); haptic(); renderChips(); renderGrid(); window.scrollTo({ top: 0 }); });
+  $("grid").addEventListener("click", function (e) { var c = e.target.closest(".card"); if (c) { haptic(); openDetail(c.getAttribute("data-id")); } });
+  $("colors").addEventListener("click", function (e) { var c = e.target.closest(".ctile"); if (c) selectColor(+c.getAttribute("data-i")); });
+  $("car").addEventListener("scroll", onScroll, { passive: true });
+  $("back").addEventListener("click", closeDetail);
+  $("choose").addEventListener("click", choose);
+  if (inTg) { tg.BackButton.onClick(closeDetail); tg.MainButton.onClick(choose); }
+
+  fetch("catalog.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (d) {
+    S.themes = d.themes; S.cats = d.categories;
+    var nc = d.themes.reduce(function (a, t) { return a + t.colors.length; }, 0);
+    $("sub").textContent = d.themes.length + " ta shablon · " + nc + " ta rangli variant";
+    renderChips(); renderGrid();
+    var m = /[?&#]theme=([\w~-]+)/.exec(location.search + location.hash);
+    if (m) openDetail(m[1].split("~")[0]);
+  }).catch(function () { $("sub").textContent = "Katalogni yuklab bo‘lmadi"; });
+})();
+</script>
+</body>
+</html>

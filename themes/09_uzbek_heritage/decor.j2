@@ -1,0 +1,11 @@
+{%- if s.layout not in ('cover', 'highlight', 'closing') %}
+<div class="decor">
+  {%- for pos in ['left:44px;top:44px', 'right:44px;top:44px;transform:scaleX(-1)', 'left:44px;bottom:44px;transform:scaleY(-1)', 'right:44px;bottom:44px;transform:scale(-1,-1)'] %}
+  <svg style="{{ pos }}" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.6">
+    <path d="M0 0 H100 M0 0 V100"/><path d="M8 8 H70 M8 8 V70"/>
+    <polygon points="30,14 34,24 44,20 40,30 50,34 40,38 44,48 34,44 30,54 26,44 16,48 20,38 10,34 20,30 16,20 26,24" class="star"/>
+    <circle class="dot" cx="30" cy="34" r="5" stroke="none"/>
+  </svg>
+  {%- endfor %}
+</div>
+{%- endif %}

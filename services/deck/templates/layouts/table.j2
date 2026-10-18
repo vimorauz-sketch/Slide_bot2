@@ -1,0 +1,10 @@
+{{ m.head(s, lead=False) }}
+<div class="s-body">
+  <div class="tbl-wrap">
+    <table class="tbl">
+      {%- if s.headers %}<thead><tr>{% for h in s.headers %}<th data-t>{{ h|rich }}</th>{% endfor %}</tr></thead>{% endif %}
+      <tbody>{% for r in s.rows %}<tr>{% for c in r %}<td data-t>{{ c|rich }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  {{ m.t(s.note, 'p', 'tbl-note') }}
+</div>

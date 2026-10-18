@@ -1,0 +1,8 @@
+{%- if s.layout not in ('cover', 'highlight', 'closing') -%}
+<div class="decor">
+  {%- set pos = ['right:-60px;top:-70px;transform:rotate(200deg)', 'left:-80px;bottom:-90px;transform:rotate(20deg)', 'right:-70px;bottom:-80px;transform:rotate(-30deg)'] -%}
+  <svg class="leaf" style="{{ pos[n % 3] }};width:360px;height:360px" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+    <path d="M10 90 C 20 40, 60 15, 92 8 C 85 45, 60 82, 10 90 Z"/><path d="M10 90 L 70 30"/><path d="M30 70 L 30 50"/><path d="M42 58 L 58 58"/><path d="M50 50 L 50 32"/><path d="M60 40 L 76 40"/>
+  </svg>
+</div>
+{%- endif -%}
