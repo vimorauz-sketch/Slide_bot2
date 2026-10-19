@@ -37,6 +37,11 @@ async def main():
 
     @dp.errors()
     async def on_error(event: ErrorEvent):
+        msg = str(event.exception).lower()
+        if any(k in msg for k in ("query is too old", "message is not modified", "message to delete not found",
+                                  "bot was blocked by the user", "message can't be deleted")):
+            logger.info("ignored Telegram error: %s", event.exception)  # harmless, the user saw nothing wrong
+            return True
         logger.exception("Unhandled error while processing update", exc_info=event.exception)
         update = event.update
         chat_id = None

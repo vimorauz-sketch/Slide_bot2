@@ -1,13 +1,13 @@
 import json
 import os
 from aiogram import Router, F
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from config import settings
 from database.connection import AsyncSessionLocal
 from database import repository
-from bot.keyboards.reply import get_main_menu_keyboard
+from bot.keyboards.reply import get_main_menu_keyboard, CANCEL_TEXTS
 from bot.utils import escape_html
 
 router = Router()
@@ -116,3 +116,23 @@ async def show_help(message: Message):
         lang = user.language if user else "uz"
     loc = load_locale(lang)
     await message.answer(loc.get("help_info", "Help center"), parse_mode="HTML")
+
+
+@router.message(Command("cancel"))
+@router.message(F.text.in_(CANCEL_TEXTS))
+async def cancel_wizard(message: Message, state: FSMContext):
+    """The «❌ Bekor qilish» reply button and /cancel: leave any wizard and show the main menu."""
+    from bot.states.forms import PresentationForm
+    cur = await state.get_state()
+    if getattr(cur, "state", cur) == PresentationForm.generating.state:
+        await message.answer("⏳ Taqdimot allaqachon tayyorlanmoqda — tayyor bo‘lgach yuboriladi.")
+        return
+    await state.clear()
+    lang = "uz"
+    try:
+        async with AsyncSessionLocal() as session:
+            user = await repository.get_user(session, message.from_user.id)
+            lang = (user.language if user else None) or "uz"
+    except Exception:  # noqa: BLE001 - the menu works without the database
+        pass
+    await message.answer("❌ Bekor qilindi. Asosiy menyu:", reply_markup=get_main_menu_keyboard(lang))

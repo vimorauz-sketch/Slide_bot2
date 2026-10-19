@@ -303,3 +303,9 @@ async def test_pay_click_records_a_payment_transaction_with_click_provider_label
         result = await session.execute(select(PaymentTransaction).where(PaymentTransaction.order_id == order_id))
         tx = result.scalars().one()
     assert tx.provider == "CLICK"
+
+
+def test_download_file_names_are_safe():
+    from bot.handlers.payment import _file_name
+    assert _file_name('Suv/havo: "sikl"?', "pdf") == "SlideLab_Suv havo sikl.pdf"
+    assert _file_name("", "pptx") == "SlideLab_Taqdimot.pptx"

@@ -3,7 +3,9 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 def get_template_selection_inline_keyboard(webapp_url: str = "") -> InlineKeyboardMarkup:
     kb = []
     if webapp_url:
-        kb.append([InlineKeyboardButton(text="🎨 Dizayn laboratoriyasi — 200 shablon", web_app=WebAppInfo(url=webapp_url))])
+        from services.deck import themes
+        n = len(themes.list_theme_ids())
+        kb.append([InlineKeyboardButton(text=f"🎨 Dizayn laboratoriyasi — {n} shablon", web_app=WebAppInfo(url=webapp_url))])
     kb += [
         [InlineKeyboardButton(text="📂 Kategoriyalar", callback_data="gal_cats"),
          InlineKeyboardButton(text="🗂 Barcha shablonlar", callback_data="gal_l:all:0")],

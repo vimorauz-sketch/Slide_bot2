@@ -98,3 +98,23 @@ async def test_ocr_advances_state_and_deletes_the_waiting_message(monkeypatch, p
     assert await state.get_state() == PresentationForm.author_name
     waiting_message = message.calls_for("answer")[0]["returned"]
     assert waiting_message.deleted is True
+
+
+@pytest.mark.asyncio
+async def test_ocr_failure_asks_for_the_subject_instead_of_inventing_a_topic(monkeypatch, patched_handlers_db):
+    message, state = await _run(monkeypatch, {"ok": False, "subject": "Biologiya", "topic": "Fotosintez"},
+                                patched_handlers_db)
+    assert await state.get_state() == PresentationForm.subject
+    assert "topic" not in await state.get_data()
+    assert "o‘qib bo‘lmadi" in message.calls_for("answer")[-1]["text"]
+
+
+@pytest.mark.asyncio
+async def test_ocr_keeps_the_template_the_user_already_chose(monkeypatch, patched_handlers_db):
+    async def fake_parse(image_bytes):
+        return {"subject": "Fizika", "topic": "Kvant", "slide_count": 10}
+    monkeypatch.setattr(ocr_task.ai_service, "parse_task_image", fake_parse)
+    state = FakeFSMContext()
+    await state.update_data(template_id="250_photo")
+    await ocr_task.handle_ocr_task_photo(_photo_message(), state)
+    assert (await state.get_data())["template_id"] == "250_photo"

@@ -18,6 +18,8 @@ class PresentationForm(StatesGroup):
     confirmation = State()
     outline_review = State()
     outline_edit = State()
+    outline_wait = State()   # AI is writing the plan (buttons pressed twice are ignored)
+    generating = State()     # slides are being written and rendered
 
 class PaymentForm(StatesGroup):
     waiting_for_payment = State()

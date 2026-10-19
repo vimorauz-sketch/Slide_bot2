@@ -1,7 +1,9 @@
 import json
 import os
+import re
 import logging
 from aiogram import Router, F
+from aiogram.filters import StateFilter
 from aiogram.types import Message, CallbackQuery, FSInputFile, InputMediaPhoto
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
@@ -15,7 +17,10 @@ from bot.keyboards.inline import (
     get_payment_inline_keyboard, get_production_payment_inline_keyboard, get_outline_inline_keyboard,
     get_gallery_categories_keyboard, get_gallery_list_keyboard, get_gallery_colors_keyboard
 )
-from bot.keyboards.reply import get_level_keyboard, get_course_keyboard, get_language_keyboard, get_cancel_keyboard, get_webapp_keyboard
+from bot.keyboards.reply import (
+    get_level_keyboard, get_course_keyboard, get_language_keyboard, get_cancel_keyboard, get_webapp_keyboard,
+    get_skip_keyboard, get_main_menu_keyboard, SKIP_TEXTS
+)
 from services import ai_service
 from services.presentation import build_presentation
 from services.deck import themes
@@ -26,6 +31,27 @@ router = Router()
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SUBJECT_PROMPT = "📚 <b>Fan nomini kiriting:</b>\n\n(Masalan: <i>Biologiya, Fizika, Tarix, Menejment</i>)"
+TEACHER_PROMPT = ("👨‍🏫 <b>O‘qituvchingiz ism-familiyasi</b> (ixtiyoriy).\n\n"
+                  "<i>Kerak bo‘lmasa «⏭ O‘tkazib yuborish» tugmasini bosing.</i>")
+LANG_NAMES = {"uz": "🇺🇿 O‘zbekcha", "ru": "🇷🇺 Русский", "en": "🇬🇧 English"}
+MAX_TEXT = 300  # longest answer kept for one wizard field
+
+
+def _clean(text) -> str:
+    return " ".join(str(text or "").split())[:MAX_TEXT]
+
+
+async def _safe_answer(callback: CallbackQuery, text: str = None, show_alert: bool = False) -> None:
+    """Answers a button press; Telegram rejects answers after ~15 s, which must not raise."""
+    try:
+        await callback.answer(text, show_alert=show_alert)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+async def _state_is(state: FSMContext, wanted) -> bool:
+    cur = await state.get_state()
+    return getattr(cur, "state", cur) == wanted.state
 
 
 _PLACEHOLDER_HOSTS = {"domeningiz", "your-domain", "your-domain.uz", "example.com", "domain.uz", "localhost"}
@@ -112,7 +138,6 @@ async def apply_template_choice(bot, chat_id: int, state: FSMContext, key) -> bo
 @router.message(F.text.in_([
     "🎨 Presentation yaratish", "🎨 Создать презентацию", "🎨 Create Presentation",
     "🖼 Shablonlar", "🖼 Шаблоны", "🖼 Templates",
-    "📄 Referat yaratish", "📄 Создать реферат", "📄 Create Paper"
 ]))
 async def start_pres_wizard(message: Message, state: FSMContext):
     await state.clear()
@@ -143,6 +168,13 @@ async def start_pres_wizard(message: Message, state: FSMContext):
     if url:
         await message.answer("👇 Galereyani pastdagi tugma orqali ham ochishingiz mumkin.",
                              reply_markup=get_webapp_keyboard(url))
+
+
+@router.message(F.text.in_(["📄 Referat yaratish", "📄 Создать реферат", "📄 Create Paper"]))
+async def referat_soon(message: Message, state: FSMContext):
+    await message.answer(
+        "📄 <b>Referat xizmati tez orada ishga tushadi.</b>\n\n"
+        "Hozircha «🎨 Presentation yaratish» orqali taqdimot tayyorlashingiz mumkin.", parse_mode="HTML")
 
 
 # ---------------------------------------------------------------- inline gallery (works without the Mini App)
@@ -205,8 +237,9 @@ async def gallery_list(callback: CallbackQuery, state: FSMContext):
         _, category, page = callback.data.split(":")
         page = int(page)
     except ValueError:
-        await callback.answer()
+        await _safe_answer(callback)
         return
+    await _safe_answer(callback, "⏳ Yuklanmoqda…")  # covers of photo templates may take a while
     ids = _category_ids(category)
     pages = max(1, (len(ids) + PAGE_SIZE - 1) // PAGE_SIZE)
     page = min(max(page, 0), pages - 1)
@@ -226,15 +259,15 @@ async def gallery_list(callback: CallbackQuery, state: FSMContext):
         await _show_photo(callback, sheet, caption, markup)
     else:
         await _edit_markup(callback, markup)
-    await callback.answer()
 
 
 @router.callback_query(F.data.startswith("gal_t:"))
 async def gallery_template(callback: CallbackQuery, state: FSMContext):
     tid = callback.data.split(":", 1)[1]
     if tid not in themes.list_theme_ids():
-        await callback.answer("Topilmadi", show_alert=True)
+        await _safe_answer(callback, "Topilmadi", show_alert=True)
         return
+    await _safe_answer(callback, "⏳ Ranglar yuklanmoqda…")
     if await state.get_state() is None:
         await state.set_state(PresentationForm.template_selection)
     t = themes.get_theme(tid)
@@ -247,7 +280,6 @@ async def gallery_template(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer_photo(FSInputFile(sheet), caption=caption, reply_markup=markup, parse_mode="HTML")
     else:
         await callback.message.answer(caption, reply_markup=markup, parse_mode="HTML")
-    await callback.answer()
 
 
 @router.callback_query(F.data == "gal_close")
@@ -275,10 +307,11 @@ async def process_template_selection(callback: CallbackQuery, state: FSMContext)
         await callback.answer()
         return
 
-    if not await apply_template_choice(callback.bot, callback.message.chat.id, state, tpl_code):
-        await callback.answer("Bu shablon topilmadi", show_alert=True)
+    if not themes.is_known_theme(tpl_code.replace("--", themes.COLOR_SEP)):
+        await _safe_answer(callback, "Bu shablon topilmadi", show_alert=True)
         return
-    await callback.answer()
+    await _safe_answer(callback, "✅ Tanlandi")  # before the cover is rendered (it can take a few seconds)
+    await apply_template_choice(callback.bot, callback.message.chat.id, state, tpl_code)
 
 
 @router.message(F.web_app_data)
@@ -300,23 +333,23 @@ async def process_template_number_text(message: Message, state: FSMContext):
     await message.answer(f"⚠️ Iltimos, <b>1 dan {n} gacha</b> shablon raqamini yuboring (masalan: <code>5</code>, <code>37</code>, <code>142</code>) yoki tugmalardan tanlang.", parse_mode="HTML")
 
 
-@router.message(PresentationForm.custom_design_prompt)
+@router.message(PresentationForm.custom_design_prompt, F.text)
 async def process_custom_design_prompt(message: Message, state: FSMContext):
-    prompt_text = message.text
+    prompt_text = _clean(message.text)
     design_spec = await ai_service.generate_custom_design_spec(prompt_text)
     await state.update_data(template_id="custom_ai", custom_design_spec=design_spec)
     await state.set_state(PresentationForm.subject)
-    await message.answer("📚 <b>Fan nomini kiriting:</b>\n\n(Masalan: <i>Biologiya, Fizika, Tarix</i>)", parse_mode="HTML")
+    await message.answer(SUBJECT_PROMPT, parse_mode="HTML", reply_markup=get_cancel_keyboard())
 
-@router.message(PresentationForm.subject)
+@router.message(PresentationForm.subject, F.text)
 async def process_subject(message: Message, state: FSMContext):
-    await state.update_data(subject=message.text)
+    await state.update_data(subject=_clean(message.text))
     await state.set_state(PresentationForm.topic)
     await message.answer("📌 <b>Prezentatsiya mavzusini kiriting:</b>\n\n(Masalan: <i>Fotosintez jarayoni va uning ahamiyati</i>)", parse_mode="HTML")
 
-@router.message(PresentationForm.topic)
+@router.message(PresentationForm.topic, F.text)
 async def process_topic(message: Message, state: FSMContext):
-    await state.update_data(topic=message.text)
+    await state.update_data(topic=_clean(message.text))
     await state.set_state(PresentationForm.slide_count)
 
     async with AsyncSessionLocal() as session:
@@ -331,13 +364,14 @@ async def process_topic(message: Message, state: FSMContext):
         parse_mode="HTML"
     )
 
-@router.message(PresentationForm.slide_count)
+@router.message(PresentationForm.slide_count, F.text)
 async def process_slide_count(message: Message, state: FSMContext):
-    if not message.text.isdigit():
+    m = re.fullmatch(r"\s*(\d{1,3})\s*(ta|та|slayd|slide|слайд(ов|а)?)?\s*", message.text.lower())
+    if not m:
         await message.answer("⚠️ Iltimos, faqat raqam kiriting (Masalan: 10):")
         return
 
-    slide_count = int(message.text)
+    slide_count = int(m.group(1))
     async with AsyncSessionLocal() as session:
         min_slides = int(await repository.get_setting(session, "min_slides", str(settings.MIN_SLIDES_PER_ORDER)))
         max_slides = int(await repository.get_setting(session, "max_slides", str(settings.MAX_SLIDES_PER_ORDER)))
@@ -354,21 +388,21 @@ async def process_slide_count(message: Message, state: FSMContext):
     await state.set_state(PresentationForm.author_name)
     await message.answer("👤 <b>Ism va familiyangizni kiriting:</b>\n\n(Masalan: <i>Doniyorbek Normurodov</i>)", parse_mode="HTML")
 
-@router.message(PresentationForm.author_name)
+@router.message(PresentationForm.author_name, F.text)
 async def process_author_name(message: Message, state: FSMContext):
-    await state.update_data(author_name=message.text)
+    await state.update_data(author_name=_clean(message.text))
     await state.set_state(PresentationForm.institution)
     await message.answer("🏫 <b>Ta'lim muassasangiz nomini kiriting:</b>\n\n(Masalan: <i>Toshkent Davlat Axborot Texnologiyalari Universiteti</i>)", parse_mode="HTML")
 
-@router.message(PresentationForm.institution)
+@router.message(PresentationForm.institution, F.text)
 async def process_institution(message: Message, state: FSMContext):
-    await state.update_data(institution=message.text)
+    await state.update_data(institution=_clean(message.text))
     await state.set_state(PresentationForm.level)
     await message.answer("🎓 <b>Ta'lim darajasini tanlang:</b>", reply_markup=get_level_keyboard(), parse_mode="HTML")
 
-@router.message(PresentationForm.level)
+@router.message(PresentationForm.level, F.text)
 async def process_level(message: Message, state: FSMContext):
-    level_text = message.text
+    level_text = _clean(message.text)
     await state.update_data(level=level_text)
 
     if level_text == "Universitet":
@@ -376,32 +410,35 @@ async def process_level(message: Message, state: FSMContext):
         await message.answer("🎓 <b>Qaysi kursda o'qiysiz?</b>", reply_markup=get_course_keyboard(), parse_mode="HTML")
     else:
         await state.set_state(PresentationForm.teacher_name)
-        await message.answer("👨‍🏫 <b>O'qituvchingiz ismi-familiyasi (ixtiyoriy, o'tkazib yuborish uchun - deb yuboring):</b>", reply_markup=get_cancel_keyboard(), parse_mode="HTML")
+        await message.answer(TEACHER_PROMPT, reply_markup=get_skip_keyboard(), parse_mode="HTML")
 
-@router.message(PresentationForm.course)
+@router.message(PresentationForm.course, F.text)
 async def process_course(message: Message, state: FSMContext):
-    await state.update_data(course=message.text)
+    await state.update_data(course=_clean(message.text))
     await state.set_state(PresentationForm.teacher_name)
-    await message.answer("👨‍🏫 <b>O'qituvchingiz ismi-familiyasi (ixtiyoriy, o'tkazib yuborish uchun - deb yuboring):</b>", reply_markup=get_cancel_keyboard(), parse_mode="HTML")
+    await message.answer(TEACHER_PROMPT, reply_markup=get_skip_keyboard(), parse_mode="HTML")
 
-@router.message(PresentationForm.teacher_name)
+@router.message(PresentationForm.teacher_name, F.text)
 async def process_teacher_name(message: Message, state: FSMContext):
-    teacher = message.text if message.text != "-" else ""
+    teacher = "" if message.text.strip() in SKIP_TEXTS else _clean(message.text)
     await state.update_data(teacher_name=teacher)
     await state.set_state(PresentationForm.language)
     await message.answer("🌐 <b>Prezentatsiya tilini tanlang:</b>", reply_markup=get_language_keyboard(), parse_mode="HTML")
 
-@router.message(PresentationForm.language)
+@router.message(PresentationForm.language, F.text)
 async def process_language(message: Message, state: FSMContext):
-    lang_map = {"🇺🇿 O'zbekcha": "uz", "🇷🇺 Русский": "ru", "🇬🇧 English": "en"}
-    lang_code = lang_map.get(message.text, "uz")
+    t = message.text.lower()
+    lang_code = "ru" if ("рус" in t or "rus" in t) else "en" if ("english" in t or "ingliz" in t) else "uz"
     await state.update_data(language=lang_code)
     await state.set_state(PresentationForm.additional_notes)
-    await message.answer("📝 <b>Qo'shimcha talablaringiz bormi?</b>\n\n(Masalan: <i>'Rasmlar ko'p bo'lsin', 'Qisqa va loqin bo'lsin' yoki - yuboring</i>)", parse_mode="HTML")
+    await message.answer("📝 <b>Qo‘shimcha talablaringiz bormi?</b>\n\n"
+                         "(Masalan: <i>«Rasmlar ko‘p bo‘lsin», «Qisqa va lo‘nda bo‘lsin»</i>)\n\n"
+                         "<i>Bo‘lmasa «⏭ O‘tkazib yuborish» tugmasini bosing.</i>",
+                         parse_mode="HTML", reply_markup=get_skip_keyboard())
 
-@router.message(PresentationForm.additional_notes)
+@router.message(PresentationForm.additional_notes, F.text)
 async def process_additional_notes(message: Message, state: FSMContext):
-    notes = message.text if message.text != "-" else ""
+    notes = "" if message.text.strip() in SKIP_TEXTS else _clean(message.text)
     await state.update_data(additional_notes=notes)
 
     data = await state.get_data()
@@ -419,7 +456,7 @@ async def process_additional_notes(message: Message, state: FSMContext):
         f"📑 <b>Slaydlar soni:</b> {slide_count} ta\n"
         f"👤 <b>Muallif:</b> {escape_html(data.get('author_name'))}\n"
         f"🏫 <b>Muassasa:</b> {escape_html(data.get('institution'))}\n"
-        f"🌐 <b>Til:</b> {escape_html(data.get('language'))}\n"
+        f"🌐 <b>Til:</b> {escape_html(LANG_NAMES.get(data.get('language'), data.get('language')))}\n"
         f"💰 <b>Jami narx:</b> {total_price} so'm\n\n"
         f"Prezentatsiyani generatsiya qilishni tasdiqlaysizmi?"
     )
@@ -445,30 +482,37 @@ async def _send_outline(message: Message, outline: dict, data: dict) -> None:
     await message.answer(text, reply_markup=get_outline_inline_keyboard(), parse_mode="HTML")
 
 
-@router.callback_query(PresentationForm.confirmation, F.data.startswith("confirm_pres_"))
-async def confirm_and_show_outline(callback: CallbackQuery, state: FSMContext):
-    try:
-        await callback.answer("🧠 Reja tuzilmoqda...")
-    except Exception:
-        pass
+async def _make_outline(message: Message, state: FSMContext, **kwargs) -> None:
+    """Writes the plan once (the wait state ignores repeated presses) and shows it."""
+    await state.set_state(PresentationForm.outline_wait)
     data = await state.get_data()
-    await callback.message.edit_text("🧠 <b>AI taqdimot rejasini tuzmoqda...</b>\n\nBu odatda 10–20 soniya oladi.", parse_mode="HTML")
-    outline = await ai_service.generate_outline(data)
+    try:
+        outline = await ai_service.generate_outline(data, **kwargs)
+    except Exception:  # noqa: BLE001
+        logger.exception("outline failed")
+        outline = ai_service.generate_mock_outline(data)
+    if not await _state_is(state, PresentationForm.outline_wait):
+        return  # the user cancelled or started a new order meanwhile
     await state.update_data(outline=outline)
     await state.set_state(PresentationForm.outline_review)
-    await _send_outline(callback.message, outline, data)
+    await _send_outline(message, outline, data)
+
+
+@router.callback_query(PresentationForm.confirmation, F.data.startswith("confirm_pres_"))
+async def confirm_and_show_outline(callback: CallbackQuery, state: FSMContext):
+    await _safe_answer(callback, "🧠 Reja tuzilmoqda...")
+    try:
+        await callback.message.edit_text("🧠 <b>AI taqdimot rejasini tuzmoqda...</b>\n\nBu odatda 10–20 soniya oladi.", parse_mode="HTML")
+    except Exception:  # noqa: BLE001
+        pass
+    await _make_outline(callback.message, state)
 
 
 @router.callback_query(PresentationForm.outline_review, F.data == "outline_regen")
 async def regenerate_outline(callback: CallbackQuery, state: FSMContext):
-    try:
-        await callback.answer("🔄 Yangi reja tuzilmoqda...")
-    except Exception:
-        pass
+    await _safe_answer(callback, "🔄 Yangi reja tuzilmoqda...")
     data = await state.get_data()
-    outline = await ai_service.generate_outline(data, previous=data.get("outline"))
-    await state.update_data(outline=outline)
-    await _send_outline(callback.message, outline, data)
+    await _make_outline(callback.message, state, previous=data.get("outline"))
 
 
 @router.callback_query(PresentationForm.outline_review, F.data == "outline_edit")
@@ -484,18 +528,15 @@ async def ask_outline_changes(callback: CallbackQuery, state: FSMContext):
         pass
 
 
-@router.message(PresentationForm.outline_edit)
+@router.message(PresentationForm.outline_edit, F.text)
 async def apply_outline_changes(message: Message, state: FSMContext):
     data = await state.get_data()
     wait = await message.answer("🧠 Reja yangilanmoqda...")
-    outline = await ai_service.generate_outline(data, feedback=message.text or "", previous=data.get("outline"))
-    await state.update_data(outline=outline)
-    await state.set_state(PresentationForm.outline_review)
+    await _make_outline(message, state, feedback=_clean(message.text), previous=data.get("outline"))
     try:
         await wait.delete()
     except Exception:
         pass
-    await _send_outline(message, outline, data)
 
 
 _PROGRESS = {
@@ -506,12 +547,14 @@ _PROGRESS = {
 
 @router.callback_query(PresentationForm.outline_review, F.data == "outline_ok")
 async def generate_and_preview_presentation(callback: CallbackQuery, state: FSMContext):
-    try:
-        await callback.answer("⚡️ Prezentatsiya tayyorlanmoqda...")
-    except Exception:
-        pass
+    await _safe_answer(callback, "⚡️ Prezentatsiya tayyorlanmoqda...")
+    await state.set_state(PresentationForm.generating)  # a second press of the button is ignored
 
     data = await state.get_data()
+    # the main menu comes back here (the wizard's reply keyboards are no longer needed); the status
+    # message is separate because messages with a reply keyboard cannot be edited later
+    await callback.message.answer("✅ Reja tasdiqlandi. Taqdimot tayyor bo‘lishi bilan shu yerga yuboraman.",
+                                  reply_markup=get_main_menu_keyboard())
     status = await callback.message.answer(_PROGRESS["write"], parse_mode="HTML")
 
     async def progress(stage: str) -> None:
@@ -528,8 +571,11 @@ async def generate_and_preview_presentation(callback: CallbackQuery, state: FSMC
         result = await build_presentation(data, storage_dir, outline=data.get("outline"), progress=progress)
     except Exception:
         logger.exception("Presentation build failed")
+        if await _state_is(state, PresentationForm.generating):
+            await state.set_state(PresentationForm.outline_review)  # «✅ Rejani tasdiqlash» can be pressed again
         await callback.message.answer(
-            "⚠️ Taqdimotni yaratishda xatolik yuz berdi. Iltimos, birozdan so‘ng qayta urinib ko‘ring.")
+            "⚠️ Taqdimotni yaratishda xatolik yuz berdi. Birozdan so‘ng rejadagi «✅ Rejani tasdiqlash» "
+            "tugmasini qayta bosing yoki /start bilan boshidan boshlang.")
         return
 
     async with AsyncSessionLocal() as session:
@@ -559,8 +605,13 @@ async def generate_and_preview_presentation(callback: CallbackQuery, state: FSMC
         ))
     if result.overview:
         media_group.append(InputMediaPhoto(media=FSInputFile(result.overview)))
-    if media_group:
-        await callback.message.answer_media_group(media=media_group)
+    try:
+        if len(media_group) >= 2:
+            await callback.message.answer_media_group(media=media_group[:10])
+        elif media_group:
+            await callback.message.answer_photo(media_group[0].media, caption=media_group[0].caption)
+    except Exception:  # noqa: BLE001 - the payment message must still arrive
+        logger.exception("preview images could not be sent")
 
     total_price = data.get("total_price", 3500)
     warning_text = (
@@ -580,14 +631,47 @@ async def generate_and_preview_presentation(callback: CallbackQuery, state: FSMC
         else get_payment_inline_keyboard(order_id, total_price)
     )
     await callback.message.answer(warning_text, reply_markup=payment_keyboard, parse_mode="HTML")
-    await state.clear()
+    if await _state_is(state, PresentationForm.generating):  # never wipe a new order started meanwhile
+        await state.clear()
 
 
 @router.callback_query(F.data == "cancel_pres")
 async def cancel_presentation_creation(callback: CallbackQuery, state: FSMContext):
+    await _safe_answer(callback)
+    if await _state_is(state, PresentationForm.generating):
+        await callback.message.answer("⏳ Taqdimot allaqachon tayyorlanmoqda, bir oz kuting.")
+        return
     await state.clear()
-    await callback.message.edit_text("❌ Prezentatsiya yaratish bekor qilindi.", parse_mode="HTML")
     try:
-        await callback.answer()
-    except Exception:
+        await callback.message.edit_text("❌ Prezentatsiya yaratish bekor qilindi.", parse_mode="HTML")
+    except Exception:  # noqa: BLE001
         pass
+    await callback.message.answer("🏠 Asosiy menyu", reply_markup=get_main_menu_keyboard())
+
+
+# ---------------------------------------------------------------- anything else (registered last)
+_BUTTON_STATES = (PresentationForm.confirmation, PresentationForm.outline_review)
+_WAIT_STATES = (PresentationForm.outline_wait, PresentationForm.generating)
+
+
+@router.message(StateFilter(*_WAIT_STATES))
+async def busy_message(message: Message, state: FSMContext):
+    await message.answer("⏳ Taqdimotingiz tayyorlanmoqda, bir oz kuting…")
+
+
+@router.message(StateFilter(*_BUTTON_STATES))
+async def press_a_button(message: Message, state: FSMContext):
+    await message.answer("👆 Iltimos, yuqoridagi xabardagi tugmalardan birini bosing.")
+
+
+@router.message(StateFilter(PresentationForm))
+async def text_expected(message: Message, state: FSMContext):
+    """A sticker, photo, voice… where the wizard waits for text."""
+    await message.answer("✍️ Iltimos, javobni <b>matn</b> ko‘rinishida yuboring.\n"
+                         "<i>Bekor qilish uchun «❌ Bekor qilish» yoki /cancel.</i>", parse_mode="HTML")
+
+
+@router.message(StateFilter(None), F.text)
+async def unknown_text(message: Message, state: FSMContext):
+    await message.answer("👇 Kerakli bo‘limni pastdagi menyudan tanlang (yoki /start).",
+                         reply_markup=get_main_menu_keyboard())

@@ -394,6 +394,7 @@ async def parse_task_image(image_bytes: bytes) -> Dict[str, Any]:
     if not client:
         logger.warning("OpenAI API key not configured. Returning fallback OCR data.")
         return {
+            "ok": False,
             "subject": "Biologiya",
             "topic": "Fotosintez jarayoni va uning ahamiyati",
             "slide_count": 10,
@@ -431,6 +432,7 @@ async def parse_task_image(image_bytes: bytes) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Error parsing task image with OpenAI Vision: {e}")
         return {
+            "ok": False,
             "subject": "Topshiriq",
             "topic": "Fotosintez va O‘simliklar dunyosi",
             "slide_count": 10,

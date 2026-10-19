@@ -9,6 +9,14 @@ from bot.keyboards.inline import get_download_format_inline_keyboard, get_paymen
 from services.payment.providers import MockPaymentProvider, ClickPaymentProvider, PaymePaymentProvider
 
 logger = logging.getLogger(__name__)
+
+
+def _file_name(topic: str, ext: str) -> str:
+    """Safe download name: no / \\ : * ? " < > | characters (they break the file on Windows/phones)."""
+    import re
+    name = re.sub(r'[\\/:*?"<>|\r\n\t]+', " ", topic or "")
+    name = " ".join(name.split())[:40].strip() or "Taqdimot"
+    return f"SlideLab_{name}.{ext}"
 router = Router()
 payment_provider = MockPaymentProvider()
 
@@ -156,7 +164,7 @@ async def _ensure_pdf_path(order) -> str:
 
 async def _send_pdf(callback: CallbackQuery, order):
     pdf_path = await _ensure_pdf_path(order)
-    doc_file = FSInputFile(pdf_path, filename=f"SlideLab_Presentation_{order.topic[:20]}.pdf")
+    doc_file = FSInputFile(pdf_path, filename=_file_name(order.topic, "pdf"))
     await callback.message.answer_document(
         document=doc_file,
         caption="📄 <b>PDF format</b> (to'liq, watermark-free)",
@@ -166,7 +174,7 @@ async def _send_pdf(callback: CallbackQuery, order):
 
 async def _send_pptx(callback: CallbackQuery, order):
     if order.pptx_path and os.path.exists(order.pptx_path):
-        pptx_file = FSInputFile(order.pptx_path, filename=f"SlideLab_Presentation_{order.topic[:20]}.pptx")
+        pptx_file = FSInputFile(order.pptx_path, filename=_file_name(order.topic, "pptx"))
         await callback.message.answer_document(
             document=pptx_file,
             caption="📊 <b>PowerPoint (.pptx) format</b>\n<i>PowerPoint yoki Google Slides orqali erkin tahrirlashingiz mumkin.</i>",
