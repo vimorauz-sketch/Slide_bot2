@@ -177,6 +177,12 @@ async def get_user_orders_count(session: AsyncSession, user_id: int) -> int:
     result = await session.execute(select(func.count()).select_from(PresentationOrder).where(PresentationOrder.user_id == user_id))
     return result.scalar() or 0
 
+async def count_user_orders_since(session: AsyncSession, user_id: int, since) -> int:
+    """Orders (previews) a user created since the given UTC datetime."""
+    result = await session.execute(select(func.count()).select_from(PresentationOrder).where(
+        PresentationOrder.user_id == user_id, PresentationOrder.created_at >= since))
+    return result.scalar() or 0
+
 async def get_user_referrals_count(session: AsyncSession, user_id: int) -> int:
     result = await session.execute(select(func.count()).select_from(User).where(User.referred_by == user_id))
     return result.scalar() or 0

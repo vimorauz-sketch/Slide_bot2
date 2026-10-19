@@ -379,6 +379,7 @@ def _assemble(data, outline, slides, subtitle, cover_visual, source) -> Dict[str
             "institution": data.get("institution", ""),
             "teacher": data.get("teacher_name", ""),
             "course": data.get("course", ""),
+            "date": data.get("date", ""),
             "visual": cover_visual or {"kind": "photo", "query": data.get("topic", "")},
         },
         "slides": slides,
@@ -552,11 +553,8 @@ def generate_mock_presentation(data: Dict[str, Any], outline: Optional[Dict[str,
     data.setdefault("slide_count", 10)
     data["slide_count"] = max(5, int(data.get("slide_count") or 10))
     data.setdefault("author_name", "Muallif")
-    data.setdefault("institution", "O‘quv muassasasi")
     if not data.get("author_name"):
         data["author_name"] = "Muallif"
-    if not data.get("institution"):
-        data["institution"] = "O‘quv muassasasi"
     outline = copy.deepcopy(outline) if outline else generate_mock_outline(data)
     topic = data.get("topic") or "Tadqiqot va tahlil"
     subject = data.get("subject") or "Fan"

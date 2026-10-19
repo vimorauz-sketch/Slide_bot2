@@ -4,7 +4,7 @@ import re
 import logging
 from aiogram import Router, F
 from aiogram.filters import StateFilter
-from aiogram.types import Message, CallbackQuery, FSInputFile, InputMediaPhoto
+from aiogram.types import Message, CallbackQuery, FSInputFile, InputMediaPhoto, ReplyKeyboardRemove
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from config import settings
@@ -19,7 +19,8 @@ from bot.keyboards.inline import (
 )
 from bot.keyboards.reply import (
     get_level_keyboard, get_course_keyboard, get_language_keyboard, get_cancel_keyboard, get_webapp_keyboard,
-    get_skip_keyboard, get_main_menu_keyboard, SKIP_TEXTS
+    get_skip_keyboard, get_main_menu_keyboard, SKIP_TEXTS, get_subject_keyboard, get_slide_count_keyboard,
+    get_date_keyboard, get_yes_no_keyboard, class_options, YES_TEXT, NO_TEXT
 )
 from services import ai_service
 from services.presentation import build_presentation
@@ -126,12 +127,12 @@ async def apply_template_choice(bot, chat_id: int, state: FSMContext, key) -> bo
     if thumb and hasattr(bot, "send_photo"):
         try:
             await bot.send_photo(chat_id, FSInputFile(thumb), caption=text, parse_mode="HTML",
-                                 reply_markup=get_cancel_keyboard() if started else None)
+                                 reply_markup=get_subject_keyboard() if started else None)
             return True
         except Exception:  # noqa: BLE001 - fall back to text
             logger.exception("cover preview could not be sent")
     await bot.send_message(chat_id, text, parse_mode="HTML",
-                           reply_markup=get_cancel_keyboard() if started else None)
+                           reply_markup=get_subject_keyboard() if started else None)
     return True
 
 
@@ -339,29 +340,44 @@ async def process_custom_design_prompt(message: Message, state: FSMContext):
     design_spec = await ai_service.generate_custom_design_spec(prompt_text)
     await state.update_data(template_id="custom_ai", custom_design_spec=design_spec)
     await state.set_state(PresentationForm.subject)
-    await message.answer(SUBJECT_PROMPT, parse_mode="HTML", reply_markup=get_cancel_keyboard())
+    await message.answer(SUBJECT_PROMPT, parse_mode="HTML", reply_markup=get_subject_keyboard())
+
+
+# ---------------------------------------------------------------- wizard: buttons for every common answer,
+# typing works everywhere too. Order: subject → topic → slides → name → level → institution (optional)
+# → class/year → teacher (optional) → date → language → extra wishes (yes/no) → confirmation
+async def _limits():
+    async with AsyncSessionLocal() as session:
+        min_slides = int(await repository.get_setting(session, "min_slides", str(settings.MIN_SLIDES_PER_ORDER)))
+        max_slides = int(await repository.get_setting(session, "max_slides", str(settings.MAX_SLIDES_PER_ORDER)))
+        price = int(await repository.get_setting(session, "price_per_slide", str(settings.DEFAULT_PRICE_PER_SLIDE)))
+    return min_slides, max_slides, price
+
+
+def _today():
+    import datetime as _dt
+    now = _dt.datetime.now(_dt.timezone(_dt.timedelta(hours=5)))  # Tashkent time
+    return now.strftime("%d.%m.%Y"), str(now.year)
+
 
 @router.message(PresentationForm.subject, F.text)
 async def process_subject(message: Message, state: FSMContext):
     await state.update_data(subject=_clean(message.text))
     await state.set_state(PresentationForm.topic)
-    await message.answer("📌 <b>Prezentatsiya mavzusini kiriting:</b>\n\n(Masalan: <i>Fotosintez jarayoni va uning ahamiyati</i>)", parse_mode="HTML")
+    await message.answer("📌 <b>Prezentatsiya mavzusini kiriting:</b>\n\n(Masalan: <i>Fotosintez jarayoni va uning ahamiyati</i>)",
+                         parse_mode="HTML", reply_markup=get_cancel_keyboard())
 
 @router.message(PresentationForm.topic, F.text)
 async def process_topic(message: Message, state: FSMContext):
     await state.update_data(topic=_clean(message.text))
     await state.set_state(PresentationForm.slide_count)
-
-    async with AsyncSessionLocal() as session:
-        min_slides = int(await repository.get_setting(session, "min_slides", str(settings.MIN_SLIDES_PER_ORDER)))
-        price_per_slide = int(await repository.get_setting(session, "price_per_slide", str(settings.DEFAULT_PRICE_PER_SLIDE)))
-
+    min_slides, max_slides, price_per_slide = await _limits()
     await message.answer(
-        f"📑 <b>Nechta slayd bo'lishini xohlaysiz?</b>\n\n"
-        f"Minimum: {min_slides} slayd\n"
-        f"Narxi: 1 slayd = {price_per_slide} so'm\n\n"
-        f"<i>Raqam ko'rinishida kiriting (Masalan: 10):</i>",
-        parse_mode="HTML"
+        f"📑 <b>Nechta slayd bo‘lishini xohlaysiz?</b>\n\n"
+        f"Minimum: {min_slides}, maksimum: {max_slides} slayd\n"
+        f"Narxi: 1 slayd = {price_per_slide} so‘m\n\n"
+        f"<i>Tugmani bosing yoki sonini yozing (masalan: 10):</i>",
+        parse_mode="HTML", reply_markup=get_slide_count_keyboard(min_slides, max_slides)
     )
 
 @router.message(PresentationForm.slide_count, F.text)
@@ -372,9 +388,7 @@ async def process_slide_count(message: Message, state: FSMContext):
         return
 
     slide_count = int(m.group(1))
-    async with AsyncSessionLocal() as session:
-        min_slides = int(await repository.get_setting(session, "min_slides", str(settings.MIN_SLIDES_PER_ORDER)))
-        max_slides = int(await repository.get_setting(session, "max_slides", str(settings.MAX_SLIDES_PER_ORDER)))
+    min_slides, max_slides, _ = await _limits()
 
     if slide_count < min_slides:
         await message.answer(f"⚠️ Minimum buyurtma miqdori: {min_slides} ta slayd. Qayta kiriting:")
@@ -386,42 +400,68 @@ async def process_slide_count(message: Message, state: FSMContext):
 
     await state.update_data(slide_count=slide_count)
     await state.set_state(PresentationForm.author_name)
-    await message.answer("👤 <b>Ism va familiyangizni kiriting:</b>\n\n(Masalan: <i>Doniyorbek Normurodov</i>)", parse_mode="HTML")
+    await message.answer("👤 <b>Ism va familiyangizni kiriting:</b>\n\n(Masalan: <i>Doniyorbek Normurodov</i>)",
+                         parse_mode="HTML", reply_markup=get_cancel_keyboard())
 
 @router.message(PresentationForm.author_name, F.text)
 async def process_author_name(message: Message, state: FSMContext):
     await state.update_data(author_name=_clean(message.text))
-    await state.set_state(PresentationForm.institution)
-    await message.answer("🏫 <b>Ta'lim muassasangiz nomini kiriting:</b>\n\n(Masalan: <i>Toshkent Davlat Axborot Texnologiyalari Universiteti</i>)", parse_mode="HTML")
-
-@router.message(PresentationForm.institution, F.text)
-async def process_institution(message: Message, state: FSMContext):
-    await state.update_data(institution=_clean(message.text))
     await state.set_state(PresentationForm.level)
-    await message.answer("🎓 <b>Ta'lim darajasini tanlang:</b>", reply_markup=get_level_keyboard(), parse_mode="HTML")
+    await message.answer("🎓 <b>Ta’lim darajangizni tanlang:</b>", reply_markup=get_level_keyboard(), parse_mode="HTML")
+
+_INSTITUTION_EXAMPLES = {"maktab": "45-son umumta’lim maktabi", "litsey": "TDTU qoshidagi akademik litsey",
+                         "kollej": "Toshkent politexnika kolleji", "universitet": "Toshkent davlat iqtisodiyot universiteti"}
 
 @router.message(PresentationForm.level, F.text)
 async def process_level(message: Message, state: FSMContext):
     level_text = _clean(message.text)
     await state.update_data(level=level_text)
+    await state.set_state(PresentationForm.institution)
+    example = next((v for k, v in _INSTITUTION_EXAMPLES.items() if k in level_text.lower()), "Sizning o‘quv dargohingiz")
+    await message.answer(f"🏫 <b>Ta’lim muassasangiz nomi</b> (ixtiyoriy)\n\n(Masalan: <i>{escape_html(example)}</i>)\n\n"
+                         "<i>Kerak bo‘lmasa «⏭ O‘tkazib yuborish» tugmasini bosing.</i>",
+                         reply_markup=get_skip_keyboard(), parse_mode="HTML")
 
-    if level_text == "Universitet":
-        await state.set_state(PresentationForm.course)
-        await message.answer("🎓 <b>Qaysi kursda o'qiysiz?</b>", reply_markup=get_course_keyboard(), parse_mode="HTML")
-    else:
-        await state.set_state(PresentationForm.teacher_name)
-        await message.answer(TEACHER_PROMPT, reply_markup=get_skip_keyboard(), parse_mode="HTML")
+async def _ask_teacher(message: Message, state: FSMContext) -> None:
+    await state.set_state(PresentationForm.teacher_name)
+    await message.answer(TEACHER_PROMPT, reply_markup=get_skip_keyboard(), parse_mode="HTML")
+
+@router.message(PresentationForm.institution, F.text)
+async def process_institution(message: Message, state: FSMContext):
+    await state.update_data(institution="" if message.text.strip() in SKIP_TEXTS else _clean(message.text))
+    level = (await state.get_data()).get("level", "")
+    if not class_options(level):
+        await state.update_data(course="")
+        await _ask_teacher(message, state)
+        return
+    await state.set_state(PresentationForm.course)
+    school = "sinf" in class_options(level)[0]
+    await message.answer("🎓 <b>Nechanchi sinfda o‘qiysiz?</b>" if school else "🎓 <b>Qaysi kursda o‘qiysiz?</b>",
+                         reply_markup=get_course_keyboard(level), parse_mode="HTML")
 
 @router.message(PresentationForm.course, F.text)
 async def process_course(message: Message, state: FSMContext):
-    await state.update_data(course=_clean(message.text))
-    await state.set_state(PresentationForm.teacher_name)
-    await message.answer(TEACHER_PROMPT, reply_markup=get_skip_keyboard(), parse_mode="HTML")
+    await state.update_data(course="" if message.text.strip() in SKIP_TEXTS else _clean(message.text))
+    await _ask_teacher(message, state)
 
 @router.message(PresentationForm.teacher_name, F.text)
 async def process_teacher_name(message: Message, state: FSMContext):
     teacher = "" if message.text.strip() in SKIP_TEXTS else _clean(message.text)
     await state.update_data(teacher_name=teacher)
+    await state.set_state(PresentationForm.date)
+    today, year = _today()
+    await message.answer("📅 <b>Titul slaydga qaysi sana yozilsin?</b>\n\n<i>Tugmani bosing yoki sanani yozing "
+                         "(masalan: 25.10.2026). Kerak bo‘lmasa «⏭ O‘tkazib yuborish».</i>",
+                         reply_markup=get_date_keyboard(today, year), parse_mode="HTML")
+
+@router.message(PresentationForm.date, F.text)
+async def process_date(message: Message, state: FSMContext):
+    text = message.text.strip()
+    if text in SKIP_TEXTS:
+        date = ""
+    else:
+        date = text.replace("📅", "").replace("Bugun:", "").strip()[:40]
+    await state.update_data(date=date)
     await state.set_state(PresentationForm.language)
     await message.answer("🌐 <b>Prezentatsiya tilini tanlang:</b>", reply_markup=get_language_keyboard(), parse_mode="HTML")
 
@@ -430,40 +470,115 @@ async def process_language(message: Message, state: FSMContext):
     t = message.text.lower()
     lang_code = "ru" if ("рус" in t or "rus" in t) else "en" if ("english" in t or "ingliz" in t) else "uz"
     await state.update_data(language=lang_code)
-    await state.set_state(PresentationForm.additional_notes)
+    await state.set_state(PresentationForm.notes_choice)
     await message.answer("📝 <b>Qo‘shimcha talablaringiz bormi?</b>\n\n"
-                         "(Masalan: <i>«Rasmlar ko‘p bo‘lsin», «Qisqa va lo‘nda bo‘lsin»</i>)\n\n"
-                         "<i>Bo‘lmasa «⏭ O‘tkazib yuborish» tugmasini bosing.</i>",
-                         parse_mode="HTML", reply_markup=get_skip_keyboard())
+                         "<i>Masalan: «Rasmlar ko‘p bo‘lsin», «Matn qisqa va lo‘nda bo‘lsin».</i>",
+                         parse_mode="HTML", reply_markup=get_yes_no_keyboard())
+
+@router.message(PresentationForm.notes_choice, F.text)
+async def process_notes_choice(message: Message, state: FSMContext):
+    text = message.text.strip()
+    if text == YES_TEXT or text.lower() in ("ha", "xa", "да", "yes", "bor"):
+        await state.set_state(PresentationForm.additional_notes)
+        await message.answer("✍️ <b>Talablaringizni yozing:</b>", parse_mode="HTML", reply_markup=get_cancel_keyboard())
+        return
+    if text == NO_TEXT or text in SKIP_TEXTS or text.lower() in ("yo'q", "yoq", "yo‘q", "нет", "no"):
+        data = await state.get_data()
+        await _finish_notes(message, state, data.get("ocr_notes", ""))
+        return
+    await _finish_notes(message, state, _clean(message.text))  # wishes typed straight away
 
 @router.message(PresentationForm.additional_notes, F.text)
 async def process_additional_notes(message: Message, state: FSMContext):
     notes = "" if message.text.strip() in SKIP_TEXTS else _clean(message.text)
-    await state.update_data(additional_notes=notes)
+    await _finish_notes(message, state, notes)
 
+async def _finish_notes(message: Message, state: FSMContext, notes: str) -> None:
     data = await state.get_data()
-    async with AsyncSessionLocal() as session:
-        price_per_slide = int(await repository.get_setting(session, "price_per_slide", str(settings.DEFAULT_PRICE_PER_SLIDE)))
+    ocr = data.get("ocr_notes", "")
+    if ocr and notes and ocr not in notes:
+        notes = f"{ocr}. {notes}"
+    await state.update_data(additional_notes=notes)
+    data = await state.get_data()
+    _, _, price_per_slide = await _limits()
 
     slide_count = int(data.get("slide_count", 10))
     total_price = slide_count * price_per_slide
     await state.update_data(total_price=total_price)
 
+    rows = [("📚", "Fan", data.get("subject")), ("📌", "Mavzu", data.get("topic")),
+            ("📑", "Slaydlar soni", f"{slide_count} ta"), ("👤", "Muallif", data.get("author_name")),
+            ("🎓", "Daraja", " · ".join(x for x in (data.get("level"), data.get("course")) if x)),
+            ("🏫", "Muassasa", data.get("institution")), ("👨‍🏫", "O‘qituvchi", data.get("teacher_name")),
+            ("📅", "Sana", data.get("date")),
+            ("🌐", "Til", LANG_NAMES.get(data.get("language"), data.get("language"))),
+            ("📝", "Talablar", notes)]
+    lines = "".join(f"{e} <b>{k}:</b> {escape_html(v)}\n" for e, k, v in rows if v)
     summary_text = (
-        f"📊 <b>BUYURTMA TASDIQLASH:</b>\n\n"
-        f"📚 <b>Fan:</b> {escape_html(data.get('subject'))}\n"
-        f"📌 <b>Mavzu:</b> {escape_html(data.get('topic'))}\n"
-        f"📑 <b>Slaydlar soni:</b> {slide_count} ta\n"
-        f"👤 <b>Muallif:</b> {escape_html(data.get('author_name'))}\n"
-        f"🏫 <b>Muassasa:</b> {escape_html(data.get('institution'))}\n"
-        f"🌐 <b>Til:</b> {escape_html(LANG_NAMES.get(data.get('language'), data.get('language')))}\n"
-        f"💰 <b>Jami narx:</b> {total_price} so'm\n\n"
+        f"📊 <b>BUYURTMA TASDIQLASH:</b>\n\n{lines}"
+        f"💰 <b>Jami narx:</b> {total_price} so‘m\n\n"
         f"Prezentatsiyani generatsiya qilishni tasdiqlaysizmi?"
     )
 
-    order_id = "temp_order"
     await state.set_state(PresentationForm.confirmation)
-    await message.answer(summary_text, reply_markup=get_confirmation_inline_keyboard(order_id), parse_mode="HTML")
+    # removes the yes/no keyboard (a message cannot carry both a reply keyboard and inline buttons)
+    await message.answer("👌 Ma’lumotlar qabul qilindi.", reply_markup=ReplyKeyboardRemove())
+    await message.answer(summary_text, reply_markup=get_confirmation_inline_keyboard("temp_order"), parse_mode="HTML")
+
+# ---------------------------------------------------------------- limits for expensive work
+_build_sem = None
+_build_waiting = 0
+
+
+def _sem():
+    global _build_sem
+    if _build_sem is None:
+        import asyncio
+        _build_sem = asyncio.Semaphore(max(1, int(settings.MAX_PARALLEL_BUILDS)))
+    return _build_sem
+
+
+class _build_slot:
+    """At most MAX_PARALLEL_BUILDS presentations are built at once; the rest wait in a queue
+    (the server stays responsive however many people press «create» at the same moment)."""
+
+    def __init__(self, status=None):
+        self.status = status
+
+    async def __aenter__(self):
+        global _build_waiting
+        sem = _sem()
+        if sem.locked() and self.status is not None:
+            try:
+                await self.status.edit_text(f"⏳ <b>Navbatdasiz</b> ({_build_waiting + 1}-o‘rin). "
+                                            "Hozir boshqa taqdimotlar tayyorlanmoqda, bir oz kuting…", parse_mode="HTML")
+            except Exception:  # noqa: BLE001
+                pass
+        _build_waiting += 1
+        try:
+            await sem.acquire()
+        finally:
+            _build_waiting -= 1
+        return self
+
+    async def __aexit__(self, *exc):
+        _sem().release()
+        return False
+
+
+async def _preview_allowed(user_id: int) -> bool:
+    """Unpaid previews per user per day (each one costs AI requests). Admins are not limited."""
+    if user_id in settings.admin_id_list or int(settings.MAX_PREVIEWS_PER_DAY) <= 0:
+        return True
+    import datetime as _dt
+    since = _dt.datetime.utcnow() - _dt.timedelta(days=1)
+    try:
+        async with AsyncSessionLocal() as session:
+            n = await repository.count_user_orders_since(session, user_id, since)
+    except Exception:  # noqa: BLE001 - never block a user because of a database hiccup
+        return True
+    return n < int(settings.MAX_PREVIEWS_PER_DAY)
+
 
 def _project_root() -> str:
     return os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -482,8 +597,19 @@ async def _send_outline(message: Message, outline: dict, data: dict) -> None:
     await message.answer(text, reply_markup=get_outline_inline_keyboard(), parse_mode="HTML")
 
 
+MAX_OUTLINES_PER_ORDER = 8  # plan rewrites per order (each one is an AI request)
+
+
 async def _make_outline(message: Message, state: FSMContext, **kwargs) -> None:
     """Writes the plan once (the wait state ignores repeated presses) and shows it."""
+    data = await state.get_data()
+    n = int(data.get("outline_count", 0))
+    if n >= MAX_OUTLINES_PER_ORDER and data.get("outline"):
+        await state.set_state(PresentationForm.outline_review)
+        await message.answer("⚠️ Reja juda ko‘p marta o‘zgartirildi. Mavjud rejani tasdiqlang yoki /start bilan qaytadan boshlang.")
+        await _send_outline(message, data["outline"], data)
+        return
+    await state.update_data(outline_count=n + 1)
     await state.set_state(PresentationForm.outline_wait)
     data = await state.get_data()
     try:
@@ -551,6 +677,12 @@ async def generate_and_preview_presentation(callback: CallbackQuery, state: FSMC
     await state.set_state(PresentationForm.generating)  # a second press of the button is ignored
 
     data = await state.get_data()
+    if not await _preview_allowed(callback.from_user.id):
+        await state.set_state(PresentationForm.outline_review)
+        await callback.message.answer(
+            f"⚠️ Bugun {settings.MAX_PREVIEWS_PER_DAY} ta taqdimot namunasini yaratdingiz — bu kunlik chegara.\n"
+            "Avvalgi buyurtmalaringizni to‘lab yuklab olishingiz mumkin yoki ertaga davom eting.")
+        return
     # the main menu comes back here (the wizard's reply keyboards are no longer needed); the status
     # message is separate because messages with a reply keyboard cannot be edited later
     await callback.message.answer("✅ Reja tasdiqlandi. Taqdimot tayyor bo‘lishi bilan shu yerga yuboraman.",
@@ -568,7 +700,8 @@ async def generate_and_preview_presentation(callback: CallbackQuery, state: FSMC
     slide_count = int(data.get("slide_count", 10))
 
     try:
-        result = await build_presentation(data, storage_dir, outline=data.get("outline"), progress=progress)
+        async with _build_slot(status):
+            result = await build_presentation(data, storage_dir, outline=data.get("outline"), progress=progress)
     except Exception:
         logger.exception("Presentation build failed")
         if await _state_is(state, PresentationForm.generating):

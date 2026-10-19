@@ -59,6 +59,12 @@ async def main():
                 pass
         return True
 
+    # Flood protection before any handler (admins are never limited)
+    from bot.middlewares.throttling import ThrottlingMiddleware
+    dp.update.outer_middleware(ThrottlingMiddleware(
+        rate=settings.THROTTLE_RATE, burst=settings.THROTTLE_BURST,
+        ban_seconds=settings.THROTTLE_BAN_SECONDS, admins=settings.admin_id_list))
+
     # Register routers
     dp.include_router(start.router)
     dp.include_router(admin.router)

@@ -50,6 +50,16 @@ class Settings(BaseSettings):
     # e.g. https://your-domain.uz/webapp/). Empty = gallery is browsed with inline buttons only.
     WEBAPP_URL: str = ""
 
+    # Flood protection (bot/middlewares/throttling.py): every user may send THROTTLE_BURST messages or
+    # button presses at once, then THROTTLE_RATE per second; flooders are ignored for THROTTLE_BAN_SECONDS.
+    THROTTLE_RATE: float = 1.0
+    THROTTLE_BURST: int = 12
+    THROTTLE_BAN_SECONDS: int = 300
+    # Expensive work: presentations built at the same time (others wait in a queue) and unpaid
+    # previews one user may create per day (each one costs AI requests). Admins are not limited.
+    MAX_PARALLEL_BUILDS: int = 2
+    MAX_PREVIEWS_PER_DAY: int = 10
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

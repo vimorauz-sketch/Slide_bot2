@@ -253,7 +253,7 @@ async def test_confirmation_summary_escapes_dangerous_user_text(patched_handlers
 
     await create_pres.process_additional_notes(message, state)
 
-    summary_text = message.calls_for("answer")[0]["text"]
+    summary_text = message.calls_for("answer")[-1]["text"]
     assert "<script>" not in summary_text
     assert "&lt;script&gt;" in summary_text
     assert await state.get_state() == PresentationForm.confirmation
@@ -331,30 +331,42 @@ async def test_process_topic_advances_to_slide_count_with_pricing_info(patched_h
 
 
 @pytest.mark.asyncio
-async def test_process_institution_advances_to_level_selection():
+async def test_author_name_is_followed_by_the_level_buttons():
     state = FakeFSMContext()
-
-    await create_pres.process_institution(_message("TATU"), state)
-
+    await create_pres.process_author_name(_message("Ali Valiyev"), state)
     assert await state.get_state() == PresentationForm.level
-    assert (await state.get_data())["institution"] == "TATU"
 
 
 @pytest.mark.asyncio
-async def test_process_level_university_asks_for_course():
+async def test_level_is_followed_by_the_optional_institution():
     state = FakeFSMContext()
+    message = _message("Maktab")
+    await create_pres.process_level(message, state)
+    assert await state.get_state() == PresentationForm.institution
+    assert "ixtiyoriy" in message.calls_for("answer")[0]["text"]
 
-    await create_pres.process_level(_message("Universitet"), state)
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("level,first_button", [("Maktab", "1-sinf"), ("Universitet", "1-kurs"),
+                                                ("Akademik litsey", "1-kurs")])
+async def test_institution_then_class_buttons_match_the_level(level, first_button):
+    state = FakeFSMContext()
+    await state.update_data(level=level)
+    message = _message("TATU")
+    await create_pres.process_institution(message, state)
     assert await state.get_state() == PresentationForm.course
+    assert (await state.get_data())["institution"] == "TATU"
+    kb = message.calls_for("answer")[0]["reply_markup"]
+    assert kb.keyboard[0][0].text == first_button
 
 
 @pytest.mark.asyncio
-async def test_process_level_non_university_skips_straight_to_teacher_name():
+async def test_institution_can_be_skipped_and_other_level_skips_the_class():
     state = FakeFSMContext()
-
-    await create_pres.process_level(_message("Maktab"), state)
-
+    await state.update_data(level="Boshqa")
+    await create_pres.process_institution(_message("⏭ O‘tkazib yuborish"), state)
+    data = await state.get_data()
+    assert data["institution"] == "" and data["course"] == ""
     assert await state.get_state() == PresentationForm.teacher_name
 
 
@@ -366,6 +378,26 @@ async def test_process_course_advances_to_teacher_name():
 
     assert await state.get_state() == PresentationForm.teacher_name
     assert (await state.get_data())["course"] == "3-kurs"
+
+
+@pytest.mark.asyncio
+async def test_teacher_is_followed_by_the_date_with_a_today_button():
+    state = FakeFSMContext()
+    message = _message("Karimova B.")
+    await create_pres.process_teacher_name(message, state)
+    assert await state.get_state() == PresentationForm.date
+    kb = message.calls_for("answer")[0]["reply_markup"]
+    assert kb.keyboard[0][0].text.startswith("📅 Bugun:")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("typed,stored", [("📅 Bugun: 20.10.2026", "20.10.2026"), ("📅 2026-yil", "2026-yil"),
+                                          ("25.10.2026", "25.10.2026"), ("⏭ O‘tkazib yuborish", "")])
+async def test_date_buttons_and_typed_dates(typed, stored):
+    state = FakeFSMContext()
+    await create_pres.process_date(_message(typed), state)
+    assert (await state.get_data())["date"] == stored
+    assert await state.get_state() == PresentationForm.language
 
 
 @pytest.mark.asyncio
@@ -381,7 +413,40 @@ async def test_process_language_maps_button_text_to_language_code(button_text, e
     await create_pres.process_language(_message(button_text), state)
 
     assert (await state.get_data())["language"] == expected_code
+    assert await state.get_state() == PresentationForm.notes_choice
+
+
+@pytest.mark.asyncio
+async def test_notes_no_goes_straight_to_the_summary(patched_handlers_db):
+    state = FakeFSMContext()
+    await state.update_data(subject="S", topic="T", slide_count=5, author_name="A", language="uz")
+    await create_pres.process_notes_choice(_message("🚫 Yo‘q"), state)
+    assert (await state.get_data())["additional_notes"] == ""
+    assert await state.get_state() == PresentationForm.confirmation
+
+
+@pytest.mark.asyncio
+async def test_notes_yes_asks_for_the_wishes(patched_handlers_db):
+    state = FakeFSMContext()
+    await state.update_data(subject="S", topic="T", slide_count=5, author_name="A", language="uz")
+    await create_pres.process_notes_choice(_message("✅ Ha, bor"), state)
     assert await state.get_state() == PresentationForm.additional_notes
+    await create_pres.process_additional_notes(_message("Rasmlar ko‘p bo‘lsin"), state)
+    assert (await state.get_data())["additional_notes"] == "Rasmlar ko‘p bo‘lsin"
+    assert await state.get_state() == PresentationForm.confirmation
+
+
+@pytest.mark.asyncio
+async def test_subject_and_slide_count_offer_buttons(patched_handlers_db):
+    state = FakeFSMContext()
+    m1 = _message("Biologiya")
+    await create_pres.process_subject(m1, state)
+    m2 = _message("Fotosintez")
+    await create_pres.process_topic(m2, state)
+    kb = m2.calls_for("answer")[0]["reply_markup"]
+    assert [b.text for b in kb.keyboard[0]] == ["5", "7", "8", "10"]
+    from bot.keyboards.reply import get_subject_keyboard
+    assert get_subject_keyboard().keyboard[0][0].text == "Biologiya"
 
 
 # ---------------------------------------------------------------------------

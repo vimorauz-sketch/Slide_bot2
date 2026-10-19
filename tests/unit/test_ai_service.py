@@ -61,7 +61,8 @@ def test_mock_presentation_total_slide_count_matches_request(n):
 def test_mock_presentation_enforces_a_five_slide_floor_and_defaults():
     assert 1 + len(ai_service.generate_mock_presentation({"slide_count": 1})["slides"]) == 5
     content = ai_service.generate_mock_presentation({})
-    assert content["title_slide"]["author"] and content["title_slide"]["institution"]
+    assert content["title_slide"]["author"]
+    assert content["title_slide"]["institution"] == ""  # optional now: never a made-up institution
     assert 1 + len(content["slides"]) == 10
 
 

@@ -81,6 +81,21 @@ DP_KEY = web.AppKey("dp", object) if hasattr(web, "AppKey") else "dp"
 WEBAPP_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "webapp")
 
 
+# Gallery images can make the server render slides: limit how fast one address may ask for them
+# (a browser scrolling the gallery stays far below this, a script hammering the server does not).
+_ip_limiter = None
+
+
+def _check_rate(request: web.Request) -> None:
+    global _ip_limiter
+    if _ip_limiter is None:
+        from bot.middlewares.throttling import ThrottlingMiddleware
+        _ip_limiter = ThrottlingMiddleware(rate=5, burst=150, ban_seconds=120)
+    ip = (request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote or "?")
+    if _ip_limiter.allow(hash(ip)) is not None:
+        raise web.HTTPTooManyRequests(text="Too many requests")
+
+
 async def webapp_index_handler(request: web.Request) -> web.StreamResponse:
     if not request.path.endswith("/"):
         raise web.HTTPFound(request.path + "/")
@@ -118,6 +133,8 @@ async def webapp_select_handler(request: web.Request) -> web.Response:
 async def webapp_preview_handler(request: web.Request) -> web.StreamResponse:
     """Preview slide n of any template/colour key (rendered once, then cached)."""
     from services.gallery import preview_path
+
+    _check_rate(request)
 
     try:
         n = int(request.match_info["n"])
@@ -160,6 +177,8 @@ async def diag_handler(request: web.Request) -> web.Response:
 async def webapp_cover_handler(request: web.Request) -> web.StreamResponse:
     """Cover of any template/colour key (photo templates are rendered on the server)."""
     from services.gallery import cover_path
+
+    _check_rate(request)
 
     path = await cover_path(request.match_info["key"])
     if not path:

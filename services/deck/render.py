@@ -44,11 +44,11 @@ _ALWAYS_IMAGE = {"cover", "text_image", "icon_list", "highlight", "closing", "se
 
 I18N = {
     "uz": {"author": "Muallif", "institution": "Ta’lim muassasasi", "teacher": "O‘qituvchi", "subject": "Fan",
-           "group": "Guruh", "course": "Kurs", "year": "Yil", "thanks": "E’tiboringiz uchun rahmat!", "questions": "Savollaringiz bo‘lsa, marhamat"},
+           "group": "Guruh", "course": "Kurs", "year": "Yil", "grade": "Sinf", "date": "Sana", "thanks": "E’tiboringiz uchun rahmat!", "questions": "Savollaringiz bo‘lsa, marhamat"},
     "ru": {"author": "Автор", "institution": "Учебное заведение", "teacher": "Преподаватель", "subject": "Предмет",
-           "group": "Группа", "course": "Курс", "year": "Год", "thanks": "Спасибо за внимание!", "questions": "Готов ответить на ваши вопросы"},
+           "group": "Группа", "course": "Курс", "year": "Год", "grade": "Класс", "date": "Дата", "thanks": "Спасибо за внимание!", "questions": "Готов ответить на ваши вопросы"},
     "en": {"author": "Author", "institution": "Institution", "teacher": "Teacher", "subject": "Subject",
-           "group": "Group", "course": "Year", "year": "Year", "thanks": "Thank you!", "questions": "Questions are welcome"},
+           "group": "Group", "course": "Year", "year": "Year", "grade": "Grade", "date": "Date", "thanks": "Thank you!", "questions": "Questions are welcome"},
 }
 
 
@@ -167,8 +167,10 @@ def build_slides(content: Dict[str, Any], theme: Dict[str, Any], images: Optiona
         "notes": ts.get("notes", ""),
     }
     meta = []
-    for key, label in (("author", labels["author"]), ("course", labels["course"]), ("group", labels["group"]),
-                       ("institution", labels["institution"]), ("teacher", labels["teacher"])):
+    grade = any(w in str(ts.get("course", "")).lower() for w in ("sinf", "класс", "grade"))
+    for key, label in (("author", labels["author"]), ("course", labels["grade" if grade else "course"]),
+                       ("group", labels["group"]), ("institution", labels["institution"]),
+                       ("teacher", labels["teacher"]), ("date", labels["date"])):
         if ts.get(key):
             meta.append({"k": label, "v": ts[key]})
     cover["meta"] = meta

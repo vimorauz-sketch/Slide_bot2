@@ -123,7 +123,7 @@ async def test_skip_button_skips_the_teacher(env):
     await ctx.set_state(PresentationForm.teacher_name)
     await _feed(env, _msg("⏭ O‘tkazib yuborish"))
     assert (await ctx.get_data())["teacher_name"] == ""
-    assert await ctx.get_state() == PresentationForm.language.state
+    assert await ctx.get_state() == PresentationForm.date.state
 
 
 @pytest.mark.asyncio
@@ -176,3 +176,75 @@ async def test_menu_button_mid_wizard_restarts_cleanly(env):
     await _feed(env, _msg("🎨 Presentation yaratish"))
     assert await ctx.get_state() == PresentationForm.template_selection.state
     assert await ctx.get_data() == {}
+
+
+@pytest.mark.asyncio
+async def test_start_flood_is_throttled_by_the_middleware(patched_handlers_db):
+    from bot.middlewares.throttling import ThrottlingMiddleware
+    dp = Dispatcher()
+    dp.update.outer_middleware(ThrottlingMiddleware(rate=1, burst=12))
+    handled = []
+
+    @dp.message()
+    async def any_message(message):
+        handled.append(message.text)
+
+    session = RecordingSession()
+    bot = Bot(TOKEN, session=session)
+    for _ in range(500):
+        await dp.feed_update(bot, _msg("/start"))
+    assert len(handled) == 4
+    notices = [t for t in session.texts() if "Juda" in t or "⛔" in t]
+    assert 1 <= len(notices) <= 3
+
+
+@pytest.mark.asyncio
+async def test_whole_wizard_with_buttons(env):
+    *_, ctx = env
+    await ctx.set_state(PresentationForm.subject)
+    for text in ["Biologiya", "Biosfera modeli", "10", "Ali Valiyev", "Maktab", "45-maktab", "9-sinf",
+                 "⏭ O‘tkazib yuborish", "📅 Bugun: 20.10.2026", "🇺🇿 O'zbekcha", "🚫 Yo‘q"]:
+        await _feed(env, _msg(text))
+    data = await ctx.get_data()
+    assert await ctx.get_state() == PresentationForm.confirmation.state
+    assert (data["subject"], data["slide_count"], data["level"], data["institution"], data["course"],
+            data["teacher_name"], data["date"], data["additional_notes"]) == \
+        ("Biologiya", 10, "Maktab", "45-maktab", "9-sinf", "", "20.10.2026", "")
+
+
+@pytest.mark.asyncio
+async def test_daily_preview_limit(env, monkeypatch):
+    *_, ctx = env
+    monkeypatch.setattr("config.settings.MAX_PREVIEWS_PER_DAY", 1)
+
+    async def many(*a, **k):
+        return 1
+    monkeypatch.setattr(create_pres.repository, "count_user_orders_since", many)
+    built = []
+
+    async def fake_build(*a, **k):
+        built.append(1)
+    monkeypatch.setattr(create_pres, "build_presentation", fake_build)
+    await ctx.set_state(PresentationForm.outline_review)
+    texts = await _feed(env, _cb("outline_ok"))
+    assert built == [] and any("chegara" in t for t in texts)
+    assert await ctx.get_state() == PresentationForm.outline_review.state
+
+
+@pytest.mark.asyncio
+async def test_builds_wait_in_a_queue(monkeypatch):
+    import asyncio
+    monkeypatch.setattr("config.settings.MAX_PARALLEL_BUILDS", 2)
+    monkeypatch.setattr(create_pres, "_build_sem", None)
+    running, peak = 0, 0
+
+    async def job():
+        nonlocal running, peak
+        async with create_pres._build_slot():
+            running += 1
+            peak = max(peak, running)
+            await asyncio.sleep(0.01)
+            running -= 1
+
+    await asyncio.gather(*(job() for _ in range(10)))
+    assert peak == 2

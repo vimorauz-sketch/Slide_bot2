@@ -9,7 +9,7 @@ from bot.states.forms import PresentationForm
 from bot.utils import escape_html
 from services import ai_service
 from services.deck import themes
-from bot.keyboards.reply import get_cancel_keyboard, CANCEL_TEXTS
+from bot.keyboards.reply import get_cancel_keyboard, get_subject_keyboard, CANCEL_TEXTS
 from bot.handlers.create_pres import SUBJECT_PROMPT
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ async def handle_ocr_task_photo(message: Message, state: FSMContext):
         await state.set_state(PresentationForm.subject)
         await message.answer("⚠️ Rasmdan topshiriqni o‘qib bo‘lmadi (rasm xira yoki AI vaqtincha ishlamayapti).\n\n"
                              "Keling, ma’lumotlarni qo‘lda kiritamiz.\n\n" + SUBJECT_PROMPT,
-                             parse_mode="HTML", reply_markup=get_cancel_keyboard())
+                             parse_mode="HTML", reply_markup=get_subject_keyboard())
         return
 
     async with AsyncSessionLocal() as session:
@@ -68,6 +68,7 @@ async def handle_ocr_task_photo(message: Message, state: FSMContext):
         slide_count=slide_count,
         language=language,
         additional_notes=requirements,
+        ocr_notes=requirements,
         template_id=template_id
     )
 
