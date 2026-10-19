@@ -84,7 +84,11 @@ WEBAPP_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file
 async def webapp_index_handler(request: web.Request) -> web.StreamResponse:
     if not request.path.endswith("/"):
         raise web.HTTPFound(request.path + "/")
-    return web.FileResponse(os.path.join(WEBAPP_DIR, "index.html"), headers={"Cache-Control": "no-cache"})
+    from services.gallery import cache_token
+
+    with open(os.path.join(WEBAPP_DIR, "index.html"), encoding="utf-8") as f:
+        html = f.read().replace("__GALLERY_V__", cache_token())
+    return web.Response(text=html, content_type="text/html", headers={"Cache-Control": "no-cache"})
 
 
 async def webapp_select_handler(request: web.Request) -> web.Response:
@@ -130,7 +134,11 @@ async def diag_handler(request: web.Request) -> web.Response:
     from config import settings
     from bot.handlers.create_pres import webapp_url
 
+    from services import gallery
+    from services.deck import images
+
     thumbs = os.path.join(WEBAPP_DIR, "thumbs")
+    covers = os.path.join(gallery.PREVIEW_CACHE, "covers")
     info = {
         "ok": True,
         "listening_port": settings.WEBHOOK_PORT,
@@ -142,6 +150,9 @@ async def diag_handler(request: web.Request) -> web.Response:
         "catalog_exists": os.path.exists(os.path.join(WEBAPP_DIR, "catalog.json")),
         "thumb_templates": len(os.listdir(thumbs)) if os.path.isdir(thumbs) else 0,
         "request_host": request.host,
+        "gallery_cache": gallery.cache_token(),
+        "photo_providers": images.enabled_providers(),
+        "photo_covers_ready": len(os.listdir(covers)) if os.path.isdir(covers) else 0,
     }
     return web.json_response(info, dumps=lambda o: json.dumps(o, ensure_ascii=False, indent=1))
 

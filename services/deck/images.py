@@ -1,7 +1,7 @@
 """
 Image resolution for slides.
 
-Order (configurable with IMAGE_PROVIDERS): Pexels -> Unsplash -> Openverse -> Wikimedia Commons ->
+Order (configurable with IMAGE_PROVIDERS): Pexels -> Pixabay -> Unsplash -> Openverse -> Wikimedia Commons ->
 OpenAI image generation (only when AI_IMAGES_ENABLED). Providers without a key are skipped;
 Openverse and Wikimedia need no key, so real photos work out of the box (Pexels gives the best ones).
 Photo templates also get one photo per card / step / list item (resolve_item_photos). Anything
@@ -52,9 +52,11 @@ def _cfg(name: str, default: Any = "") -> Any:
 
 
 def enabled_providers() -> List[str]:
-    order = [p.strip().lower() for p in str(_cfg("IMAGE_PROVIDERS", "pexels,unsplash,openverse,wikimedia,openai")).split(",") if p.strip()]
+    order = [p.strip().lower() for p in str(_cfg("IMAGE_PROVIDERS", "pexels,pixabay,unsplash,openverse,wikimedia,openai")).split(",") if p.strip()]
     if "openverse" not in order and "wikimedia" in order:  # older .env values: add the keyless photo source
         order.insert(order.index("wikimedia"), "openverse")
+    if "pixabay" not in order:
+        order.insert(1 if order and order[0] == "pexels" else 0, "pixabay")
     out = []
     if _cfg("LOCAL_PHOTO_DIR") and os.path.isdir(str(_cfg("LOCAL_PHOTO_DIR"))):
         out.append("local")  # development / offline previews
@@ -63,6 +65,8 @@ def enabled_providers() -> List[str]:
             out.append(p)
             continue
         if p == "pexels" and _cfg("PEXELS_API_KEY"):
+            out.append(p)
+        elif p == "pixabay" and _cfg("PIXABAY_API_KEY"):
             out.append(p)
         elif p == "unsplash" and _cfg("UNSPLASH_ACCESS_KEY"):
             out.append(p)
@@ -138,6 +142,21 @@ async def _pexels(session, query: str, orientation: str) -> List[Dict[str, Any]]
         if url:
             out.append({"id": f"pexels:{p.get('id')}", "url": url, "w": p.get("width", 0), "h": p.get("height", 0),
                         "credit": f"Foto: {p.get('photographer', '')} / Pexels", "alt": p.get("alt", "")})
+    return out
+
+
+async def _pixabay(session, query: str, orientation: str) -> List[Dict[str, Any]]:
+    """Pixabay: free key (shown on pixabay.com/api/docs after signing in), high quality stock photos."""
+    data = await _get_json(session, "https://pixabay.com/api/", {"User-Agent": UA}, {
+        "key": str(_cfg("PIXABAY_API_KEY")), "q": query[:100], "image_type": "photo", "safesearch": "true",
+        "orientation": "vertical" if orientation == "portrait" else "horizontal", "per_page": 12, "min_width": 1000,
+    })
+    out = []
+    for p in (data or {}).get("hits", []):
+        url = p.get("largeImageURL") or p.get("webformatURL")
+        if url:
+            out.append({"id": f"pixabay:{p.get('id')}", "url": url, "w": p.get("imageWidth", 0), "h": p.get("imageHeight", 0),
+                        "credit": f"Foto: {p.get('user', '')} / Pixabay", "alt": p.get("tags", "")})
     return out
 
 
@@ -296,7 +315,8 @@ class ImageResolver:
         if prov == "local":
             candidates = _local(query)
         else:
-            search = {"pexels": _pexels, "unsplash": _unsplash, "wikimedia": _wikimedia, "openverse": _openverse}[prov]
+            search = {"pexels": _pexels, "pixabay": _pixabay, "unsplash": _unsplash, "wikimedia": _wikimedia,
+                      "openverse": _openverse}[prov]
             candidates = await search(session, query, orientation)
         if prov == "local" and all(c["id"] in self.used for c in candidates):
             self.used -= {c["id"] for c in candidates}  # development pool is small: allow repeats

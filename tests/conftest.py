@@ -62,6 +62,7 @@ def no_network_images(monkeypatch):
     """Slide rendering must never reach Pexels/Unsplash/Wikimedia/OpenAI from the test suite;
     with no provider enabled the renderer uses the theme's generated art instead."""
     monkeypatch.setattr("config.settings.PEXELS_API_KEY", "")
+    monkeypatch.setattr("config.settings.PIXABAY_API_KEY", "")
     monkeypatch.setattr("config.settings.UNSPLASH_ACCESS_KEY", "")
     monkeypatch.setattr("config.settings.WIKIMEDIA_ENABLED", False)
     monkeypatch.setattr("config.settings.OPENVERSE_ENABLED", False)

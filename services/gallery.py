@@ -26,8 +26,20 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEBAPP_DIR = os.path.join(ROOT, "webapp")
 THUMBS_DIR = os.path.join(WEBAPP_DIR, "thumbs")
-GALLERY_VERSION = "6"  # bump when templates change so cached previews are rebuilt
-PREVIEW_CACHE = os.path.join(ROOT, "storage", "preview_cache", "v" + GALLERY_VERSION)
+GALLERY_VERSION = "7"  # bump when templates change so cached previews are rebuilt
+
+
+def cache_token() -> str:
+    """Changes when templates or the photo sources change, so previews (and browser caches) refresh."""
+    try:
+        from services.deck.images import enabled_providers
+        prov = "-".join(p for p in enabled_providers() if p != "openai")
+    except Exception:  # noqa: BLE001
+        prov = ""
+    return f"{GALLERY_VERSION}-{prov or 'art'}"
+
+
+PREVIEW_CACHE = os.path.join(ROOT, "storage", "preview_cache", "v" + cache_token())
 GALLERY_CACHE = os.path.join(ROOT, "storage", "gallery_cache", "v" + GALLERY_VERSION)
 SAMPLE = os.path.join(ROOT, "assets", "sample_content.json")
 

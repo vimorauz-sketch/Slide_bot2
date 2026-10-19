@@ -67,7 +67,7 @@ python scripts/build_gallery.py              # Mini App previews, catalog.json, 
 ```
 
 ### Photos
-Photo search order: Pexels (`PEXELS_API_KEY`, free, best quality) → Unsplash (`UNSPLASH_ACCESS_KEY`) →
+Photo search order: Pexels (`PEXELS_API_KEY`, free, best quality) → Pixabay (`PIXABAY_API_KEY`, free: sign in at pixabay.com and open pixabay.com/api/docs/, the key is shown there) → Unsplash (`UNSPLASH_ACCESS_KEY`) →
 Openverse (no key) → Wikimedia Commons (no key). The AI writes an English photo query for every card and
 step; photos are cached in `storage/image_cache`. Get a free Pexels key at https://www.pexels.com/api/ —
 without it photos still work but are less consistent.
@@ -78,7 +78,7 @@ on first view and cached in `storage/preview_cache`.
 
 ### Railway
 The repo has a `Dockerfile` (Python + Chromium + fonts), which Railway uses automatically.
-1. Variables: `BOT_TOKEN`, `OPENAI_API_KEY` (and optionally `PEXELS_API_KEY`). Leave `WEBAPP_URL` empty.
+1. Variables: `BOT_TOKEN`, `OPENAI_API_KEY` (and optionally `PIXABAY_API_KEY` / `PEXELS_API_KEY`). Leave `WEBAPP_URL` empty.
 2. Settings → Networking → **Generate Domain**. Railway then sets `RAILWAY_PUBLIC_DOMAIN`; the bot
    uses it as the Mini App address (`https://<domain>/webapp/`) and listens on Railway's `$PORT`.
 3. For persistent data add a Volume mounted at `/app/storage` (and keep the SQLite DB there).
@@ -128,7 +128,7 @@ Copy `.env.example` to `.env` and fill in your own values:
 cp .env.example .env   # Windows: copy .env.example .env
 ```
 
-For photos on slides add a free `PEXELS_API_KEY` (and/or `UNSPLASH_ACCESS_KEY`); without keys the
+For photos on slides add a free `PIXABAY_API_KEY` or `PEXELS_API_KEY` (and/or `UNSPLASH_ACCESS_KEY`); without keys the
 themes' generated illustrations are used. Required for a real deployment: `BOT_TOKEN` (from @BotFather) and, optionally, `OPENAI_API_KEY`
 (without it, the bot still works end-to-end using its built-in mock content generator).
 `ADMIN_IDS` is a comma-separated list of Telegram user IDs allowed to use `/admin`; leaving it

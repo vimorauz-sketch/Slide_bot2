@@ -144,15 +144,16 @@ body.web .choose { display: block; }
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   var LIVE = {};  // photo templates: previews are rendered by the server
+  var GV = "__GALLERY_V__".indexOf("__") === 0 ? "" : "?v=" + encodeURIComponent("__GALLERY_V__");  // cache-busting
   function thumb(id, n) {
-    if (LIVE[id]) return (n || 0) === 0 ? "cover/" + encodeURIComponent(id) + ".webp" : "preview/" + encodeURIComponent(id) + "/" + n + ".webp";
+    if (LIVE[id]) return (n || 0) === 0 ? "cover/" + encodeURIComponent(id) + ".webp" + GV : "preview/" + encodeURIComponent(id) + "/" + n + ".webp" + GV;
     return "thumbs/" + encodeURIComponent(id) + "/" + (n || 0) + ".webp";
   }
   function colorCover(t, c, i) {
-    if (t.live) return "cover/" + encodeURIComponent(c.key) + ".webp";
+    if (t.live) return "cover/" + encodeURIComponent(c.key) + ".webp" + GV;
     return i === 0 ? thumb(t.id, 0) : "thumbs/" + encodeURIComponent(t.id) + "/c/" + encodeURIComponent(c.slug) + ".webp";
   }
-  function slideSrc(t, i, n) { return (i === 0 && !t.live) ? thumb(t.id, n) : "preview/" + encodeURIComponent(t.colors[i].key) + "/" + n + ".webp"; }
+  function slideSrc(t, i, n) { return (i === 0 && !t.live) ? thumb(t.id, n) : "preview/" + encodeURIComponent(t.colors[i].key) + "/" + n + ".webp" + GV; }
   function haptic() { try { tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged(); } catch (e) {} }
   function toast(msg, ms) { var t = $("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(function () { t.style.display = "none"; }, ms || 2600); }
   function norm(s) { return String(s || "").toLowerCase().replace(/[‘’ʻʼ'`]/g, ""); }

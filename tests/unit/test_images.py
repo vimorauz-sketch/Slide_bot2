@@ -118,3 +118,27 @@ def test_gallery_previews_use_different_photos_per_template():
     ids = themes.list_theme_ids()[200:225]
     covers = {gallery.sample_content(True, t)["title_slide"]["visual"]["query"] for t in ids}
     assert len(covers) == 25
+
+
+async def test_pixabay_results_are_parsed(monkeypatch):
+    monkeypatch.setattr("config.settings.PIXABAY_API_KEY", "pk")
+    async def fake_json(session, url, headers, params):
+        assert "pixabay.com" in url and params["key"] == "pk" and params["orientation"] == "vertical"
+        return {"hits": [{"id": 7, "largeImageURL": "https://p/l.jpg", "imageWidth": 4000, "imageHeight": 6000,
+                          "user": "Bob", "tags": "forest"}]}
+    monkeypatch.setattr(images, "_get_json", fake_json)
+    out = await images._pixabay(None, "forest", "portrait")
+    assert out[0]["id"] == "pixabay:7" and out[0]["url"] == "https://p/l.jpg" and "Pixabay" in out[0]["credit"]
+
+
+def test_pixabay_is_used_when_its_key_is_set(monkeypatch):
+    monkeypatch.setattr("config.settings.PIXABAY_API_KEY", "pk")
+    monkeypatch.setattr("config.settings.IMAGE_PROVIDERS", "pexels,unsplash,wikimedia,openai")  # old .env value
+    assert images.enabled_providers() == ["pixabay"]
+
+
+def test_gallery_cache_token_changes_with_photo_sources(monkeypatch):
+    from services import gallery
+    before = gallery.cache_token()
+    monkeypatch.setattr("config.settings.PIXABAY_API_KEY", "pk")
+    assert gallery.cache_token() != before and "pixabay" in gallery.cache_token()
