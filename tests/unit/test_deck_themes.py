@@ -5,11 +5,13 @@ from services.deck.fonts import FAMILY_NAMES, font_face_css
 REQUIRED = ["bg", "bg2", "surface", "text", "muted", "primary", "secondary", "accent", "on_primary"]
 
 
-def test_there_are_200_templates_numbered_1_to_200():
+def test_there_are_400_templates_numbered_1_to_400():
     assert len(themes.list_family_ids()) == 20
     ids = themes.list_theme_ids()
-    assert len(ids) == 200 and len(set(ids)) == 200
-    assert [int(themes.get_theme(t)["code"]) for t in ids] == list(range(1, 201))
+    assert len(ids) == 400 and len(set(ids)) == 400
+    assert [int(themes.get_theme(t)["code"]) for t in ids] == list(range(1, 401))
+    assert all(themes.get_theme(t).get("photo") for t in ids[200:])
+    assert not any(themes.get_theme(t).get("photo") for t in ids[:200])
 
 
 SAMPLE_IDS = themes.list_family_ids() + themes.list_theme_ids()[20::23]
@@ -79,7 +81,7 @@ def test_every_colour_set_passes_contrast_checks():
 
 
 def test_generated_templates_are_all_different():
-    specs = [themes.get_theme(t) for t in themes.list_theme_ids()[20:]]
+    specs = [themes.get_theme(t) for t in themes.list_theme_ids()[20:200]]
     combos = {(t["art"], t["cover_variant"], t["fonts"]["title"], t["fonts"]["body"]) for t in specs}
     assert len(combos) == len(specs)
     names = [t["name"] for t in specs]
@@ -100,15 +102,26 @@ def test_template_and_colour_aliases(key, expected):
 
 
 def test_unknown_numbers_are_not_known():
-    assert not themes.is_known_theme("201") and not themes.is_known_theme("0") and not themes.is_known_theme("21~nope")
+    assert not themes.is_known_theme("401") and not themes.is_known_theme("0") and not themes.is_known_theme("21~nope")
 
 
 def test_catalog_has_categories_and_colours():
     cat = themes.catalog()
-    assert len(cat) == 200
+    assert len(cat) == 400
     keys = {k for k, *_ in themes.CATEGORIES}
     for t in cat:
         assert t["categories"] and set(t["categories"]) <= keys
         assert ("dark" in t["categories"]) == (t["mode"] == "dark")
         assert len(t["colors"]) == 10 and t["colors"][0]["key"] == t["id"]
         assert all(len(c["swatch"]) == 4 for c in t["colors"])
+
+
+
+def test_photo_templates_are_all_different():
+    specs = [themes.get_theme(t) for t in themes.list_theme_ids()[200:]]
+    combos = {(t["cover_variant"], t["fonts"]["title"], t["fonts"]["body"], t["traits"]["pc"]) for t in specs}
+    assert len(combos) == len(specs) == 200
+    assert len({t["name"] for t in specs}) == 200
+    for t in specs:
+        assert "photo-mode" in t["trait_classes"] and "photo" in t["categories"]
+        assert len(t["colors"]) == 10

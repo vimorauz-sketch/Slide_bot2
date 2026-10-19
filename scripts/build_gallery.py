@@ -49,7 +49,11 @@ def build_catalog():
     cat = catalog()
     for t in cat:
         d = os.path.join(gallery.THUMBS_DIR, t["id"])
-        t["previews"] = len([f for f in os.listdir(d) if f.endswith(".webp")]) if os.path.isdir(d) else 0
+        t["live"] = gallery.is_live(t["id"])
+        if t["live"]:
+            t["previews"] = len(gallery.PREVIEW_SLIDES) + 1
+        else:
+            t["previews"] = len([f for f in os.listdir(d) if f.endswith(".webp")]) if os.path.isdir(d) else 0
     cats = [{"key": k, "label": lbl, "emoji": e, "count": sum(k in t["categories"] for t in cat)} for k, lbl, e, _ in CATEGORIES]
     with open(os.path.join(gallery.WEBAPP_DIR, "catalog.json"), "w", encoding="utf-8") as f:
         json.dump({"categories": cats, "themes": cat}, f, ensure_ascii=False, separators=(",", ":"))
@@ -76,7 +80,8 @@ def main():
     ap.add_argument("--no-colors", action="store_true")
     a = ap.parse_args()
     if not a.skip_render:
-        asyncio.run(render_all(a.templates or list_theme_ids(), colors=not a.no_colors))
+        ids = a.templates or [t for t in list_theme_ids() if not gallery.is_live(t)]  # photo templates render on the server
+        asyncio.run(render_all(ids, colors=not a.no_colors))
     build_catalog()
 
 

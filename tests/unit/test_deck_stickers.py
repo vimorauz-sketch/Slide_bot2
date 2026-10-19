@@ -39,7 +39,7 @@ def test_sticker_replaces_the_art_icon_badge():
 
 
 def test_templates_have_sticker_style_and_placement():
-    for tid in themes.list_theme_ids():
+    for tid in themes.list_theme_ids()[:200]:  # photo templates (201-400) use real photos instead
         t = themes.get_theme(tid)
         assert t["sticker_style"] in stickers.STYLES, tid
         assert t["sticker_place"] in ("corner", "cards", "both", "art"), tid

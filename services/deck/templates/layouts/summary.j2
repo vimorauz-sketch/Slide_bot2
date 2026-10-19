@@ -1,3 +1,4 @@
+{%- if s.image %}{{ m.media(s.image, 'media-bleed ' ~ side) }}{% endif %}
 <div class="sum-wrap">
   <div>
     {{ m.head(s, lead=False) }}

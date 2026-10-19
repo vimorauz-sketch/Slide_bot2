@@ -63,3 +63,22 @@ async def test_long_text_is_shrunk_or_trimmed_instead_of_overflowing(storage_dir
          "items": [{"icon": "leaf", "title": long, "text": long} for _ in range(4)]}]}
     res = await render_deck(content, "06", storage_dir, want_pdf=False, want_pptx=False)
     assert not [f for f in res.fit if f["overflow"]]
+
+
+async def test_photo_template_puts_a_photo_on_every_card(storage_dir, monkeypatch, tmp_path):
+    from PIL import Image
+    folder = tmp_path / "photos"
+    folder.mkdir()
+    for k in range(8):
+        Image.new("RGB", (1600, 1200), (30 * k, 140, 90)).save(folder / f"p{k}.jpg")
+    monkeypatch.setattr("config.settings.LOCAL_PHOTO_DIR", str(folder))
+    content = {"language": "uz", "title_slide": {"title": "Biosfera modeli", "subject": "Biologiya"},
+               "slides": [{"layout": "cards", "title": "Biosfera qatlamlari",
+                           "items": [{"title": t, "text": "Matn", "photo": q} for t, q in
+                                     (("Atmosfera", "sky clouds"), ("Gidrosfera", "ocean"), ("Litosfera", "mountains"))]},
+                          {"layout": "summary", "title": "Xulosa", "points": ["A", "B", "C"]}]}
+    res = await render_deck(content, "201", storage_dir, want_pdf=False, want_pptx=True)
+    html = open(res.html_path, encoding="utf-8").read()
+    assert html.count('class="card-photo"') == 3          # real photos, not the art fallback
+    assert "photo-mode" in html and "layout-summary with-bleed" in html
+    assert not [f for f in res.fit if f["overflow"]]

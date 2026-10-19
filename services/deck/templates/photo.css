@@ -1,0 +1,90 @@
+/* ==========================================================================
+   Photo templates (themes/templates.json, "photo": true): real photos on cards, steps and
+   list items, plus photo panels on agenda / summary. Deck classes:
+     photo-mode   tr-pc-*  photo card style    tr-ph-*  photo treatment
+   ========================================================================== */
+
+/* ---------- photo inside a card / step ---------- */
+.card-photo { position: relative; overflow: hidden; flex: none; background: var(--surface2); }
+.card-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.has-photo { overflow: hidden; }
+.photo-mode .cards { align-items: stretch; }
+.photo-mode .card.has-photo .icon-badge { display: none; }
+.photo-mode .card.has-photo { gap: calc(14px * var(--fit)); }
+.photo-mode .step .step-card.has-photo { gap: 10px; }
+
+/* top: photo across the top of the card (default) */
+.photo-mode .card.has-photo > .card-photo,
+.photo-mode .step-card.has-photo > .card-photo {
+  margin: calc(var(--card-pad) * var(--fit) * -1) calc(var(--card-pad) * -0.92) calc(6px * var(--fit));
+  height: calc(230px * var(--fit)); border-radius: var(--radius) var(--radius) 0 0; }
+.photo-mode .step-card.has-photo > .card-photo { margin: calc(-34px * var(--fit)) -34px calc(6px * var(--fit)); height: calc(170px * var(--fit)); }
+.photo-mode .cards[style*="--n:3"] .card.has-photo > .card-photo { height: calc(280px * var(--fit)); }
+.photo-mode .cards.grid-2x2 .card.has-photo { flex-direction: column; align-items: stretch; }
+.photo-mode .card.has-photo > .card-photo, .photo-mode .step-card.has-photo > .card-photo { align-self: stretch; }
+/* 2x2 grid: photo on the left half of each card, whatever the card style (except "full") */
+.photo-mode:not(.tr-pc-full) .cards.grid-2x2 .card.has-photo { display: grid; grid-template-columns: 42% 1fr; grid-template-rows: 1fr; padding: 0; gap: 0; }
+.photo-mode:not(.tr-pc-full) .cards.grid-2x2 .card.has-photo > .card-photo { margin: 0; width: 100%; height: 100%; min-height: calc(310px * var(--fit));
+  border-radius: var(--radius) 0 0 var(--radius); transform: none; border: 0; box-shadow: none; }
+.photo-mode:not(.tr-pc-full) .cards.grid-2x2 .card.has-photo .card-txt { padding: calc(26px * var(--fit)) 30px; justify-content: center; }
+
+/* full: the photo is the card, text sits on a dark gradient */
+.tr-pc-full .card.has-photo { justify-content: flex-end; min-height: calc(560px * var(--fit)); border: 0; --title-color: #fff; color: #fff; }
+.tr-pc-full .card.has-photo > .card-photo { position: absolute; inset: 0; margin: 0; height: auto; border-radius: 0; z-index: 0; }
+.tr-pc-full .card.has-photo > .card-photo::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 25%, color-mix(in srgb, var(--ink) 88%, transparent) 78%); }
+.tr-pc-full .card.has-photo > :not(.card-photo) { position: relative; z-index: 1; }
+.tr-pc-full .card.has-photo p { color: rgba(255,255,255,.88); }
+.tr-pc-full .cards.grid-2x2 .card.has-photo { min-height: calc(300px * var(--fit)); }
+
+/* side: in a row of three, the photo fills the left part of each card */
+.tr-pc-side .cards[style*="--n:3"] .card.has-photo { display: grid; grid-template-columns: 44% 1fr; grid-template-rows: auto 1fr; padding: 0; gap: 0; }
+.tr-pc-side .cards[style*="--n:3"] .card.has-photo > .card-photo { grid-row: 1 / span 2; margin: 0; width: 100%; height: 100%; min-height: calc(380px * var(--fit));
+  border-radius: var(--radius) 0 0 var(--radius); }
+.tr-pc-side .cards[style*="--n:3"] .card.has-photo > h3 { padding: calc(28px * var(--fit)) 26px 8px; }
+.tr-pc-side .cards[style*="--n:3"] .card.has-photo > p { padding: 0 26px calc(24px * var(--fit)); }
+
+/* circle: round photo centred above the text */
+.tr-pc-circle .card.has-photo { align-items: center; text-align: center; }
+.tr-pc-circle .card.has-photo > .card-photo { margin: 0 auto calc(8px * var(--fit)); width: calc(190px * var(--fit)); height: calc(190px * var(--fit)); border-radius: 50%;
+  box-shadow: 0 0 0 6px var(--card-bg, var(--surface)), 0 0 0 9px color-mix(in srgb, var(--primary) 45%, transparent); }
+.tr-pc-circle .step-card.has-photo { align-items: center; text-align: center; }
+.tr-pc-circle .step-card.has-photo > .card-photo { margin: 0 auto 8px; width: calc(140px * var(--fit)); height: calc(140px * var(--fit)); border-radius: 50%; }
+
+/* polaroid: white framed photo, slightly turned */
+.tr-pc-polaroid .card.has-photo > .card-photo, .tr-pc-polaroid .step-card.has-photo > .card-photo {
+  margin: 0 0 calc(10px * var(--fit)); border: 12px solid #fff; border-bottom-width: 34px; border-radius: 3px;
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--ink) 22%, transparent); transform: rotate(-1.6deg); }
+.tr-pc-polaroid .card.has-photo:nth-child(even) > .card-photo { transform: rotate(1.8deg); }
+.tr-pc-polaroid .card.has-photo { overflow: visible; }
+
+/* frame: rounded inset photo with the card's text below */
+.tr-pc-frame .card.has-photo > .card-photo, .tr-pc-frame .step-card.has-photo > .card-photo {
+  margin: 0 0 calc(10px * var(--fit)); border-radius: calc(var(--radius) * .7); }
+
+/* ---------- list items with round photos ---------- */
+.icon-badge.photo-badge { position: relative; overflow: hidden; border-radius: 50%; background: var(--surface2); padding: 0;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 35%, transparent); }
+.ilist .row .icon-badge.photo-badge { width: 92px; height: 92px; }
+.icon-badge.photo-badge img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------- agenda / summary next to a photo ---------- */
+.layout-agenda.with-bleed .agenda-wrap { grid-template-columns: 1fr; gap: calc(30px * var(--fit)); align-content: center; }
+.layout-agenda.with-bleed .agenda-list li { padding: calc(18px * var(--fit)) 0; grid-template-columns: 90px 1fr; }
+.layout-summary.with-bleed .sum-wrap { grid-template-columns: 1fr; gap: calc(34px * var(--fit)); align-content: center; }
+.layout-summary.with-bleed .takeaway { margin-top: calc(26px * var(--fit)); }
+.layout-summary.with-bleed .s-title, .layout-agenda.with-bleed .s-title { font-size: calc(var(--fs-title) * var(--fit)); }
+
+/* ---------- section label: "02 • KIRISH" ---------- */
+.photo-mode .tr-eyebrow-num .s-head .eyebrow::before,
+.photo-mode.tr-eyebrow-num .s-head .eyebrow::before { content: counter(sl, decimal-leading-zero) "  •"; width: auto; height: auto; background: none; font-weight: 800; }
+
+/* ---------- photo treatments (real photos only, never the art fallback) ---------- */
+.tr-ph-warm :is(.media, .card-photo, .photo-badge):not(.is-art) img { filter: sepia(.18) saturate(1.12) brightness(1.02); }
+.tr-ph-cool :is(.media, .card-photo, .photo-badge):not(.is-art) img { filter: saturate(.92) hue-rotate(-6deg) contrast(1.04); }
+.tr-ph-bw :is(.media, .card-photo, .photo-badge):not(.is-art) img { filter: grayscale(1) contrast(1.06); }
+.tr-ph-duotone :is(.media, .card-photo):not(.is-art) img { filter: grayscale(1) contrast(1.1) brightness(1.05); }
+.tr-ph-duotone :is(.media, .card-photo):not(.is-art)::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: var(--primary); mix-blend-mode: multiply; opacity: .55; }
+.tr-ph-vivid :is(.media, .card-photo, .photo-badge):not(.is-art) img { filter: saturate(1.25) contrast(1.06); }
+.tr-ph-duotone .bg-media:not(.is-art)::before { opacity: .35; }

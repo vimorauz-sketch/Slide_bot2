@@ -7,7 +7,9 @@ A Telegram bot (aiogram 3) that turns a topic into a designed presentation, Gamm
 2. **Slide-by-slide writing.** Every slide is written in parallel against the JSON shape of its own
    layout (20 layouts: cards, process, cycle, timeline, stats, chart, comparison, pyramid, formula,
    table, quote, highlight, …), with an icon, a picture query and speaker notes.
-3. **Real design engine.** Slides are HTML/CSS (Jinja2 templates + **200 different templates**, each
+3. **Real design engine.** Slides are HTML/CSS (Jinja2 templates + **400 different templates**: 1-200
+   illustrated templates and **201-400 "Real foto" templates** that put real, topic-matched photos on the
+   cover, on every card / step / list item and on most slides. Each
    with 10 contrast-checked colour sets: 20 hand-made design families and 180 generated designs that
    combine 31 art styles, 12 cover compositions, 31 font pairs, backgrounds, card, heading, icon,
    picture-frame and decoration styles) rendered by Chromium. Every deck also gets **subject
@@ -63,6 +65,23 @@ python scripts/render_sample.py <theme_id>   # every layout as a contact sheet (
 python scripts/generate_templates.py         # themes/templates.json (generated templates + colour sets)
 python scripts/build_gallery.py              # Mini App previews, catalog.json, overview.jpg
 ```
+
+### Photos
+Photo search order: Pexels (`PEXELS_API_KEY`, free, best quality) → Unsplash (`UNSPLASH_ACCESS_KEY`) →
+Openverse (no key) → Wikimedia Commons (no key). The AI writes an English photo query for every card and
+step; photos are cached in `storage/image_cache`. Get a free Pexels key at https://www.pexels.com/api/ —
+without it photos still work but are less consistent.
+
+Previews of the photo templates are rendered by the bot server itself (they need real photos): on start a
+background task renders all 200 covers (`GALLERY_WARMUP=0` turns it off), and other previews are rendered
+on first view and cached in `storage/preview_cache`.
+
+### Railway
+The repo has a `Dockerfile` (Python + Chromium + fonts), which Railway uses automatically.
+1. Variables: `BOT_TOKEN`, `OPENAI_API_KEY` (and optionally `PEXELS_API_KEY`). Leave `WEBAPP_URL` empty.
+2. Settings → Networking → **Generate Domain**. Railway then sets `RAILWAY_PUBLIC_DOMAIN`; the bot
+   uses it as the Mini App address (`https://<domain>/webapp/`) and listens on Railway's `$PORT`.
+3. For persistent data add a Volume mounted at `/app/storage` (and keep the SQLite DB there).
 
 ### Template gallery Mini App
 `webapp/` is static. The bot's web server (`bot/webhook_app.py`, port `WEBHOOK_PORT`) serves it at

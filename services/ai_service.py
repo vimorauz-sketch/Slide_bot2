@@ -225,6 +225,8 @@ Rules:
 - Do not start bullet points with numbers or symbols; the design adds markers.
 - 'visual.query' is in English and names something photographable (e.g. "green leaf macro", "Registan Samarkand").
   Use kind "illustration" for diagrams/microscopic/abstract scientific pictures, "none" when no picture fits.
+- 'photo' (in cards / steps / list items) is a 2-5 word English stock-photo query that shows exactly that item
+  (e.g. "teacher using tablet classroom", "coral reef underwater"): concrete, photographable, no abstract words.
 - 'icon' values must come from this list: {icons}
 - Return ONLY JSON with exactly this shape:
 {shape}"""

@@ -4,7 +4,7 @@
     {%- for st in s.steps %}
     <div class="step">
       <div class="dot" data-t>{{ loop.index }}</div>
-      <div class="step-card">{{ m.t(st.title, 'h3') }}{{ m.t(st.text) }}</div>
+      <div class="step-card{% if s.item_photos %} has-photo{% endif %}">{% if s.item_photos %}{{ m.photo(st.image) }}{% endif %}{{ m.t(st.title, 'h3') }}{{ m.t(st.text) }}</div>
     </div>
     {%- endfor %}
   </div>

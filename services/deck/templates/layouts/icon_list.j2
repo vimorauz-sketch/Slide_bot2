@@ -4,7 +4,7 @@
     {{ m.head(s, lead=False) }}
     <div class="ilist">
       {%- for it in s['items'] %}
-      <div class="row">{{ m.icon_badge(it.icon, it.title, s.item_stickers[loop.index0] if s.item_stickers else '') }}<div>{{ m.t(it.title, 'h3') }}{{ m.t(it.text) }}</div></div>
+      <div class="row">{% if s.item_photos %}{{ m.photo(it.image, 'icon-badge photo-badge') }}{% else %}{{ m.icon_badge(it.icon, it.title, s.item_stickers[loop.index0] if s.item_stickers else '') }}{% endif %}<div>{{ m.t(it.title, 'h3') }}{{ m.t(it.text) }}</div></div>
       {%- endfor %}
     </div>
   </div>

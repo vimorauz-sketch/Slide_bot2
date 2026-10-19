@@ -95,7 +95,7 @@ def _env() -> Environment:
 
 
 _ENV = _env()
-_BASE_CSS = (_TEMPLATES / "base.css").read_text(encoding="utf-8") + "\n" + (_TEMPLATES / "traits.css").read_text(encoding="utf-8")
+_BASE_CSS = "\n".join((_TEMPLATES / f).read_text(encoding="utf-8") for f in ("base.css", "traits.css", "photo.css"))
 
 
 # ------------------------------------------------------------------ deck preparation
@@ -129,6 +129,18 @@ def _art_image(theme: Dict[str, Any], slide: Dict[str, Any], seed: int, size, su
 
 
 BLEED_COVERS = ("split", "split-left", "band", "circle", "arch", "frame", "diagonal", "poster")
+
+
+ITEM_PHOTO_LAYOUTS = {"cards": "items", "process": "steps", "icon_list": "items"}
+_ITEM = (960, 680)
+
+
+def _item_art(theme: Dict[str, Any], slide: Dict[str, Any], item: Dict[str, Any], seed: int, subject: str) -> Dict[str, Any]:
+    """Fallback picture for a card / step without a photo: the theme's art with the item's icon."""
+    hint = " ".join(str(x) for x in (item.get("photo", ""), item.get("title", ""), slide.get("title", "")))
+    icon_name = icons.resolve(item.get("icon") or "", hint)
+    return {"src": art.art_data_uri(theme.get("art", "academic"), _palette(theme), icon_name, hint, _ITEM[0], _ITEM[1], seed, True),
+            "is_art": True, "credit": "", "slot": "item"}
 
 
 def _slot_size(layout: str, cover_variant: str) -> tuple:
@@ -170,17 +182,19 @@ def build_slides(content: Dict[str, Any], theme: Dict[str, Any], images: Optiona
 
     subject = stickers.detect_subject(content)
     place = theme.get("sticker_place", "none") if theme.get("sticker_style") else "none"
+    photo = bool(theme.get("photo"))
     side_toggle = 0
     for idx, s in enumerate(slides):
         layout = s["layout"]
         # Picture placement alternates so consecutive picture slides don't look identical.
-        if layout in ("text_image", "icon_list", "quote", "section", "stats") and s.get("variant") not in ("left", "right"):
+        photo_extra = photo and layout in ("summary", "agenda")
+        if (layout in ("text_image", "icon_list", "quote", "section", "stats") or photo_extra) and s.get("variant") not in ("left", "right"):
             s["variant"] = "right" if side_toggle % 2 == 0 else "left"
             side_toggle += 1
         if layout == "cards" and not s.get("variant"):
             s["variant"] = theme.get("cards_variant", "row")
 
-        wants_image = layout in _ALWAYS_IMAGE or (
+        wants_image = layout in _ALWAYS_IMAGE or photo_extra or (
             layout in IMAGE_LAYOUTS and (s.get("visual") or {}).get("kind", "none") != "none")
         if layout == "stats" and len(s.get("stats", [])) > 3:
             wants_image = False
@@ -191,6 +205,20 @@ def build_slides(content: Dict[str, Any], theme: Dict[str, Any], images: Optiona
             s["image"] = img
         else:
             s["image"] = None
+
+        s["item_photos"] = False
+        item_key = ITEM_PHOTO_LAYOUTS.get(layout)
+        if photo and item_key and s.get(item_key):
+            raw_slides = content.get("slides") or []
+            raw = raw_slides[idx - 1] if 0 < idx <= len(raw_slides) and isinstance(raw_slides[idx - 1], dict) else {}
+            raw_items = raw.get(item_key) or []
+            for k, it in enumerate(s[item_key]):
+                src = raw_items[k] if raw_items and k < len(raw_items) and isinstance(raw_items[k], dict) else {}
+                img = src.get("image")
+                if not (img and (not str(img.get("src", "")).startswith("file:") or os.path.exists(img["src"][7:]))):
+                    img = _item_art(theme, s, it, idx * 7 + k, subject)
+                it["image"] = img
+            s["item_photos"] = True
 
         s["pack_svg"] = ""
         if theme.get("pack"):
@@ -402,8 +430,14 @@ async def _rasterize_art(context, slides: List[Dict[str, Any]]) -> None:
     ART_CACHE.mkdir(parents=True, exist_ok=True)
     page = None
     try:
+        todo = []
         for s in slides:
-            img = s.get("image")
+            todo.append((s.get("image"), _slot_size(s["layout"], s.get("cover_variant", ""))))
+            for key in ("items", "steps"):
+                for it in s.get(key) or []:
+                    if isinstance(it, dict) and it.get("image"):
+                        todo.append((it["image"], _ITEM))
+        for img, (w, h) in todo:
             if not img or not img.get("is_art") or not str(img.get("src", "")).startswith("data:"):
                 continue
             key = hashlib.sha1(img["src"].encode("ascii")).hexdigest()[:24]
@@ -411,7 +445,6 @@ async def _rasterize_art(context, slides: List[Dict[str, Any]]) -> None:
             if not dst.exists():
                 if page is None:
                     page = await context.new_page()
-                w, h = _slot_size(s["layout"], s.get("cover_variant", ""))
                 await page.set_viewport_size({"width": w, "height": h})
                 await page.set_content(f'<html><body style="margin:0"><img src="{img["src"]}" '
                                        f'style="display:block;width:{w}px;height:{h}px"></body></html>')

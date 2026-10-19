@@ -19,6 +19,7 @@ T_LEAD = 220
 T_ITEM_TITLE = 48
 T_ITEM_TEXT = 170
 T_BULLET = 150
+T_PHOTO = 60  # English stock-photo query for one card / step (photo templates show it)
 
 LAYOUTS: Dict[str, Dict[str, Any]] = {
     "cover": {
@@ -40,19 +41,19 @@ LAYOUTS: Dict[str, Dict[str, Any]] = {
         "use_when": "3-4 parallel components, types, features or parts of something, each with an icon.",
         "has_visual": False,
         "fields": {"title": T_TITLE, "lead": 160,
-                   "items": {"min": 3, "max": 4, "fields": {"icon": 40, "title": T_ITEM_TITLE, "text": T_ITEM_TEXT}}},
+                   "items": {"min": 3, "max": 4, "fields": {"icon": 40, "title": T_ITEM_TITLE, "text": T_ITEM_TEXT, "photo": T_PHOTO}}},
     },
     "icon_list": {
         "use_when": "3-5 facts, reasons, properties or rules, listed vertically with icons, next to a picture.",
         "has_visual": True,
         "fields": {"title": T_TITLE,
-                   "items": {"min": 3, "max": 5, "fields": {"icon": 40, "title": T_ITEM_TITLE, "text": 140}}},
+                   "items": {"min": 3, "max": 5, "fields": {"icon": 40, "title": T_ITEM_TITLE, "text": 140, "photo": T_PHOTO}}},
     },
     "process": {
         "use_when": "3-5 sequential steps or stages that happen in order (a mechanism, a method, a procedure).",
         "has_visual": False,
         "fields": {"title": T_TITLE, "lead": 160,
-                   "steps": {"min": 3, "max": 5, "fields": {"title": T_ITEM_TITLE, "text": 150}}},
+                   "steps": {"min": 3, "max": 5, "fields": {"title": T_ITEM_TITLE, "text": 150, "photo": T_PHOTO}}},
     },
     "timeline": {
         "use_when": "3-6 dated events in history or a chronology (years, centuries, periods).",

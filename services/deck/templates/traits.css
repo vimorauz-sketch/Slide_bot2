@@ -30,8 +30,8 @@
   radial-gradient(900px 640px at 100% 0%, color-mix(in srgb, var(--primary) 20%, transparent), transparent 70%),
   radial-gradient(800px 600px at 0% 100%, color-mix(in srgb, var(--secondary) 18%, transparent), transparent 70%), var(--bg); }
 .tr-bg-band .slide { background: linear-gradient(90deg, var(--bg2) 0 92px, var(--bg) 92px); }
-.tr-bg-band .slide:not(.layout-cover) { padding-left: calc(var(--pad-x) + 60px); }
-.tr-bg-band .slide:not(.layout-cover) .s-foot { left: calc(var(--pad-x) + 60px); }
+.tr-bg-band .slide:not(.layout-cover):not(.media-left) { padding-left: calc(var(--pad-x) + 60px); }
+.tr-bg-band .slide:not(.layout-cover):not(.media-left) .s-foot { left: calc(var(--pad-x) + 60px); }
 .tr-bg-corner .slide { background: radial-gradient(circle at 100% 100%, var(--bg2) 0 330px, transparent 331px), var(--bg); }
 .tr-bg-topbar .slide { background: linear-gradient(180deg, var(--primary) 0 16px, var(--bg) 16px); }
 .tr-bg-wave .slide { background:

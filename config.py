@@ -20,9 +20,11 @@ class Settings(BaseSettings):
 
     # Slide images (services/deck/images.py). Providers without a key are skipped; when none
     # finds a picture, the theme's generated art is used instead.
-    IMAGE_PROVIDERS: str = "pexels,unsplash,wikimedia,openai"
+    IMAGE_PROVIDERS: str = "pexels,unsplash,openverse,wikimedia,openai"
     PEXELS_API_KEY: str = ""          # https://www.pexels.com/api/ (free)
     UNSPLASH_ACCESS_KEY: str = ""     # https://unsplash.com/developers (free)
+    OPENVERSE_ENABLED: bool = True    # no key needed; openly licensed real photos (Openverse)
+    LOCAL_PHOTO_DIR: str = ""         # development only: take photos from this folder
     WIKIMEDIA_ENABLED: bool = True    # no key needed; good for science/history pictures
     AI_IMAGES_ENABLED: bool = False   # OpenAI image generation (paid per image)
     OPENAI_IMAGE_MODEL: str = "gpt-image-1"

@@ -42,7 +42,7 @@ async def test_invalid_template_number_shows_error_and_does_not_advance():
     await create_pres.process_template_number_text(message, state)
 
     assert await state.get_state() == PresentationForm.template_selection  # unchanged
-    assert "1 dan 200 gacha" in message.calls_for("answer")[0]["text"]
+    assert "1 dan 400 gacha" in message.calls_for("answer")[0]["text"]
 
 
 @pytest.mark.asyncio

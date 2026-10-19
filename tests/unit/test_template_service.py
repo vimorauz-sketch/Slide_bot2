@@ -3,7 +3,7 @@ from services.template_service import template_manager
 
 def test_all_ten_templates_are_listed_with_names():
     tpls = template_manager.get_all_templates()
-    assert len(tpls) == 200
+    assert len(tpls) == 400
     assert all(t["name"] and t["code"] for t in tpls)
 
 

@@ -76,6 +76,7 @@ async def health_handler(request: web.Request) -> web.Response:
 
 
 BOT_KEY = web.AppKey("bot", object) if hasattr(web, "AppKey") else "bot"
+_background: list = []  # keeps background tasks referenced
 DP_KEY = web.AppKey("dp", object) if hasattr(web, "AppKey") else "dp"
 WEBAPP_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "webapp")
 
@@ -145,6 +146,16 @@ async def diag_handler(request: web.Request) -> web.Response:
     return web.json_response(info, dumps=lambda o: json.dumps(o, ensure_ascii=False, indent=1))
 
 
+async def webapp_cover_handler(request: web.Request) -> web.StreamResponse:
+    """Cover of any template/colour key (photo templates are rendered on the server)."""
+    from services.gallery import cover_path
+
+    path = await cover_path(request.match_info["key"])
+    if not path:
+        raise web.HTTPNotFound()
+    return web.FileResponse(path, headers={"Cache-Control": "public, max-age=604800"})
+
+
 def create_webhook_app(bot=None, dp=None) -> web.Application:
     app = web.Application()
     app[BOT_KEY], app[DP_KEY] = bot, dp
@@ -153,6 +164,7 @@ def create_webhook_app(bot=None, dp=None) -> web.Application:
         app.router.add_get("/webapp/", webapp_index_handler)
         app.router.add_post("/webapp/api/select", webapp_select_handler)
         app.router.add_get(r"/webapp/preview/{key}/{n:\d+}.webp", webapp_preview_handler)
+        app.router.add_get(r"/webapp/cover/{key}.webp", webapp_cover_handler)
         app.router.add_static("/webapp/", WEBAPP_DIR, show_index=False)
     app.router.add_get("/health", health_handler)
     app.router.add_get("/", health_handler)
@@ -178,6 +190,10 @@ async def run_webhook_app(host: str, port: int, bot=None, dp=None):
     else:
         logger.warning("Mini App O'CHIQ: WEBAPP_URL yo'q yoki noto'g'ri (%r). Railway: Settings -> Networking -> Generate Domain.",
                        settings.WEBAPP_URL)
+    if os.getenv("GALLERY_WARMUP", "1") != "0":
+        import asyncio
+        from services.gallery import warm_up
+        _background.append(asyncio.create_task(warm_up()))
     if not os.path.exists(os.path.join(WEBAPP_DIR, "index.html")):
         logger.warning("webapp/index.html topilmadi: webapp papkasi serverga yuklanmagan!")
     return runner

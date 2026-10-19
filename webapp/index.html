@@ -51,6 +51,8 @@ h1 { margin: 0; font-size: 21px; letter-spacing: -.02em; }
 .thumb img { width: 100%; height: 100%; object-fit: cover; }
 .code { position: absolute; right: 7px; bottom: 7px; background: rgba(0,0,0,.66); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: 7px; }
 .meta { padding: 9px 10px 11px; }
+.live { position: absolute; left: 7px; bottom: 7px; background: rgba(255,255,255,.92); color: #111; font-size: 10.5px; font-weight: 700; padding: 3px 7px; border-radius: 7px; }
+.thumb img { background: linear-gradient(110deg, var(--bg2) 30%, color-mix(in srgb, var(--bg2) 70%, var(--text) 8%) 50%, var(--bg2) 70%); background-size: 200% 100%; }
 .name { font-weight: 650; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 6px; }
 .dots { display: flex; align-items: center; }
@@ -141,9 +143,16 @@ body.web .choose { display: block; }
   var S = { themes: [], cats: [], cat: "", q: "", cur: null, color: 0 };
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
-  function thumb(id, n) { return "thumbs/" + encodeURIComponent(id) + "/" + (n || 0) + ".webp"; }
-  function colorCover(t, c, i) { return i === 0 ? thumb(t.id, 0) : "thumbs/" + encodeURIComponent(t.id) + "/c/" + encodeURIComponent(c.slug) + ".webp"; }
-  function slideSrc(t, i, n) { return i === 0 ? thumb(t.id, n) : "preview/" + encodeURIComponent(t.colors[i].key) + "/" + n + ".webp"; }
+  var LIVE = {};  // photo templates: previews are rendered by the server
+  function thumb(id, n) {
+    if (LIVE[id]) return (n || 0) === 0 ? "cover/" + encodeURIComponent(id) + ".webp" : "preview/" + encodeURIComponent(id) + "/" + n + ".webp";
+    return "thumbs/" + encodeURIComponent(id) + "/" + (n || 0) + ".webp";
+  }
+  function colorCover(t, c, i) {
+    if (t.live) return "cover/" + encodeURIComponent(c.key) + ".webp";
+    return i === 0 ? thumb(t.id, 0) : "thumbs/" + encodeURIComponent(t.id) + "/c/" + encodeURIComponent(c.slug) + ".webp";
+  }
+  function slideSrc(t, i, n) { return (i === 0 && !t.live) ? thumb(t.id, n) : "preview/" + encodeURIComponent(t.colors[i].key) + "/" + n + ".webp"; }
   function haptic() { try { tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged(); } catch (e) {} }
   function toast(msg, ms) { var t = $("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(function () { t.style.display = "none"; }, ms || 2600); }
   function norm(s) { return String(s || "").toLowerCase().replace(/[‘’ʻʼ'`]/g, ""); }
@@ -173,7 +182,7 @@ body.web .choose { display: block; }
     $("grid").innerHTML = list.map(function (t) {
       var dots = t.colors.slice(0, 5).map(function (c) { return '<i style="background:' + esc(c.swatch[1]) + '"></i>'; }).join("");
       return '<button class="card" data-id="' + esc(t.id) + '"><div class="thumb"><img loading="lazy" decoding="async" src="' + thumb(t.id) + '" alt="">' +
-        '<span class="code">№ ' + t.code + '</span></div><div class="meta"><div class="name">' + esc(t.name) +
+        '<span class="code">№ ' + t.code + '</span>' + (t.live ? '<span class="live">📷 Real foto</span>' : '') + '</div><div class="meta"><div class="name">' + esc(t.name) +
         '</div><div class="row"><span class="tag">' + esc((t.category || "").split("•")[0]) + '</span><span class="dots">' + dots + "<span>+" + (t.colors.length - 5) + "</span></span></div></div></button>";
     }).join("");
   }
@@ -181,8 +190,8 @@ body.web .choose { display: block; }
   function renderSlides() {
     var t = S.cur, i = S.color, n = Math.max(1, t.previews || 1), html = "", dots = "";
     for (var k = 0; k < n; k++) {
-      var poster = k === 0 ? colorCover(t, t.colors[i], i) : thumb(t.id, k);
-      html += '<div class="slot' + (i ? " loading" : "") + '" style="background-image:url(\'' + poster + '\')"><img alt="" ' + (k > 1 ? 'loading="lazy" ' : "") +
+      var poster = k === 0 ? colorCover(t, t.colors[i], i) : (t.live ? "" : thumb(t.id, k));
+      html += '<div class="slot' + (i || t.live ? " loading" : "") + '"' + (poster ? ' style="background-image:url(\'' + poster + '\')"' : "") + '><img alt="" ' + (k > 1 ? 'loading="lazy" ' : "") +
         'style="opacity:0" src="' + slideSrc(t, i, k) + '"></div>';
       dots += "<i" + (k ? "" : ' class="on"') + "></i>";
     }
@@ -285,6 +294,7 @@ body.web .choose { display: block; }
 
   fetch("catalog.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (d) {
     S.themes = d.themes; S.cats = d.categories;
+    d.themes.forEach(function (t) { if (t.live) LIVE[t.id] = 1; });
     var nc = d.themes.reduce(function (a, t) { return a + t.colors.length; }, 0);
     $("sub").textContent = d.themes.length + " ta shablon · " + nc + " ta rangli variant";
     renderChips(); renderGrid();

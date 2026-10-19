@@ -64,6 +64,8 @@ def no_network_images(monkeypatch):
     monkeypatch.setattr("config.settings.PEXELS_API_KEY", "")
     monkeypatch.setattr("config.settings.UNSPLASH_ACCESS_KEY", "")
     monkeypatch.setattr("config.settings.WIKIMEDIA_ENABLED", False)
+    monkeypatch.setattr("config.settings.OPENVERSE_ENABLED", False)
+    monkeypatch.setattr("config.settings.LOCAL_PHOTO_DIR", "")
     monkeypatch.setattr("config.settings.AI_IMAGES_ENABLED", False)
     return None
 

@@ -6,6 +6,8 @@ Template gallery images.
     <template>/c/<slug>.webp  cover in every other colour set
 * On demand (served by bot/webhook_app.py at /webapp/preview/<key>/<n>.webp):
     the 6 preview slides in any colour set, rendered once and cached in storage/preview_cache.
+* Photo templates (201-400) have no static thumbs: their previews need real photos, so the bot
+  server renders them on demand (and warms the covers up in the background after start).
 * Inline-keyboard gallery: colour grid per template and cover collages for template lists.
 """
 from __future__ import annotations
@@ -24,7 +26,7 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEBAPP_DIR = os.path.join(ROOT, "webapp")
 THUMBS_DIR = os.path.join(WEBAPP_DIR, "thumbs")
-GALLERY_VERSION = "4"  # bump when templates change so cached previews are rebuilt
+GALLERY_VERSION = "5"  # bump when templates change so cached previews are rebuilt
 PREVIEW_CACHE = os.path.join(ROOT, "storage", "preview_cache", "v" + GALLERY_VERSION)
 GALLERY_CACHE = os.path.join(ROOT, "storage", "gallery_cache", "v" + GALLERY_VERSION)
 SAMPLE = os.path.join(ROOT, "assets", "sample_content.json")
@@ -35,6 +37,21 @@ COVER_SIZE = (480, 270)
 KEY_RE = re.compile(r"^[0-9a-z_]+(~[a-z]+)?$")
 
 _locks: Dict[str, asyncio.Lock] = {}
+_render_sem: Optional[asyncio.Semaphore] = None
+
+
+def _sem() -> asyncio.Semaphore:
+    """At most one gallery render at a time: keeps the bot responsive on a small server."""
+    global _render_sem
+    if _render_sem is None:
+        _render_sem = asyncio.Semaphore(1)
+    return _render_sem
+
+
+def is_live(template_id: str) -> bool:
+    """Templates whose previews are rendered on the server (photo templates)."""
+    from services.deck import themes
+    return bool(themes.get_theme(themes.split_key(template_id)[0]).get("photo"))
 
 
 def sample_content(cover_only: bool = False) -> dict:
@@ -50,8 +67,9 @@ async def render_set(key: str, out_dir: str, cover_only: bool = False, size=PREV
 
     tmp = tempfile.mkdtemp(prefix="gal_")
     try:
-        res = await render_deck(sample_content(cover_only), key, tmp, want_pdf=False, want_pptx=False,
-                                png_scale=0.5 if size[0] > 480 else 0.34, fetch_images=False)
+        async with _sem():
+            res = await render_deck(sample_content(cover_only), key, tmp, want_pdf=False, want_pptx=False,
+                                    png_scale=0.5 if size[0] > 480 else 0.34, fetch_images=is_live(key))
         os.makedirs(out_dir, exist_ok=True)
         paths = []
         for i, p in enumerate(res.slide_pngs):
@@ -96,11 +114,69 @@ def _font(size: int):
 
 
 def cover_thumb(key: str) -> Optional[str]:
+    """Existing cover image for a template/colour key (static thumb or server-rendered cache)."""
     from services.deck import themes
 
     base, color = themes.split_key(key)
     p = os.path.join(THUMBS_DIR, base, "c", f"{color}.webp") if color else os.path.join(THUMBS_DIR, base, "0.webp")
-    return p if os.path.exists(p) else None
+    if os.path.exists(p):
+        return p
+    for q in (os.path.join(PREVIEW_CACHE, "covers", f"{key.replace('~', '__')}.webp"),
+              os.path.join(PREVIEW_CACHE, key.replace("~", "__"), "0.webp")):
+        if os.path.exists(q):
+            return q
+    return None
+
+
+async def cover_path(key: str) -> Optional[str]:
+    """Cover of any template/colour key, rendering (cover only) on first request."""
+    from services.deck import themes
+
+    if not KEY_RE.match(key or "") or not themes.is_known_theme(key):
+        return None
+    key = themes.resolve_theme_id(key)
+    p = cover_thumb(key)
+    if p:
+        return p
+    out_dir = os.path.join(PREVIEW_CACHE, "covers")
+    dst = os.path.join(out_dir, f"{key.replace('~', '__')}.webp")
+    lock = _locks.setdefault("cover:" + key, asyncio.Lock())
+    async with lock:
+        if not os.path.exists(dst):
+            tmp_dir = os.path.join(out_dir, "_" + key.replace("~", "__"))
+            try:
+                paths = await render_set(key, tmp_dir, cover_only=True, size=COVER_SIZE, quality=72)
+                if paths:
+                    os.replace(paths[0], dst)
+            finally:
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+    return dst if os.path.exists(dst) else None
+
+
+async def ensure_covers(keys: List[str]) -> None:
+    for k in keys:
+        try:
+            await cover_path(k)
+        except Exception:  # noqa: BLE001 - a missing preview must never break the gallery
+            pass
+
+
+async def warm_up(delay: float = 20.0) -> None:
+    """Background task: renders the covers of all server-rendered templates after start."""
+    import logging
+    from services.deck import themes
+
+    await asyncio.sleep(delay)
+    ids = [t for t in themes.list_theme_ids() if is_live(t)]
+    done = 0
+    for tid in ids:
+        try:
+            if await cover_path(tid):
+                done += 1
+        except Exception as e:  # noqa: BLE001
+            logging.getLogger(__name__).info("gallery warm-up %s: %s", tid, e)
+        await asyncio.sleep(0.2)
+    logging.getLogger(__name__).info("gallery warm-up finished: %d/%d photo template covers", done, len(ids))
 
 
 def _grid(items, out_path: str, cols: int, tw: int, label_h: int = 44, font_size: int = 24) -> Optional[str]:
@@ -121,6 +197,17 @@ def _grid(items, out_path: str, cols: int, tw: int, label_h: int = 44, font_size
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     sheet.save(out_path, quality=86)
     return out_path
+
+
+async def colors_sheet_async(template_id: str) -> Optional[str]:
+    from services.deck import themes
+    await ensure_covers([c["key"] for c in themes.theme_colors(template_id)])
+    return colors_sheet(template_id)
+
+
+async def list_sheet_async(template_ids: List[str], name: str) -> Optional[str]:
+    await ensure_covers(template_ids)
+    return list_sheet(template_ids, name)
 
 
 def colors_sheet(template_id: str, refresh: bool = False) -> Optional[str]:

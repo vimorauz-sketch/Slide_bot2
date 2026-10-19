@@ -334,3 +334,84 @@ def type_css(t: dict) -> str:
         "--fs-title": f"{round(72 * scale)}px", "--fs-cover": f"{round(112 * scale)}px",
     }
     return ":root{" + "".join(f"{k}:{val};" for k, val in v.items()) + "}"
+
+
+# ====================================================================== photo templates (201-400)
+PHOTO_COVERS = ["split", "split-left", "full", "card", "band", "diagonal", "frame", "arch", "circle", "bottom", "poster"]
+PHOTO_DIMS = {
+    "bg": ["plain", "plain", "dots", "grid", "tint", "topbar", "band", "split", "lines", "paper", "corner"],
+    "card": ["soft", "outline", "tint", "topbar", "leftbar", "elevated", "minimal", "glass", "numbered", "solid"],
+    "head": ["plain", "bar", "underline", "pill", "number", "caps", "slash", "tag", "center"],
+    "icon": ["tint", "circle", "outline", "solid", "square", "ring", "gradient"],
+    "bul": ["dot", "square", "dash", "diamond", "ring", "arrow", "check", "bar"],
+    "fr": ["bleed", "inset", "round", "circle", "arch", "blob", "tilt", "diag", "offset", "window", "hex"],
+    "dec": ["none", "none", "tab", "bignum", "pagebadge", "brackets", "strip", "tricolor"],
+    "rad": ["sharp", "soft", "round", "pill"],
+    "hl": ["overlay", "overlay", "gradient", "tint", "solid"],
+    "pc": ["top", "full", "side", "circle", "polaroid", "frame"],
+    "ph": ["natural", "natural", "warm", "cool", "vivid", "bw", "duotone"],
+}
+PHOTO_ART = ["mesh", "rings", "waves", "topo", "academic", "corporate", "lowpoly", "papercut", "aurora", "medical"]
+_PHOTO_FIRST = ["Daylight", "Horizon", "Atlas", "Lumen", "Field", "Focus", "Vista", "Canvas", "Prism", "Harbor",
+                "Summit", "Meridian", "Mosaic", "Pulse", "Origin", "Echo", "Nova", "Terra", "Cinema", "Urban"]
+_PHOTO_SECOND = ["Photo", "Story", "Journal", "Report", "Lens", "Gallery", "Insight", "Spotlight", "Edition", "Folio"]
+_PHOTO_CATS = ["education", "business", "tech", "nature", "culture", "creative"]
+_PC_UZ = {"top": "tepasida surati bor kartalar", "full": "to‘liq suratli kartalar", "side": "yon suratli kartalar",
+          "circle": "aylana suratli kartalar", "polaroid": "polaroid suratlar", "frame": "ramkali suratlar"}
+
+
+def generate_photo(count: int = 200, start_code: int = 201, seed: int = 4242) -> List[dict]:
+    """Photo-first templates: real photos on the cover, on cards / steps / list items and on most slides."""
+    rnd = random.Random(seed)
+    used = {k: Counter() for k in ["cover", "mode", "font", "art", *PHOTO_DIMS]}
+    fonts_ok = [k for k, f in enumerate(FONT_PAIRS) if f[2] != "hand"]
+    names = [f"{a} {b}" for b in _PHOTO_SECOND for a in _PHOTO_FIRST]
+    rnd.shuffle(names)
+    seen = set()
+    out = []
+    for i in range(count):
+        mode = _pick(MODES, used["mode"], rnd)
+        for _ in range(50):
+            cover = _pick(PHOTO_COVERS, used["cover"], rnd)
+            font = _pick(fonts_ok, used["font"], rnd)
+            pc = _pick(PHOTO_DIMS["pc"], used["pc"], rnd)
+            if (cover, font, pc) not in seen:
+                break
+            used["font"][font] += 1  # nudge to another combination
+        seen.add((cover, font, pc))
+        tr = {}
+        for dim, opts in PHOTO_DIMS.items():
+            if dim == "pc":
+                tr[dim] = pc
+                continue
+            avoid = set()
+            if dim == "fr" and cover in ("circle", "arch"):
+                avoid |= {cover}
+            tr[dim] = _pick(opts, used[dim], rnd, avoid=avoid)
+        if tr["card"] == "glass":
+            tr["bg"] = rnd.choice(["tint", "plain"])
+        art = _pick(PHOTO_ART, used["art"], rnd)
+        for k, v in (("mode", mode), ("cover", cover), ("font", font), ("art", art), *tr.items()):
+            used[k][v] += 1
+        title_f, body_f, mood, typ = FONT_PAIRS[font]
+        code = start_code + i
+        name = names[i % len(names)]
+        recipe = recipe_for(mode, rnd)
+        colors = colors_for(recipe, SEED_KEY[mode], offset=rnd.randrange(11))
+        cat = _PHOTO_CATS[i % len(_PHOTO_CATS)]
+        out.append({
+            "id": f"{code:03d}_{name.lower().replace(' ', '_')}", "code": str(code), "name": name,
+            "tagline": f"Haqiqiy fotosuratlar: {UZ['mode'][mode].lower()}, {UZ['cover'][cover]}, {_PC_UZ[pc]}",
+            "mode": "dark" if mode in ("dark", "vivid") else "light", "tone": mode, "art": art, "cover_variant": cover,
+            "cards_variant": "grid" if pc == "side" else ("grid" if i % 4 == 0 else "row"),
+            "fonts": {"title": title_f, "body": body_f},
+            "pptx_fonts": {"title": "Cambria" if title_f in _PPTX_SERIF_TITLES else "Arial",
+                           "body": "Cambria" if body_f in _SERIF_BODY else "Calibri"},
+            "type": typ, "traits": tr, "categories": ["photo", cat],
+            "category": "Real foto • " + {"tech": "Texnologiya", "education": "Ta’lim", "nature": "Tabiat", "business": "Biznes",
+                                           "creative": "Ijod", "culture": "Madaniyat"}[cat],
+            "writing_tone": MOOD_TONE[cat], "pdf_mode": "raster" if tr["card"] == "glass" else "vector",
+            "recipe": recipe, "colors": colors, "photo": True, "eyebrow_num": i % 2 == 0,
+            "sticker_style": "", "sticker_place": "none", "pack": "", "image_style": "photo",
+        })
+    return out

@@ -1,8 +1,10 @@
 """
 Image resolution for slides.
 
-Order (configurable with IMAGE_PROVIDERS): Pexels -> Unsplash -> Wikimedia Commons -> OpenAI
-image generation (only when AI_IMAGES_ENABLED). Providers without a key are skipped. Anything
+Order (configurable with IMAGE_PROVIDERS): Pexels -> Unsplash -> Openverse -> Wikimedia Commons ->
+OpenAI image generation (only when AI_IMAGES_ENABLED). Providers without a key are skipped;
+Openverse and Wikimedia need no key, so real photos work out of the box (Pexels gives the best ones).
+Photo templates also get one photo per card / step / list item (resolve_item_photos). Anything
 not found falls back to the theme's own generated art in the renderer, so a slide never ends
 up empty. Downloads are cached on disk by query, and the chosen image is written back into
 the content JSON so re-rendering (e.g. after payment) never hits the network again.
@@ -30,7 +32,10 @@ TIMEOUT_S = 10
 # Slot sizes the renderer uses (px at 1x): the downloaded image is cropped to cover them.
 SLOT_PORTRAIT = (900, 1080)
 SLOT_LANDSCAPE = (1920, 1080)
-PORTRAIT_LAYOUTS = {"text_image", "icon_list", "quote", "section", "stats"}
+SLOT_ITEM = (960, 680)
+PORTRAIT_LAYOUTS = {"text_image", "icon_list", "quote", "section", "stats", "summary", "agenda"}
+ITEM_PHOTO_LAYOUTS = {"cards": "items", "process": "steps", "icon_list": "items"}
+MAX_ITEM_PHOTOS = 24
 
 
 def _settings():
@@ -47,9 +52,16 @@ def _cfg(name: str, default: Any = "") -> Any:
 
 
 def enabled_providers() -> List[str]:
-    order = [p.strip().lower() for p in str(_cfg("IMAGE_PROVIDERS", "pexels,unsplash,wikimedia,openai")).split(",") if p.strip()]
+    order = [p.strip().lower() for p in str(_cfg("IMAGE_PROVIDERS", "pexels,unsplash,openverse,wikimedia,openai")).split(",") if p.strip()]
+    if "openverse" not in order and "wikimedia" in order:  # older .env values: add the keyless photo source
+        order.insert(order.index("wikimedia"), "openverse")
     out = []
+    if _cfg("LOCAL_PHOTO_DIR") and os.path.isdir(str(_cfg("LOCAL_PHOTO_DIR"))):
+        out.append("local")  # development / offline previews
     for p in order:
+        if p == "openverse" and str(_cfg("OPENVERSE_ENABLED", True)).lower() not in ("0", "false", "no"):
+            out.append(p)
+            continue
         if p == "pexels" and _cfg("PEXELS_API_KEY"):
             out.append(p)
         elif p == "unsplash" and _cfg("UNSPLASH_ACCESS_KEY"):
@@ -171,6 +183,37 @@ async def _wikimedia(session, query: str, orientation: str) -> List[Dict[str, An
     return out
 
 
+async def _openverse(session, query: str, orientation: str) -> List[Dict[str, Any]]:
+    """Openverse (WordPress.org): openly licensed photos from Flickr, Wikimedia and others, no key."""
+    data = await _get_json(session, "https://api.openverse.org/v1/images/", {"User-Agent": UA}, {
+        "q": query, "page_size": 12, "license_type": "commercial", "category": "photograph",
+        "aspect_ratio": "tall" if orientation == "portrait" else "wide", "mature": "false",
+    })
+    if not (data or {}).get("results"):  # retry without the optional filters
+        data = await _get_json(session, "https://api.openverse.org/v1/images/", {"User-Agent": UA},
+                               {"q": query, "page_size": 12, "license_type": "commercial"})
+    out = []
+    for p in (data or {}).get("results", []):
+        if (p.get("width") or 0) and p["width"] < 700:
+            continue
+        lic = f"CC {str(p.get('license', '')).upper()} {p.get('license_version', '')}".strip()
+        out.append({"id": f"openverse:{p.get('id')}", "url": p.get("url"), "w": p.get("width", 0), "h": p.get("height", 0),
+                    "credit": f"Foto: {(p.get('creator') or '')[:40]} / {p.get('source', 'Openverse')}, {lic}".strip(),
+                    "alt": p.get("title", "")})
+    return out
+
+
+def _local(query: str) -> List[Dict[str, Any]]:
+    """Photos from LOCAL_PHOTO_DIR (development only), chosen deterministically from the query."""
+    folder = Path(str(_cfg("LOCAL_PHOTO_DIR")))
+    files = sorted(f for f in folder.iterdir() if f.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp"))
+    if not files:
+        return []
+    start = int(_key(query.lower()), 16) % len(files)
+    return [{"id": f"local:{files[(start + k) % len(files)].name}", "path": str(files[(start + k) % len(files)]), "credit": ""}
+            for k in range(len(files))]
+
+
 async def _openai_image(prompt: str, orientation: str) -> Optional[bytes]:
     try:
         from openai import AsyncOpenAI
@@ -201,14 +244,17 @@ class ImageResolver:
     async def resolve(self, session, query: str, prompt: str, kind: str, layout: str) -> Optional[Dict[str, Any]]:
         if not query or kind == "none" or not self.providers:
             return None
-        orientation = "portrait" if layout in PORTRAIT_LAYOUTS or layout == "cover" else "landscape"
-        slot = SLOT_PORTRAIT if orientation == "portrait" else SLOT_LANDSCAPE
+        if layout == "item":
+            orientation, slot = "landscape", SLOT_ITEM
+        else:
+            orientation = "portrait" if layout in PORTRAIT_LAYOUTS or layout == "cover" else "landscape"
+            slot = SLOT_PORTRAIT if orientation == "portrait" else SLOT_LANDSCAPE
         order = list(self.providers)
         if kind == "illustration":  # scientific / historical pictures: generated or encyclopedic first
             order = [p for p in ("openai", "wikimedia") if p in order] + [p for p in order if p not in ("openai", "wikimedia")]
         async with self.sem:
             for prov in order:
-                key = _key(prov, query.lower(), orientation, kind)
+                key = _key(prov, query.lower(), orientation, kind, str(slot))
                 jpg, meta = self._cache_paths(key)
                 if jpg.exists() and meta.exists():
                     m = json.loads(meta.read_text(encoding="utf-8"))
@@ -231,12 +277,17 @@ class ImageResolver:
             raw = await _openai_image(full, orientation)
             data = _crop_cover(raw, slot) if raw else None
             return (data, {"id": f"openai:{_key(full)}", "credit": "AI tasvir"}) if data else None
-        search = {"pexels": _pexels, "unsplash": _unsplash, "wikimedia": _wikimedia}[prov]
-        candidates = await search(session, query, orientation)
+        if prov == "local":
+            candidates = _local(query)
+        else:
+            search = {"pexels": _pexels, "unsplash": _unsplash, "wikimedia": _wikimedia, "openverse": _openverse}[prov]
+            candidates = await search(session, query, orientation)
+        if prov == "local" and all(c["id"] in self.used for c in candidates):
+            self.used -= {c["id"] for c in candidates}  # development pool is small: allow repeats
         for c in candidates:
             if c["id"] in self.used:
                 continue
-            raw = await _get_bytes(session, c["url"])
+            raw = Path(c["path"]).read_bytes() if c.get("path") else await _get_bytes(session, c["url"])
             data = _crop_cover(raw, slot) if raw else None
             if not data:
                 continue
@@ -246,14 +297,51 @@ class ImageResolver:
         return None
 
 
-def _needs_image(slide: Dict[str, Any], is_cover: bool) -> bool:
+def item_photo_query(item: Dict[str, Any], slide: Dict[str, Any], topic: str) -> str:
+    """English query for one card/step photo (AI writes item.photo; otherwise a usable fallback)."""
+    q = str(item.get("photo") or "").strip()
+    if q:
+        return q
+    v = slide.get("visual") or {}
+    base = (v.get("query") if isinstance(v, dict) else str(v)) or topic
+    return f"{base} {item.get('title', '')}".strip()
+
+
+async def resolve_item_photos(content: Dict[str, Any], theme: Dict[str, Any], resolver: "ImageResolver", session) -> int:
+    """Photo templates: one photo per card / step / list item, stored as item['image']."""
+    topic = str((content.get("title_slide") or {}).get("title", ""))
+    jobs = []
+    for slide in content.get("slides", []):
+        from services.deck.catalog import resolve_layout_name
+        key = ITEM_PHOTO_LAYOUTS.get(resolve_layout_name(slide.get("layout") or slide.get("layout_type")))
+        if not key:
+            continue
+        for it in (slide.get(key) or [])[:5]:
+            if not isinstance(it, dict):
+                continue
+            img = it.get("image") or {}
+            if str(img.get("src", "")).startswith("file:") and os.path.exists(img["src"][7:]):
+                continue
+            if len(jobs) >= MAX_ITEM_PHOTOS:
+                break
+            jobs.append((it, resolver.resolve(session, item_photo_query(it, slide, topic), "", "photo", "item")))
+    results = await asyncio.gather(*(j[1] for j in jobs), return_exceptions=True)
+    n = 0
+    for (it, _), res in zip(jobs, results):
+        if isinstance(res, dict):
+            it["image"] = res
+            n += 1
+    return n
+
+
+def _needs_image(slide: Dict[str, Any], is_cover: bool, photo_theme: bool = False) -> bool:
     from services.deck.render import IMAGE_LAYOUTS, _ALWAYS_IMAGE
     from services.deck.catalog import resolve_layout_name
     layout = "cover" if is_cover else resolve_layout_name(slide.get("layout") or slide.get("layout_type"))
     v = slide.get("visual") or {}
     if isinstance(v, str):
         v = {"query": v}
-    if layout in _ALWAYS_IMAGE:
+    if layout in _ALWAYS_IMAGE or (photo_theme and layout in ("summary", "agenda")):
         return True
     return layout in IMAGE_LAYOUTS and (v.get("kind") or "photo") != "none"
 
@@ -275,7 +363,7 @@ async def resolve_images(content: Dict[str, Any], theme: Dict[str, Any]) -> Dict
             if slide.get("image") and str(slide["image"].get("src", "")).startswith("file:") and \
                     os.path.exists(slide["image"]["src"][7:]):
                 continue
-            if not _needs_image(slide, is_cover):
+            if not _needs_image(slide, is_cover, bool(theme.get("photo"))):
                 continue
             v = slide.get("visual") or {}
             if isinstance(v, str):
@@ -284,6 +372,8 @@ async def resolve_images(content: Dict[str, Any], theme: Dict[str, Any]) -> Dict
             layout = "cover" if is_cover else resolve_layout_name(slide.get("layout") or slide.get("layout_type"))
             jobs.append((idx, slide, resolver.resolve(session, query, v.get("prompt", ""), v.get("kind", "photo"), layout)))
         results = await asyncio.gather(*(j[2] for j in jobs), return_exceptions=True)
+        if theme.get("photo"):
+            await resolve_item_photos(content, theme, resolver, session)
     found: Dict[int, Dict[str, Any]] = {}
     for (idx, slide, _), res in zip(jobs, results):
         if isinstance(res, dict):

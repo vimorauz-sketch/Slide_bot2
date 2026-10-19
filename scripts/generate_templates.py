@@ -27,6 +27,7 @@ def main():
         cols = ds.colors_for({"type": r["type"], "kwargs": r.get("kwargs", {})}, r.get("seeds", r["type"]), offset=0, n=ds.COLORS_PER_TEMPLATE - 1)
         fam_colors[fam] = [{"slug": "asl", "name": "Asl", "palette": None}] + cols
     gen = ds.generate(count=200 - len(families), start_code=len(families) + 1)
+    gen += ds.generate_photo(count=200, start_code=201)
     problems = []
     for t in gen:
         for c in t["colors"]:

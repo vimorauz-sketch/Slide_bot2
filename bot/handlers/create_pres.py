@@ -63,7 +63,8 @@ async def webapp_link(bot) -> str:
 def _picker_caption(with_webapp: bool) -> str:
     n = len(themes.list_theme_ids())
     lines = [f"🖼 <b>{n} TA SHABLON — HAR BIRIDA 10 XIL RANG</b>\n",
-             "Har bir shablonning tuzilishi, rasmlari va shriftlari o‘ziga xos.\n"]
+             "Har bir shablonning tuzilishi, rasmlari va shriftlari o‘ziga xos.\n",
+             "📷 <b>201–400: Real foto</b> — slaydlarga mavzuga mos haqiqiy fotosuratlar qo‘yiladi.\n"]
     if with_webapp:
         lines.append("🎨 <b>Dizayn laboratoriyasi</b>da shablonga kirib, slaydlarini va barcha ranglarini ko‘ring.\n")
     lines.append(f"👉 Yoki <b>shablon raqamini</b> yuboring (<code>1</code> – <code>{n}</code>), yoki kategoriyalar bo‘yicha ko‘ring:")
@@ -92,7 +93,10 @@ async def apply_template_choice(bot, chat_id: int, state: FSMContext, key) -> bo
         await state.update_data(template_id=tid)
         started = False
         text = f"🎨 <b>Dizayn o‘zgartirildi:</b> {label}"
-    thumb = gallery.cover_thumb(tid)
+    try:
+        thumb = await gallery.cover_path(tid)
+    except Exception:  # noqa: BLE001
+        thumb = None
     if thumb and hasattr(bot, "send_photo"):
         try:
             await bot.send_photo(chat_id, FSInputFile(thumb), caption=text, parse_mode="HTML",
@@ -217,7 +221,7 @@ async def gallery_list(callback: CallbackQuery, state: FSMContext):
     caption = (f"<b>{label}</b> — {len(ids)} ta shablon\n"
                f"Shablonni bosing: uning 10 xil rangi ko‘rinadi.")
     markup = get_gallery_list_keyboard(items, category, page, pages)
-    sheet = gallery.list_sheet(chunk, f"{category}_{page}")
+    sheet = await gallery.list_sheet_async(chunk, f"{category}_{page}")
     if sheet:
         await _show_photo(callback, sheet, caption, markup)
     else:
@@ -238,7 +242,7 @@ async def gallery_template(callback: CallbackQuery, state: FSMContext):
     caption = (f"<b>№ {int(t['code'])}. {escape_html(t['name'])}</b>\n{escape_html(t.get('tagline', ''))}\n"
                f"<i>{escape_html(t.get('category', ''))}</i>\n\n🎨 Rangni tanlang ({len(colors)} ta variant):")
     markup = get_gallery_colors_keyboard(colors)
-    sheet = gallery.colors_sheet(tid)
+    sheet = await gallery.colors_sheet_async(tid)
     if sheet:
         await callback.message.answer_photo(FSInputFile(sheet), caption=caption, reply_markup=markup, parse_mode="HTML")
     else:

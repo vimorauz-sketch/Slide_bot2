@@ -23,3 +23,7 @@
 {%- macro icon_badge(name, text='', stk='') -%}
 {%- if stk %}<div class="icon-badge stk-badge">{{ stk|safe }}</div>{% else %}<div class="icon-badge">{{ name|icon(text) }}</div>{% endif -%}
 {%- endmacro -%}
+
+{%- macro photo(img, cls='card-photo') -%}
+{%- if img %}<div class="{{ cls }}{% if img.is_art %} is-art{% endif %}"><img src="{{ img.src }}" alt=""></div>{% endif -%}
+{%- endmacro -%}

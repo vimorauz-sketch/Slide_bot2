@@ -15,6 +15,6 @@ def test_every_pack_renders_valid_svg(name, kind):
 
 
 def test_packs_are_spread_over_templates():
-    used = [themes.get_theme(t).get("pack", "") for t in themes.list_theme_ids()[20:]]
+    used = [themes.get_theme(t).get("pack", "") for t in themes.list_theme_ids()[20:200]]
     assert set(packs.PACKS) <= set(used)
     assert used.count("") <= len(used) // 4

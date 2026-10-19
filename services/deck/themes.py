@@ -24,6 +24,7 @@ _ALIASES: Dict[str, str] = {}
 
 # Gallery categories: (key, label, emoji, tags that put a theme in it)
 CATEGORIES = [
+    ("photo", "Real foto", "📷", {"photo"}),
     ("education", "Ta’lim va fan", "🎓", {"education", "school", "science", "academic", "math", "language", "notes", "kids"}),
     ("business", "Biznes", "💼", {"business", "finance", "economics", "modern"}),
     ("tech", "Texnologiya", "💻", {"tech", "it", "engineering", "space"}),
@@ -109,6 +110,8 @@ def _load_generated(spec: Dict[str, Any]) -> Dict[str, Any]:
     t["palette"] = pal
     tr = t["traits"]
     t["trait_classes"] = " ".join(f"tr-{dim}-{val}" for dim, val in tr.items()) + f" tone-{t['tone']}"
+    if t.get("photo"):
+        t["trait_classes"] += " photo-mode" + (" tr-eyebrow-num" if t.get("eyebrow_num") else "")
     extra = ""
     if t["tone"] in ("light", "cream"):
         extra = ":root{--ov:color-mix(in srgb, var(--primary) 62%, var(--ink));}"

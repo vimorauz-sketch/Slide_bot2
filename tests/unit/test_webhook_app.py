@@ -193,7 +193,7 @@ async def test_webapp_index_and_catalog_are_served():
         assert r.status == 200 and "Dizayn laboratoriyasi" in await r.text()
         r = await client.get("/webapp/catalog.json")
         assert r.status == 200
-        assert len((await r.json())["themes"]) == 200
+        assert len((await r.json())["themes"]) == 400
 
 
 async def test_webapp_select_rejects_unsigned_requests():

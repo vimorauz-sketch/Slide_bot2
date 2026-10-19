@@ -18,7 +18,9 @@ def test_providers_follow_configured_keys(monkeypatch):
     monkeypatch.setattr("config.settings.PEXELS_API_KEY", "k")
     monkeypatch.setattr("config.settings.WIKIMEDIA_ENABLED", True)
     monkeypatch.setattr("config.settings.IMAGE_PROVIDERS", "wikimedia,pexels,openai")
-    assert images.enabled_providers() == ["wikimedia", "pexels"]
+    assert images.enabled_providers() == ["wikimedia", "pexels"]  # openverse disabled in tests
+    monkeypatch.setattr("config.settings.OPENVERSE_ENABLED", True)
+    assert images.enabled_providers() == ["openverse", "wikimedia", "pexels"]  # keyless photos added for old .env values
 
 
 def test_crop_cover_produces_exact_slot_size():
@@ -69,3 +71,31 @@ async def test_resolve_images_writes_the_image_back_into_content(monkeypatch, tm
     assert set(found) == {0, 1}
     assert content["slides"][0]["image"]["src"].startswith("file:")
     assert "image" not in content["slides"][1]
+
+
+
+async def test_openverse_results_are_parsed(monkeypatch):
+    async def fake_json(session, url, headers, params):
+        assert "openverse" in url and params["q"] == "coral reef"
+        return {"results": [{"id": "abc", "url": "https://x/y.jpg", "width": 1600, "height": 900, "creator": "Ann",
+                             "source": "flickr", "license": "by", "license_version": "2.0", "title": "Reef"},
+                            {"id": "small", "url": "https://x/s.jpg", "width": 300, "height": 200}]}
+    monkeypatch.setattr(images, "_get_json", fake_json)
+    out = await images._openverse(None, "coral reef", "landscape")
+    assert [o["id"] for o in out] == ["openverse:abc"]
+    assert "Ann" in out[0]["credit"] and "CC BY 2.0" in out[0]["credit"]
+
+
+async def test_item_photos_are_resolved_for_cards(monkeypatch, tmp_path):
+    from PIL import Image as _I
+    folder = tmp_path / "photos"
+    folder.mkdir()
+    for k in range(3):
+        _I.new("RGB", (1600, 1100), (k * 60, 120, 200)).save(folder / f"p{k}.jpg")
+    monkeypatch.setattr("config.settings.LOCAL_PHOTO_DIR", str(folder))
+    content = {"title_slide": {"title": "Ekotizim"}, "slides": [
+        {"layout": "cards", "title": "T", "items": [{"title": "Suv", "photo": "lake water"}, {"title": "Tuproq"}, {"title": "Havo"}]}]}
+    found = await images.resolve_images(content, {"photo": True})
+    items = content["slides"][0]["items"]
+    assert all(it.get("image", {}).get("src", "").startswith("file:") for it in items)
+    assert images.item_photo_query(items[1], content["slides"][0], "Ekotizim").endswith("Tuproq")

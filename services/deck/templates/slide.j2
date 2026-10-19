@@ -1,5 +1,5 @@
 {%- import '_macros.j2' as m with context -%}
-{%- set bleed = s.image is not none and s.layout in ('text_image', 'icon_list', 'quote', 'section', 'stats') -%}
+{%- set bleed = s.image is not none and s.layout in ('text_image', 'icon_list', 'quote', 'section', 'stats', 'summary', 'agenda') -%}
 {%- set side = 'left' if s.variant == 'left' else 'right' -%}
 {%- set classes = ['slide', 'layout-' ~ s.layout] -%}
 {%- if bleed %}{% set classes = classes + ['with-bleed', 'media-' ~ side] %}{% endif -%}

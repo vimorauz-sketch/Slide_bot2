@@ -1,3 +1,4 @@
+{%- if s.image %}{{ m.media(s.image, 'media-bleed ' ~ side) }}{% endif %}
 <div class="agenda-wrap">
   {{ m.head(s) }}
   <ol class="agenda-list">
