@@ -99,3 +99,22 @@ async def test_item_photos_are_resolved_for_cards(monkeypatch, tmp_path):
     items = content["slides"][0]["items"]
     assert all(it.get("image", {}).get("src", "").startswith("file:") for it in items)
     assert images.item_photo_query(items[1], content["slides"][0], "Ekotizim").endswith("Tuproq")
+
+
+async def test_keyless_sources_skip_maps_and_diagrams(monkeypatch):
+    async def fake_json(session, url, headers, params):
+        return {"results": [
+            {"id": "m", "url": "https://x/m.jpg", "width": 2000, "height": 1200, "title": "Satellite map of Europe"},
+            {"id": "t", "url": "https://x/t.jpg", "width": 2000, "height": 1200, "title": "Forest", "tags": [{"name": "landsat"}]},
+            {"id": "ok", "url": "https://x/ok.jpg", "width": 2000, "height": 1200, "title": "Sunflower field"}]}
+    monkeypatch.setattr(images, "_get_json", fake_json)
+    out = await images._openverse(None, "sunflower", "landscape")
+    assert [o["id"] for o in out] == ["openverse:ok"]
+
+
+def test_gallery_previews_use_different_photos_per_template():
+    from services import gallery
+    from services.deck import themes
+    ids = themes.list_theme_ids()[200:225]
+    covers = {gallery.sample_content(True, t)["title_slide"]["visual"]["query"] for t in ids}
+    assert len(covers) == 25

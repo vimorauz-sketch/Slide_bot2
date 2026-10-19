@@ -26,7 +26,7 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEBAPP_DIR = os.path.join(ROOT, "webapp")
 THUMBS_DIR = os.path.join(WEBAPP_DIR, "thumbs")
-GALLERY_VERSION = "5"  # bump when templates change so cached previews are rebuilt
+GALLERY_VERSION = "6"  # bump when templates change so cached previews are rebuilt
 PREVIEW_CACHE = os.path.join(ROOT, "storage", "preview_cache", "v" + GALLERY_VERSION)
 GALLERY_CACHE = os.path.join(ROOT, "storage", "gallery_cache", "v" + GALLERY_VERSION)
 SAMPLE = os.path.join(ROOT, "assets", "sample_content.json")
@@ -54,10 +54,42 @@ def is_live(template_id: str) -> bool:
     return bool(themes.get_theme(themes.split_key(template_id)[0]).get("photo"))
 
 
-def sample_content(cover_only: bool = False) -> dict:
+# Photo scenes for the previews of photo templates: every template gets its own set of photos,
+# so the gallery shows 200 different pictures instead of one (the sample text is about plants).
+PHOTO_SCENES = [
+    "sunflower field", "tropical rainforest", "green tea plantation", "autumn forest", "lotus pond",
+    "bamboo forest", "wheat field sunset", "greenhouse plants", "mountain lake forest", "botanical garden",
+    "rice terraces", "lavender field", "pine forest fog", "coral reef", "cactus desert bloom",
+    "vineyard hills", "cherry blossom", "fern leaves", "orchard apple trees", "waterfall jungle",
+    "moss forest floor", "tulip field", "palm trees beach", "meadow wildflowers", "maple leaves",
+]
+_ITEM_SCENES = ["sunlight", "water drops", "green leaf", "plant cells", "seedling soil", "flowers", "forest",
+                "field", "leaf macro", "garden", "roots", "tree canopy"]
+
+
+def _scene_index(key: str) -> int:
+    from services.deck import themes
+    try:
+        code = int(themes.get_theme(themes.split_key(key)[0])["code"])
+    except Exception:  # noqa: BLE001
+        code = 0
+    return code
+
+
+def sample_content(cover_only: bool = False, key: str = "") -> dict:
     with open(SAMPLE, encoding="utf-8") as f:
         c = copy.deepcopy(json.load(f))
     c["slides"] = [] if cover_only else [c["slides"][i] for i in PREVIEW_SLIDES]
+    if key and is_live(key):
+        n = _scene_index(key)
+        scene = PHOTO_SCENES[n % len(PHOTO_SCENES)]
+        c["title_slide"]["visual"] = {"kind": "photo", "query": scene, "icon": "leaf"}
+        for k, sl in enumerate(c["slides"]):
+            sl["visual"] = {**(sl.get("visual") or {}), "kind": "photo",
+                            "query": PHOTO_SCENES[(n + 7 * (k + 1)) % len(PHOTO_SCENES)]}
+            for key_ in ("items", "steps"):
+                for j, it in enumerate(sl.get(key_) or []):
+                    it["photo"] = f"{_ITEM_SCENES[(n + j + 3 * k) % len(_ITEM_SCENES)]} {scene.split()[0]}"
     return c
 
 
@@ -68,7 +100,7 @@ async def render_set(key: str, out_dir: str, cover_only: bool = False, size=PREV
     tmp = tempfile.mkdtemp(prefix="gal_")
     try:
         async with _sem():
-            res = await render_deck(sample_content(cover_only), key, tmp, want_pdf=False, want_pptx=False,
+            res = await render_deck(sample_content(cover_only, key), key, tmp, want_pdf=False, want_pptx=False,
                                     png_scale=0.5 if size[0] > 480 else 0.34, fetch_images=is_live(key))
         os.makedirs(out_dir, exist_ok=True)
         paths = []

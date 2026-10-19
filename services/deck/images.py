@@ -173,6 +173,8 @@ async def _wikimedia(session, query: str, orientation: str) -> List[Dict[str, An
             continue
         if info.get("width", 0) < 800:
             continue
+        if not _looks_like_photo(p.get("title", "")):
+            continue
         meta = info.get("extmetadata") or {}
         artist = _strip_html((meta.get("Artist") or {}).get("value", ""))[:60]
         lic = (meta.get("LicenseShortName") or {}).get("value", "")
@@ -181,6 +183,17 @@ async def _wikimedia(session, query: str, orientation: str) -> List[Dict[str, An
                     "credit": f"{artist} / Wikimedia Commons{', ' + lic if lic else ''}".strip(" /"),
                     "alt": p.get("title", "")})
     return out
+
+
+_NOT_PHOTO = re.compile(r"\b(map|satellite|diagram|chart|logo|icon|svg|drawing|scheme|schema|graph|plan|flag|coat of arms|"
+                        r"text|document|page|scan|stamp|poster|illustration|clipart|nasa|landsat|modis)\b", re.I)
+
+
+_STRONG_NOT_PHOTO = re.compile(r"\b(map|satellite|diagram|landsat|nasa|modis|infographic)\b", re.I)
+
+
+def _looks_like_photo(title: str) -> bool:
+    return not _NOT_PHOTO.search(title or "")
 
 
 async def _openverse(session, query: str, orientation: str) -> List[Dict[str, Any]]:
@@ -195,6 +208,9 @@ async def _openverse(session, query: str, orientation: str) -> List[Dict[str, An
     out = []
     for p in (data or {}).get("results", []):
         if (p.get("width") or 0) and p["width"] < 700:
+            continue
+        tags = " ".join(t.get("name", "") for t in (p.get("tags") or [])[:10] if isinstance(t, dict))
+        if not _looks_like_photo(p.get("title", "")) or _STRONG_NOT_PHOTO.search(tags):
             continue
         lic = f"CC {str(p.get('license', '')).upper()} {p.get('license_version', '')}".strip()
         out.append({"id": f"openverse:{p.get('id')}", "url": p.get("url"), "w": p.get("width", 0), "h": p.get("height", 0),
