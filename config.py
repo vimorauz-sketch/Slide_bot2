@@ -61,6 +61,16 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
+# Hosting platforms (Railway, Render, Heroku...) give the public port in $PORT and the bot must
+# listen on it; Railway also exposes the public domain, which gives the Mini App address for free.
+import os as _os  # noqa: E402
+if _os.getenv("PORT", "").isdigit():
+    settings.WEBHOOK_PORT = int(_os.environ["PORT"])
+if not settings.WEBAPP_URL:
+    _domain = _os.getenv("RAILWAY_PUBLIC_DOMAIN") or _os.getenv("RENDER_EXTERNAL_HOSTNAME") or ""
+    if _domain:
+        settings.WEBAPP_URL = f"https://{_domain.strip('/')}/webapp/"
+
 
 
 

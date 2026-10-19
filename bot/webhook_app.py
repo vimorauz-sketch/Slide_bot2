@@ -124,6 +124,27 @@ async def webapp_preview_handler(request: web.Request) -> web.StreamResponse:
     return web.FileResponse(path, headers={"Cache-Control": "public, max-age=604800"})
 
 
+async def diag_handler(request: web.Request) -> web.Response:
+    """Mini App diagnostics: open https://<domain>/diag in a browser."""
+    from config import settings
+    from bot.handlers.create_pres import webapp_url
+
+    thumbs = os.path.join(WEBAPP_DIR, "thumbs")
+    info = {
+        "ok": True,
+        "listening_port": settings.WEBHOOK_PORT,
+        "env_PORT": os.getenv("PORT", ""),
+        "env_RAILWAY_PUBLIC_DOMAIN": os.getenv("RAILWAY_PUBLIC_DOMAIN", ""),
+        "WEBAPP_URL_setting": settings.WEBAPP_URL,
+        "webapp_url_used_by_bot": webapp_url() or "(bo'sh: Mini App tugmasi chiqmaydi)",
+        "webapp_index_exists": os.path.exists(os.path.join(WEBAPP_DIR, "index.html")),
+        "catalog_exists": os.path.exists(os.path.join(WEBAPP_DIR, "catalog.json")),
+        "thumb_templates": len(os.listdir(thumbs)) if os.path.isdir(thumbs) else 0,
+        "request_host": request.host,
+    }
+    return web.json_response(info, dumps=lambda o: json.dumps(o, ensure_ascii=False, indent=1))
+
+
 def create_webhook_app(bot=None, dp=None) -> web.Application:
     app = web.Application()
     app[BOT_KEY], app[DP_KEY] = bot, dp
@@ -134,6 +155,8 @@ def create_webhook_app(bot=None, dp=None) -> web.Application:
         app.router.add_get(r"/webapp/preview/{key}/{n:\d+}.webp", webapp_preview_handler)
         app.router.add_static("/webapp/", WEBAPP_DIR, show_index=False)
     app.router.add_get("/health", health_handler)
+    app.router.add_get("/", health_handler)
+    app.router.add_get("/diag", diag_handler)
     app.router.add_post("/payments/click/prepare", click_prepare_handler)
     app.router.add_post("/payments/click/complete", click_complete_handler)
     app.router.add_post("/payments/payme", payme_handler)
@@ -147,4 +170,14 @@ async def run_webhook_app(host: str, port: int, bot=None, dp=None):
     site = web.TCPSite(runner, host, port)
     await site.start()
     logger.info(f"Payment webhook server listening on {host}:{port}")
+    from config import settings
+    from bot.handlers.create_pres import webapp_url
+    url = webapp_url()
+    if url:
+        logger.info(f"Mini App: {url}  (tekshirish: {url.split('/webapp')[0]}/diag)")
+    else:
+        logger.warning("Mini App O'CHIQ: WEBAPP_URL yo'q yoki noto'g'ri (%r). Railway: Settings -> Networking -> Generate Domain.",
+                       settings.WEBAPP_URL)
+    if not os.path.exists(os.path.join(WEBAPP_DIR, "index.html")):
+        logger.warning("webapp/index.html topilmadi: webapp papkasi serverga yuklanmagan!")
     return runner
