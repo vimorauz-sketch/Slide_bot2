@@ -27,7 +27,8 @@ logger = logging.getLogger(__name__)
 ROOT = Path(__file__).resolve().parents[2]
 CACHE_DIR = ROOT / "storage" / "image_cache"
 UA = "SlideLabBot/2.0 (Telegram presentation generator; contact via bot)"
-TIMEOUT_S = 10
+TIMEOUT_S = 5          # photo search (a slow source is skipped instead of holding the deck up)
+DOWNLOAD_TIMEOUT_S = 8
 
 # Slot sizes the renderer uses (px at 1x): the downloaded image is cropped to cover them.
 SLOT_PORTRAIT = (900, 1080)
@@ -121,7 +122,7 @@ async def _get_json(session, url: str, headers: Dict[str, str], params: Dict[str
 
 async def _get_bytes(session, url: str, headers: Optional[Dict[str, str]] = None) -> Optional[bytes]:
     try:
-        async with session.get(url, headers=headers or {"User-Agent": UA}, timeout=TIMEOUT_S * 2) as r:
+        async with session.get(url, headers=headers or {"User-Agent": UA}, timeout=DOWNLOAD_TIMEOUT_S) as r:
             if r.status != 200:
                 return None
             return await r.read()
@@ -271,7 +272,7 @@ class ImageResolver:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.providers = enabled_providers()
         self.used: set = set()
-        self.sem = asyncio.Semaphore(6)
+        self.sem = asyncio.Semaphore(10)
 
     def _cache_paths(self, key: str) -> Tuple[Path, Path]:
         return self.cache_dir / f"{key}.jpg", self.cache_dir / f"{key}.json"
@@ -287,22 +288,40 @@ class ImageResolver:
         order = list(self.providers)
         if kind == "illustration":  # scientific / historical pictures: generated or encyclopedic first
             order = [p for p in ("openai", "wikimedia") if p in order] + [p for p in order if p not in ("openai", "wikimedia")]
+        def paths(prov):
+            return self._cache_paths(_key(prov, query.lower(), orientation, kind, str(slot)))
+
+        # 1) a photo found earlier for the same query (any source) costs no network at all
+        for prov in order:
+            jpg, meta = paths(prov)
+            if jpg.exists() and meta.exists():
+                m = json.loads(meta.read_text(encoding="utf-8"))
+                if m.get("id") not in self.used:
+                    self.used.add(m.get("id"))
+                    return {"src": jpg.as_uri(), "credit": m.get("credit", ""), "is_art": False, "provider": prov}
+
+        def keep(prov, img):
+            data, info = img
+            jpg, meta = paths(prov)
+            jpg.write_bytes(data)
+            meta.write_text(json.dumps(info, ensure_ascii=False), encoding="utf-8")
+            self.used.add(info.get("id"))
+            return {"src": jpg.as_uri(), "credit": info.get("credit", ""), "is_art": False, "provider": prov}
+
         async with self.sem:
-            for prov in order:
-                key = _key(prov, query.lower(), orientation, kind, str(slot))
-                jpg, meta = self._cache_paths(key)
-                if jpg.exists() and meta.exists():
-                    m = json.loads(meta.read_text(encoding="utf-8"))
-                    if m.get("id") not in self.used:
-                        self.used.add(m.get("id"))
-                        return {"src": jpg.as_uri(), "credit": m.get("credit", ""), "is_art": False, "provider": prov}
+            # 2) the two preferred free sources are asked at the same time (the better one wins);
+            #    3) the others (and paid AI images) only if both found nothing
+            first = [p for p in order if p != "openai"][:2]
+            if first:
+                found = await asyncio.gather(*(self._from_provider(session, p, query, prompt, orientation, slot)
+                                               for p in first), return_exceptions=True)
+                for prov, img in zip(first, found):
+                    if img and not isinstance(img, BaseException) and img[1].get("id") not in self.used:
+                        return keep(prov, img)
+            for prov in [p for p in order if p not in first]:
                 img = await self._from_provider(session, prov, query, prompt, orientation, slot)
                 if img:
-                    data, info = img
-                    jpg.write_bytes(data)
-                    meta.write_text(json.dumps(info, ensure_ascii=False), encoding="utf-8")
-                    self.used.add(info.get("id"))
-                    return {"src": jpg.as_uri(), "credit": info.get("credit", ""), "is_art": False, "provider": prov}
+                    return keep(prov, img)
         return None
 
     async def _from_provider(self, session, prov, query, prompt, orientation, slot):
@@ -320,9 +339,7 @@ class ImageResolver:
             candidates = await search(session, query, orientation)
         if prov == "local" and all(c["id"] in self.used for c in candidates):
             self.used -= {c["id"] for c in candidates}  # development pool is small: allow repeats
-        for c in candidates:
-            if c["id"] in self.used:
-                continue
+        for c in [c for c in candidates if c["id"] not in self.used][:3]:  # never wait on a long list
             raw = Path(c["path"]).read_bytes() if c.get("path") else await _get_bytes(session, c["url"])
             data = _crop_cover(raw, slot) if raw else None
             if not data:

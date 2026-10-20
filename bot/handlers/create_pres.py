@@ -23,7 +23,10 @@ from bot.keyboards.reply import (
     get_date_keyboard, get_yes_no_keyboard, class_options, YES_TEXT, NO_TEXT
 )
 from services import ai_service
-from services.presentation import build_presentation
+from services.presentation import build_presentation, start_files
+from services import prefetch
+from bot.progress import ProgressMessage
+import asyncio
 from services.deck import themes
 from services import gallery
 
@@ -141,6 +144,7 @@ async def apply_template_choice(bot, chat_id: int, state: FSMContext, key) -> bo
     "🖼 Shablonlar", "🖼 Шаблоны", "🖼 Templates",
 ]))
 async def start_pres_wizard(message: Message, state: FSMContext):
+    prefetch.drop(message.from_user.id)
     await state.clear()
     await state.set_state(PresentationForm.template_selection)
 
@@ -422,7 +426,17 @@ async def process_level(message: Message, state: FSMContext):
                          "<i>Kerak bo‘lmasa «⏭ O‘tkazib yuborish» tugmasini bosing.</i>",
                          reply_markup=get_skip_keyboard(), parse_mode="HTML")
 
+async def _prefetch(message: Message, state: FSMContext) -> None:
+    """Starts (or restarts, if an answer changed) writing the text in the background."""
+    try:
+        if await _preview_allowed(message.from_user.id):
+            prefetch.ensure(message.from_user.id, await state.get_data())
+    except Exception:  # noqa: BLE001 - the deck is simply written later
+        logger.exception("prefetch could not start")
+
+
 async def _ask_teacher(message: Message, state: FSMContext) -> None:
+    await _prefetch(message, state)
     await state.set_state(PresentationForm.teacher_name)
     await message.answer(TEACHER_PROMPT, reply_markup=get_skip_keyboard(), parse_mode="HTML")
 
@@ -470,6 +484,7 @@ async def process_language(message: Message, state: FSMContext):
     t = message.text.lower()
     lang_code = "ru" if ("рус" in t or "rus" in t) else "en" if ("english" in t or "ingliz" in t) else "uz"
     await state.update_data(language=lang_code)
+    await _prefetch(message, state)  # restarts only if the language differs from the guess
     await state.set_state(PresentationForm.notes_choice)
     await message.answer("📝 <b>Qo‘shimcha talablaringiz bormi?</b>\n\n"
                          "<i>Masalan: «Rasmlar ko‘p bo‘lsin», «Matn qisqa va lo‘nda bo‘lsin».</i>",
@@ -499,6 +514,7 @@ async def _finish_notes(message: Message, state: FSMContext, notes: str) -> None
     if ocr and notes and ocr not in notes:
         notes = f"{ocr}. {notes}"
     await state.update_data(additional_notes=notes)
+    await _prefetch(message, state)  # extra wishes change the text: start over with them
     data = await state.get_data()
     _, _, price_per_slide = await _limits()
 
@@ -542,16 +558,17 @@ class _build_slot:
     """At most MAX_PARALLEL_BUILDS presentations are built at once; the rest wait in a queue
     (the server stays responsive however many people press «create» at the same moment)."""
 
-    def __init__(self, status=None):
-        self.status = status
+    def __init__(self, bar=None):
+        self.bar = bar
 
     async def __aenter__(self):
         global _build_waiting
         sem = _sem()
-        if sem.locked() and self.status is not None:
+        if sem.locked() and self.bar is not None:
+            self.bar.note = (f"⏳ <b>Navbatdasiz</b> ({_build_waiting + 1}-o‘rin) — hozir boshqa taqdimotlar "
+                             "tayyorlanmoqda, bir oz kuting…")
             try:
-                await self.status.edit_text(f"⏳ <b>Navbatdasiz</b> ({_build_waiting + 1}-o‘rin). "
-                                            "Hozir boshqa taqdimotlar tayyorlanmoqda, bir oz kuting…", parse_mode="HTML")
+                await self.bar.refresh(force=True)
             except Exception:  # noqa: BLE001
                 pass
         _build_waiting += 1
@@ -559,6 +576,8 @@ class _build_slot:
             await sem.acquire()
         finally:
             _build_waiting -= 1
+        if self.bar is not None:
+            self.bar.note = ""
         return self
 
     async def __aexit__(self, *exc):
@@ -624,13 +643,27 @@ async def _make_outline(message: Message, state: FSMContext, **kwargs) -> None:
     await _send_outline(message, outline, data)
 
 
-@router.callback_query(PresentationForm.confirmation, F.data.startswith("confirm_pres_"))
+@router.callback_query(PresentationForm.confirmation, F.data == "show_plan")
 async def confirm_and_show_outline(callback: CallbackQuery, state: FSMContext):
-    await _safe_answer(callback, "🧠 Reja tuzilmoqda...")
+    """«📋 Avval rejani ko‘rish»: the plan first (instant when it was already written in the background)."""
+    await _safe_answer(callback, "🧠 Reja tayyorlanmoqda...")
     try:
-        await callback.message.edit_text("🧠 <b>AI taqdimot rejasini tuzmoqda...</b>\n\nBu odatda 10–20 soniya oladi.", parse_mode="HTML")
+        await callback.message.edit_text("🧠 <b>AI taqdimot rejasini tuzmoqda...</b>", parse_mode="HTML")
     except Exception:  # noqa: BLE001
         pass
+    data = await state.get_data()
+    job = prefetch.get(callback.from_user.id, data)
+    if job is not None:
+        await state.set_state(PresentationForm.outline_wait)
+        try:
+            await asyncio.wait_for(job.outline_ready.wait(), timeout=120)
+        except asyncio.TimeoutError:
+            pass
+        if job.outline and await _state_is(state, PresentationForm.outline_wait):
+            await state.update_data(outline=job.outline, outline_count=1)
+            await state.set_state(PresentationForm.outline_review)
+            await _send_outline(callback.message, job.outline, data)
+            return
     await _make_outline(callback.message, state)
 
 
@@ -665,60 +698,68 @@ async def apply_outline_changes(message: Message, state: FSMContext):
         pass
 
 
-_PROGRESS = {
-    "write": "✍️ <b>AI slaydlar matnini yozmoqda…</b> (1/2)\n\nHar bir slayd reja asosida alohida yozilmoqda.",
-    "render": "🎨 <b>Rasmlar tanlanmoqda va slaydlar chizilmoqda…</b> (2/2)\n\nPowerPoint va PDF tayyorlanmoqda.",
-}
-
-
-@router.callback_query(PresentationForm.outline_review, F.data == "outline_ok")
-async def generate_and_preview_presentation(callback: CallbackQuery, state: FSMContext):
-    await _safe_answer(callback, "⚡️ Prezentatsiya tayyorlanmoqda...")
+async def _build_and_send(message: Message, user_id: int, state: FSMContext, back_state) -> None:
+    """Makes the deck (reusing text written in the background when the answers still match),
+    shows an animated progress bar, sends the previews and the payment buttons; the PDF and PPTX
+    are finished in the background."""
     await state.set_state(PresentationForm.generating)  # a second press of the button is ignored
-
     data = await state.get_data()
-    if not await _preview_allowed(callback.from_user.id):
-        await state.set_state(PresentationForm.outline_review)
-        await callback.message.answer(
+    if not await _preview_allowed(user_id):
+        await state.set_state(back_state)
+        await message.answer(
             f"⚠️ Bugun {settings.MAX_PREVIEWS_PER_DAY} ta taqdimot namunasini yaratdingiz — bu kunlik chegara.\n"
             "Avvalgi buyurtmalaringizni to‘lab yuklab olishingiz mumkin yoki ertaga davom eting.")
         return
-    # the main menu comes back here (the wizard's reply keyboards are no longer needed); the status
+    # the main menu comes back here (the wizard's reply keyboards are no longer needed); the progress
     # message is separate because messages with a reply keyboard cannot be edited later
-    await callback.message.answer("✅ Reja tasdiqlandi. Taqdimot tayyor bo‘lishi bilan shu yerga yuboraman.",
-                                  reply_markup=get_main_menu_keyboard())
-    status = await callback.message.answer(_PROGRESS["write"], parse_mode="HTML")
-
-    async def progress(stage: str) -> None:
-        if stage in _PROGRESS:
-            await status.edit_text(_PROGRESS[stage], parse_mode="HTML")
+    await message.answer("✅ Qabul qilindi! Taqdimot tayyor bo‘lishi bilan shu yerga yuboraman.",
+                         reply_markup=get_main_menu_keyboard())
+    status = await message.answer("🎨 <b>Taqdimotingiz tayyorlanmoqda</b>\n\n<code>▱▱▱▱▱▱▱▱▱▱▱▱</code>  <b>0%</b>",
+                                  parse_mode="HTML")
+    bar = ProgressMessage(status).start()
 
     import uuid
-    order_uuid = str(uuid.uuid4())
-    storage_dir = os.path.join(_project_root(), "storage", order_uuid)
+    storage_dir = os.path.join(_project_root(), "storage", str(uuid.uuid4()))
     tpl_id = data.get("template_id", "05_nature_organic")
     slide_count = int(data.get("slide_count", 10))
+    outline = data.get("outline")
 
     try:
-        async with _build_slot(status):
-            result = await build_presentation(data, storage_dir, outline=data.get("outline"), progress=progress)
+        async with _build_slot(bar):
+            content = None
+            job = prefetch.take(user_id, data)
+            if job is not None and (outline is None or outline == job.outline):
+                # written in the background while the user was answering: follow its progress
+                while not job.task.done():
+                    await bar.set("write", job.done, job.total or slide_count)
+                    await asyncio.sleep(0.5)
+                try:
+                    content = job.task.result()
+                except Exception:  # noqa: BLE001 - write it again below
+                    logger.exception("background writing failed; writing again")
+            elif job is not None:
+                job.cancel()
+            result = await build_presentation(data, storage_dir, outline=outline, progress=bar.set, content=content)
     except Exception:
+        await bar.stop()
         logger.exception("Presentation build failed")
         if await _state_is(state, PresentationForm.generating):
-            await state.set_state(PresentationForm.outline_review)  # «✅ Rejani tasdiqlash» can be pressed again
-        await callback.message.answer(
-            "⚠️ Taqdimotni yaratishda xatolik yuz berdi. Birozdan so‘ng rejadagi «✅ Rejani tasdiqlash» "
-            "tugmasini qayta bosing yoki /start bilan boshidan boshlang.")
+            await state.set_state(back_state)  # the create button can be pressed again
+        await message.answer(
+            "⚠️ Taqdimotni yaratishda xatolik yuz berdi. Birozdan so‘ng «✅» tugmasini qayta bosing "
+            "yoki /start bilan boshidan boshlang.")
         return
+    start_files(storage_dir)  # PDF + PPTX are ready long before anyone pays
+    await bar.finish()
 
     async with AsyncSessionLocal() as session:
         order = await repository.create_presentation_order(
             session=session,
-            user_id=callback.from_user.id,
+            user_id=user_id,
             topic=data.get("topic", ""),
             subject=data.get("subject", ""),
             slide_count=slide_count,
-            template_id=tpl_id,
+            template_id=tpl_id if isinstance(tpl_id, str) else "custom_ai",
             total_price=data.get("total_price", 3500),
             pptx_path=result.pptx_path,
             pdf_path=result.pdf_path
@@ -740,9 +781,9 @@ async def generate_and_preview_presentation(callback: CallbackQuery, state: FSMC
         media_group.append(InputMediaPhoto(media=FSInputFile(result.overview)))
     try:
         if len(media_group) >= 2:
-            await callback.message.answer_media_group(media=media_group[:10])
+            await message.answer_media_group(media=media_group[:10])
         elif media_group:
-            await callback.message.answer_photo(media_group[0].media, caption=media_group[0].caption)
+            await message.answer_photo(media_group[0].media, caption=media_group[0].caption)
     except Exception:  # noqa: BLE001 - the payment message must still arrive
         logger.exception("preview images could not be sent")
 
@@ -763,9 +804,26 @@ async def generate_and_preview_presentation(callback: CallbackQuery, state: FSMC
         if settings.PAYMENT_ENV.upper() == "PRODUCTION"
         else get_payment_inline_keyboard(order_id, total_price)
     )
-    await callback.message.answer(warning_text, reply_markup=payment_keyboard, parse_mode="HTML")
+    await message.answer(warning_text, reply_markup=payment_keyboard, parse_mode="HTML")
     if await _state_is(state, PresentationForm.generating):  # never wipe a new order started meanwhile
         await state.clear()
+
+
+@router.callback_query(PresentationForm.confirmation, F.data.startswith("confirm_pres_"))
+async def confirm_and_create(callback: CallbackQuery, state: FSMContext):
+    """«✅ Tasdiqlash va yaratish»: straight to the slides, no plan review."""
+    await _safe_answer(callback, "⚡️ Taqdimot tayyorlanmoqda...")
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception:  # noqa: BLE001
+        pass
+    await _build_and_send(callback.message, callback.from_user.id, state, PresentationForm.confirmation)
+
+
+@router.callback_query(PresentationForm.outline_review, F.data == "outline_ok")
+async def generate_and_preview_presentation(callback: CallbackQuery, state: FSMContext):
+    await _safe_answer(callback, "⚡️ Prezentatsiya tayyorlanmoqda...")
+    await _build_and_send(callback.message, callback.from_user.id, state, PresentationForm.outline_review)
 
 
 @router.callback_query(F.data == "cancel_pres")
@@ -775,6 +833,7 @@ async def cancel_presentation_creation(callback: CallbackQuery, state: FSMContex
         await callback.message.answer("⏳ Taqdimot allaqachon tayyorlanmoqda, bir oz kuting.")
         return
     await state.clear()
+    prefetch.drop(callback.from_user.id)
     try:
         await callback.message.edit_text("❌ Prezentatsiya yaratish bekor qilindi.", parse_mode="HTML")
     except Exception:  # noqa: BLE001

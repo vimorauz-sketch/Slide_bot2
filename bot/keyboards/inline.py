@@ -49,7 +49,8 @@ def get_gallery_colors_keyboard(colors) -> InlineKeyboardMarkup:
 
 def get_confirmation_inline_keyboard(order_id: str) -> InlineKeyboardMarkup:
     kb = [
-        [InlineKeyboardButton(text="✅ Tasdiqlash va Yaratish", callback_data=f"confirm_pres_{order_id}")],
+        [InlineKeyboardButton(text="✅ Tasdiqlash va yaratish", callback_data=f"confirm_pres_{order_id}")],
+        [InlineKeyboardButton(text="📋 Avval rejani ko‘rish", callback_data="show_plan")],
         [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_pres")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)

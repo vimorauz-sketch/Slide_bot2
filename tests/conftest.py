@@ -68,6 +68,8 @@ def no_network_images(monkeypatch):
     monkeypatch.setattr("config.settings.OPENVERSE_ENABLED", False)
     monkeypatch.setattr("config.settings.LOCAL_PHOTO_DIR", "")
     monkeypatch.setattr("config.settings.AI_IMAGES_ENABLED", False)
+    # never call the real OpenAI API from tests (tests that need it patch get_openai_client)
+    monkeypatch.setattr("config.settings.OPENAI_API_KEY", "")
     return None
 
 
@@ -79,3 +81,17 @@ async def close_render_browser():
     from services.deck import render as deck_render
     if deck_render._pw_state.get("browser") is not None:
         await deck_render.shutdown_browser()
+
+
+@pytest.fixture(autouse=True)
+async def finish_background_files():
+    """PDF/PPTX are made by background tasks: let them finish inside the test that started them."""
+    yield
+    import asyncio
+    from services import presentation
+    from services import prefetch
+    tasks = list(presentation._file_tasks.values()) + [j.task for j in prefetch._jobs.values()]
+    presentation._file_tasks.clear()
+    prefetch._jobs.clear()
+    if tasks:
+        await asyncio.gather(*tasks, return_exceptions=True)

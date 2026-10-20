@@ -144,10 +144,26 @@ async def _get_paid_order_or_deny(callback: CallbackQuery, order_id: str):
             await callback.answer("⚠️ Avval to'lovni tasdiqlang.", show_alert=True)
             return None
 
-        return order
+    try:  # answered now: preparing the file can take longer than Telegram waits for an answer
+        await callback.answer("⏳ Fayl yuborilmoqda…")
+    except Exception:  # noqa: BLE001
+        pass
+    return order
+
+
+async def _wait_files(order) -> None:
+    """The PDF/PPTX are built in the background after the previews; wait for them if needed."""
+    path = order.pdf_path or order.pptx_path
+    if path and not (os.path.exists(order.pdf_path or "") and os.path.exists(order.pptx_path or "")):
+        from services.presentation import ensure_files
+        try:
+            await ensure_files(os.path.dirname(path))
+        except Exception:  # noqa: BLE001 - the PDF fallback below still works
+            logger.exception("files for order %s could not be built", order.id)
 
 
 async def _ensure_pdf_path(order) -> str:
+    await _wait_files(order)
     if order.pdf_path and os.path.exists(order.pdf_path):
         return order.pdf_path
 
@@ -173,6 +189,7 @@ async def _send_pdf(callback: CallbackQuery, order):
 
 
 async def _send_pptx(callback: CallbackQuery, order):
+    await _wait_files(order)
     if order.pptx_path and os.path.exists(order.pptx_path):
         pptx_file = FSInputFile(order.pptx_path, filename=_file_name(order.topic, "pptx"))
         await callback.message.answer_document(

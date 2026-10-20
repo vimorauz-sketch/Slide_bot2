@@ -128,6 +128,8 @@ async def cancel_wizard(message: Message, state: FSMContext):
         await message.answer("⏳ Taqdimot allaqachon tayyorlanmoqda — tayyor bo‘lgach yuboriladi.")
         return
     await state.clear()
+    from services import prefetch
+    prefetch.drop(message.from_user.id)
     lang = "uz"
     try:
         async with AsyncSessionLocal() as session:

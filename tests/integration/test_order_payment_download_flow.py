@@ -60,9 +60,12 @@ async def test_full_user_journey_from_wizard_to_download(
     assert order.status == "PREVIEW_READY"
     assert order.slide_count == 8
     assert order.template_id == "05_nature_organic"
+    assert order.pptx_path.startswith(sandboxed_create_pres)  # proves it never touched the real storage/ dir
+    # the PDF and PPTX are built in the background right after the previews were sent
+    from services.presentation import ensure_files
+    await ensure_files(os.path.dirname(order.pptx_path))
     assert os.path.exists(order.pptx_path)
     assert os.path.exists(order.pdf_path)
-    assert order.pptx_path.startswith(sandboxed_create_pres)  # proves it never touched the real storage/ dir
 
     prs = Presentation(order.pptx_path)
     assert len(prs.slides) == 8

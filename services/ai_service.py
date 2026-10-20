@@ -232,12 +232,34 @@ Rules:
 {shape}"""
 
 
+_fast_failed = False  # set when the fast model / effort setting is rejected: then the main model is used
+
+
+def _fast_kwargs() -> Dict[str, Any]:
+    """Model and reasoning effort for writing slides: a low-latency model thinking briefly is several
+    times faster than a big model thinking at its default (medium) effort, and good enough for slides."""
+    kw: Dict[str, Any] = {"model": (getattr(settings, "OPENAI_FAST_MODEL", "") or _model()).strip()}
+    effort = (getattr(settings, "OPENAI_REASONING_EFFORT", "") or "").strip().lower()
+    if effort and effort != "default":
+        kw["reasoning_effort"] = effort
+    return kw
+
+
 async def _chat_json(client: AsyncOpenAI, system: str, user: str) -> Dict[str, Any]:
-    resp = await client.chat.completions.create(
-        model=_model(),
-        messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-        response_format={"type": "json_object"},
-    )
+    global _fast_failed
+    messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
+    kw = {"model": _model()} if _fast_failed else _fast_kwargs()
+    try:
+        resp = await client.chat.completions.create(messages=messages, response_format={"type": "json_object"}, **kw)
+    except Exception as e:  # noqa: BLE001
+        text = str(e).lower()
+        if _fast_failed or not any(w in text for w in ("model", "reasoning", "effort", "unsupported", "invalid", "400", "404")):
+            raise
+        # the account has no access to the fast model, or it does not accept the effort value
+        logger.warning("Fast AI settings rejected (%s); using OPENAI_MODEL=%s from now on", e, _model())
+        _fast_failed = True
+        resp = await client.chat.completions.create(messages=messages, response_format={"type": "json_object"},
+                                                    model=_model())
     return json.loads(resp.choices[0].message.content)
 
 
@@ -338,17 +360,39 @@ async def _write_slide(client, data, outline, idx, sem, theme) -> Dict[str, Any]
     return out
 
 
-async def generate_presentation_content(data: Dict[str, Any], outline: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    """Full deck content in the renderer's format. Pass the approved `outline` when there is one."""
+async def generate_presentation_content(data: Dict[str, Any], outline: Optional[Dict[str, Any]] = None,
+                                        on_progress=None) -> Dict[str, Any]:
+    """Full deck content in the renderer's format. Pass the approved `outline` when there is one.
+    on_progress(done, total) is called as the plan and the slides are finished (for the progress bar)."""
+
+    async def report(done: int, total: int) -> None:
+        if on_progress:
+            try:
+                await on_progress(done, total)
+            except Exception:  # noqa: BLE001 - progress must never break the build
+                pass
+
     client = get_openai_client()
     if not client:
         logger.warning("OpenAI API key not configured. Using the built-in content generator.")
-        return generate_mock_presentation(data, outline)
+        content = generate_mock_presentation(data, outline)
+        await report(1, 1)
+        return content
     if outline is None:
         outline = await generate_outline(data)
     from services.deck.themes import get_theme
     theme = get_theme(data.get("custom_design_spec") or data.get("template_id", "05_nature_organic"))
-    sem = asyncio.Semaphore(6)
+    sem = asyncio.Semaphore(max(1, int(getattr(settings, "AI_PARALLEL_REQUESTS", 10))))
+    total = len(outline["slides"]) + 1
+    done = 0
+
+    async def counted(coro):
+        nonlocal done
+        try:
+            return await coro
+        finally:
+            done += 1
+            await report(done, total)
     try:
         cover_task = _chat_json(client, (
             "Return JSON {\"subtitle\": \"one-line subtitle, max 120 chars\", \"visual\": {\"kind\": \"photo\", "
@@ -356,7 +400,8 @@ async def generate_presentation_content(data: Dict[str, Any], outline: Optional[
             f"Language of the subtitle: {LANG_RULES.get(data.get('language', 'uz'))}. Icons: {', '.join(deck_icons.curated_names()[:60])}"),
             f"Title: {outline.get('title')}\nTopic: {data.get('topic')}\nSubject: {data.get('subject')}")
         results = await asyncio.gather(
-            cover_task, *(_write_slide(client, data, outline, i, sem, theme) for i in range(len(outline["slides"]))),
+            counted(cover_task), *(counted(_write_slide(client, data, outline, i, sem, theme))
+                                   for i in range(len(outline["slides"]))),
             return_exceptions=True)
     except Exception as e:  # pragma: no cover - gather with return_exceptions should not raise
         logger.error("Content generation failed: %s", e)

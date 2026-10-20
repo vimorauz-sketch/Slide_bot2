@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-5.6-sol"
     OPENAI_VISION_MODEL: str = "gpt-5.6-sol"
+    # Slides and plans are written with a low-latency model thinking briefly (several times faster).
+    # Leave OPENAI_FAST_MODEL empty to use OPENAI_MODEL; OPENAI_REASONING_EFFORT: none/minimal/low/medium/default.
+    OPENAI_FAST_MODEL: str = "gpt-5.6-luna"
+    OPENAI_REASONING_EFFORT: str = "low"
+    AI_PARALLEL_REQUESTS: int = 10      # slides written at the same time
     DEFAULT_PRICE_PER_SLIDE: int = 350
     MIN_SLIDES_PER_ORDER: int = 5
     MAX_SLIDES_PER_ORDER: int = 30
