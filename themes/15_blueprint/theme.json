@@ -1,0 +1,53 @@
+{
+  "code": "15",
+  "name": "Blueprint",
+  "category": "Muhandislik • Arxitektura • Fizika • Texnika",
+  "tagline": "Texnik chizma: ko‘k fon, oq chiziqlar, o‘lcham belgilari",
+  "mode": "dark",
+  "fonts": {
+    "title": "manrope",
+    "body": "manrope",
+    "extra": [
+      "jetbrains-mono"
+    ]
+  },
+  "pptx_fonts": {
+    "title": "Arial",
+    "body": "Arial"
+  },
+  "palette": {
+    "bg": "#0D3563",
+    "bg2": "#124A85",
+    "surface": "#0F3F72",
+    "text": "#F2F8FF",
+    "muted": "#B8CDE6",
+    "primary": "#FFFFFF",
+    "secondary": "#7CC4FF",
+    "accent": "#FFD166",
+    "on_primary": "#0D3563",
+    "ink": "#082445"
+  },
+  "art": "blueprint",
+  "cover_variant": "split",
+  "cards_variant": "row",
+  "image_style": "technical blueprint drawing, white lines on blue, engineering schematic",
+  "writing_tone": "Technical and exact: components, parameters, units, cause and effect.",
+  "recipe": {
+    "type": "dark",
+    "seeds": "dark",
+    "kwargs": {
+      "bg_L": 0.33,
+      "bg_C": 0.09,
+      "prim_L": 0.97,
+      "prim_C": 0.03
+    }
+  },
+  "tags": [
+    "engineering",
+    "science",
+    "tech"
+  ],
+  "sticker_style": "line",
+  "sticker_place": "cards",
+  "art_sticker": true
+}

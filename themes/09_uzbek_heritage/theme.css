@@ -1,0 +1,49 @@
+:root {
+  --bg: #F4EBDD; --bg2: #EADCC6; --surface: #FBF5EA; --text: #3B2119; --muted: #7A5E4E;
+  --primary: #6E1423; --secondary: #1F6F64; --accent: #C49A4A; --on-primary: #FBF5EA; --ink: #4A0C18;
+  --gold-light: color-mix(in srgb, var(--accent) 65%, #fff);
+  --border: color-mix(in srgb, var(--accent) 45%, var(--bg)); --rule: color-mix(in srgb, var(--accent) 55%, transparent);
+  --c4: color-mix(in srgb, var(--primary) 60%, var(--accent));
+  --pyr-to: var(--accent);
+  --title-weight: 700; --title-tracking: -0.005em; --title-lh: 1.02; --item-weight: 700; --num-weight: 700;
+  --fs-title: 84px; --fs-cover: 124px; --fs-item: 38px; --fs-body: 29px;
+  --radius: 6px; --radius-sm: 4px; --img-radius: 0px; --icon-radius: 0;
+  --card-bg: var(--surface); --card-border: 1px solid var(--border); --card-shadow: 0 1px 0 var(--border), 0 14px 30px color-mix(in srgb, var(--primary) 7%, transparent);
+  --icon-bg: var(--primary); --icon-fg: var(--gold-light);
+  --cycle-fill: var(--bg2);
+  --eyebrow-color: var(--secondary); --num-color: var(--primary); --title-color: color-mix(in srgb, var(--primary) 70%, var(--ink));
+  --overlay: linear-gradient(180deg, color-mix(in srgb, var(--ink) 15%, transparent) 0%, color-mix(in srgb, var(--ink) 85%, transparent) 100%);
+  --overlay-text: color-mix(in srgb, var(--bg) 60%, #fff);
+  --th-bg: var(--primary); --th-fg: var(--overlay-text); --takeaway-bg: var(--primary); --takeaway-fg: var(--overlay-text);
+  --quote-style: italic; --quote-weight: 600; --formula-bg: var(--surface);
+}
+.slide { background: var(--bg); }
+.slide::after { content: ""; position: absolute; inset: 28px; border: 2px solid var(--accent); outline: 1px solid var(--accent); outline-offset: -10px; pointer-events: none; z-index: 1; }
+.eyebrow { font-family: var(--font-body); letter-spacing: .2em; font-weight: 700; }
+.eyebrow::before { width: 14px; height: 14px; border-radius: 0; transform: rotate(45deg); background: var(--accent); }
+.icon-badge { clip-path: polygon(50% 0, 64% 15%, 85% 15%, 85% 36%, 100% 50%, 85% 64%, 85% 85%, 64% 85%, 50% 100%, 36% 85%, 15% 85%, 15% 64%, 0 50%, 15% 36%, 15% 15%, 36% 15%); width: 96px; height: 96px; }
+.icon-badge .ico { width: 40px; height: 40px; }
+.media-bleed { top: 70px; bottom: 70px; right: 80px; width: calc(44% - 80px); border-radius: 50% 50% 0 0 / 28% 28% 0 0; border: 6px solid var(--accent); }
+.media-bleed.left { left: 80px; right: auto; }
+.with-bleed.media-right { padding-right: calc(44% + 80px); }
+.with-bleed.media-left { padding-left: calc(44% + 90px); }
+.with-bleed.media-left .s-foot { left: calc(44% + 90px); }
+.with-bleed.media-right .s-foot { right: calc(44% + 80px); }
+.card { border-top: 6px solid var(--primary); }
+.card:nth-child(even) { border-top-color: var(--secondary); }
+.step .dot { background: transparent; color: var(--gold-light); box-shadow: none; font-size: 30px; }
+.step .dot::before { content: ""; position: absolute; inset: 12px; background: var(--primary); transform: rotate(45deg); z-index: -1; box-shadow: 0 0 0 6px var(--bg), 0 0 0 8px var(--accent); }
+.step:not(:last-child)::after { background: var(--accent); height: 2px; }
+.bullets li .mk { border-radius: 0; transform: rotate(45deg); width: 12px; height: 12px; background: var(--accent); }
+.tl::before { background: var(--accent); height: 2px; }
+.tl .pin { border-radius: 0; transform: rotate(45deg); border: 4px solid var(--primary); background: var(--gold-light); }
+.agenda-list .n { color: var(--accent); }
+.cmp .vs { font-family: var(--font-title); font-style: italic; border-color: var(--accent); color: var(--primary); }
+.layout-cover .c-title, .layout-closing .cl-title { color: var(--gold-light); }
+.layout-cover.v-center .kicker { color: var(--gold-light); }
+.layout-cover.v-center .c-sub, .layout-cover.v-center .meta .k { color: color-mix(in srgb, var(--gold-light) 70%, #fff); }
+.layout-cover.v-center .meta .v { color: var(--overlay-text); }
+.layout-cover .bg-media.is-art::after { background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--ink) 80%, transparent) 0%, color-mix(in srgb, var(--ink) 45%, transparent) 75%); }
+.slide.layout-cover::after, .slide.layout-closing::after, .slide.layout-highlight::after { border-color: var(--gold-light); outline-color: var(--gold-light); }
+.decor svg { width: 150px; height: 150px; color: var(--accent); }
+.decor svg .star { fill: var(--primary); stroke: var(--accent); } .decor svg .dot { fill: var(--accent); }

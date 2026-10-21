@@ -1,0 +1,50 @@
+{
+  "code": "12",
+  "name": "Pastel Playful",
+  "category": "Maktab • Boshlang‘ich ta’lim • Bolalar • Ijod",
+  "tagline": "Pastel ranglar, yumaloq shakllar, stikerlar va quvnoq kayfiyat",
+  "mode": "light",
+  "fonts": {
+    "title": "nunito",
+    "body": "nunito"
+  },
+  "pptx_fonts": {
+    "title": "Calibri",
+    "body": "Calibri"
+  },
+  "palette": {
+    "bg": "#FFF7F0",
+    "bg2": "#FFE3D3",
+    "surface": "#FFFFFF",
+    "text": "#2B2233",
+    "muted": "#6A5F72",
+    "primary": "#7B4FD6",
+    "secondary": "#FF7AA2",
+    "accent": "#FFD24D",
+    "on_primary": "#FFFFFF",
+    "ink": "#2B2233"
+  },
+  "art": "blobs",
+  "cover_variant": "split",
+  "cards_variant": "row",
+  "image_style": "cheerful colorful illustration, soft pastel colors, friendly, playful, for children",
+  "writing_tone": "Friendly and simple, for school pupils. Short sentences, vivid everyday examples, encouraging tone.",
+  "recipe": {
+    "type": "light",
+    "seeds": "light",
+    "kwargs": {
+      "tint": 0.03,
+      "bg_L": 0.975,
+      "prim_L": 0.52,
+      "prim_C": 0.17
+    }
+  },
+  "tags": [
+    "school",
+    "creative",
+    "kids"
+  ],
+  "sticker_style": "diecut",
+  "sticker_place": "both",
+  "art_sticker": true
+}

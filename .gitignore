@@ -1,0 +1,29 @@
+# Environment & Secrets
+.env
+*.env
+
+# Databases & Local Storage
+*.db
+slidelab.db
+storage/
+logs/
+
+# Python Cache & Virtual Envs
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+ENV/
+
+# IDE & Editor Configs
+.idea/
+.vscode/
+*.swp
+
+# Test & lint artifacts
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+coverage.xml
+.coverage

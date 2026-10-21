@@ -1,0 +1,10 @@
+{{ m.head(s, lead=False) }}
+<div class="s-body">
+  <div class="formula-box" data-t>{{ s.formula|formula }}</div>
+  {{ m.t(s.caption, 'p', 'formula-cap') }}
+  {%- if s.terms %}
+  <div class="terms" style="--n:{{ s.terms|length }}">
+    {%- for tm in s.terms %}<div class="term"><div class="sym" data-t>{{ tm.symbol|formula }}</div>{{ m.t(tm.meaning) }}</div>{% endfor %}
+  </div>
+  {%- endif %}
+</div>

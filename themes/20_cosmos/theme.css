@@ -1,0 +1,38 @@
+:root {
+  --bg: #05061A; --bg2: #11133A; --surface: #0E1033; --text: #F4F5FF; --muted: #A9AED6;
+  --primary: #8E7BFF; --secondary: #3FD0FF; --accent: #FF9E5E; --on-primary: #FFFFFF; --ink: #05061A;
+  --border: color-mix(in srgb, var(--primary) 30%, transparent); --rule: color-mix(in srgb, var(--muted) 22%, transparent);
+  --title-weight: 400; --title-transform: uppercase; --title-tracking: 0.02em; --title-lh: 1.05; --item-weight: 400; --num-weight: 400;
+  --fs-title: 64px; --fs-cover: 100px;
+  --radius: 22px; --img-radius: 50%; --icon-radius: 50%;
+  --card-bg: color-mix(in srgb, var(--surface) 75%, transparent); --card-border: 1px solid var(--border);
+  --card-shadow: 0 0 40px color-mix(in srgb, var(--primary) 15%, transparent);
+  --icon-bg: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--secondary) 80%, #fff), var(--primary)); --icon-fg: #FFFFFF;
+  --cycle-fill: color-mix(in srgb, var(--primary) 18%, var(--bg));
+  --eyebrow-color: var(--secondary); --num-color: var(--secondary); --title-color: #FFFFFF;
+  --overlay: linear-gradient(90deg, color-mix(in srgb, var(--ink) 92%, transparent), color-mix(in srgb, var(--ink) 10%, transparent));
+  --th-bg: color-mix(in srgb, var(--primary) 45%, var(--bg)); --th-fg: #fff;
+  --takeaway-bg: linear-gradient(135deg, var(--primary), var(--secondary)); --takeaway-fg: #fff;
+  --formula-bg: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+.slide { background:
+  radial-gradient(1px 1px at 10% 20%, #fff, transparent), radial-gradient(1.5px 1.5px at 30% 70%, #fff, transparent),
+  radial-gradient(1px 1px at 55% 15%, #fff, transparent), radial-gradient(2px 2px at 75% 45%, #fff, transparent),
+  radial-gradient(1px 1px at 90% 80%, #fff, transparent), radial-gradient(1.5px 1.5px at 45% 90%, #fff, transparent),
+  radial-gradient(1px 1px at 20% 50%, #fff, transparent), radial-gradient(1px 1px at 65% 60%, #fff, transparent),
+  radial-gradient(900px 600px at 85% 15%, color-mix(in srgb, var(--primary) 28%, transparent), transparent 60%),
+  radial-gradient(800px 600px at 10% 95%, color-mix(in srgb, var(--secondary) 18%, transparent), transparent 60%), var(--bg); }
+.eyebrow::before { width: 12px; height: 12px; border-radius: 50%; background: var(--secondary); box-shadow: 0 0 14px var(--secondary); }
+.card h3, .step h3, .stat .lbl, .ilist h3, .cmp .side h3, .tl h3, .cycle-list h3 { font-family: var(--font-title); text-transform: uppercase; letter-spacing: .03em; }
+.stat .val { color: var(--secondary); text-shadow: 0 0 30px color-mix(in srgb, var(--secondary) 45%, transparent); }
+.step .dot { background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--secondary) 80%, #fff), var(--primary)); box-shadow: 0 0 0 10px var(--bg), 0 0 30px color-mix(in srgb, var(--primary) 60%, transparent); }
+.step:not(:last-child)::after { background: linear-gradient(90deg, var(--primary), transparent); }
+.bullets li .mk { background: var(--secondary); box-shadow: 0 0 10px var(--secondary); }
+.media-bleed { top: 140px; bottom: 140px; right: 90px; width: 800px; height: 800px; border-radius: 50%; box-shadow: 0 0 0 2px var(--border), 0 0 0 30px color-mix(in srgb, var(--primary) 6%, transparent), 0 0 120px color-mix(in srgb, var(--primary) 35%, transparent); }
+.media-bleed.left { left: 90px; right: auto; }
+.with-bleed.media-right { padding-right: 960px; }
+.with-bleed.media-left { padding-left: 960px; }
+.with-bleed.media-left .s-foot { left: 960px; }
+.with-bleed.media-right .s-foot { right: 960px; }
+.tl .pin { border-color: var(--secondary); background: var(--bg); box-shadow: 0 0 14px var(--secondary); }
+.cmp .vs { background: var(--bg2); border-color: var(--border); color: #fff; }

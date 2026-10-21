@@ -1,0 +1,14 @@
+{{ m.head(s) }}
+<div class="s-body">
+  {%- set n_items = s['items']|length %}
+  <div class="cards{% if n_items == 4 and s.variant == 'grid' %} grid-2x2{% endif %}" style="--n:{{ n_items }}">
+    {%- for it in s['items'] %}
+    <div class="card{% if s.item_photos %} has-photo{% endif %}">
+      {%- if s.item_photos %}{{ m.photo(it.image) }}{% endif %}
+      {{ m.icon_badge(it.icon, it.title, s.item_stickers[loop.index0] if s.item_stickers else '') }}
+      {%- if n_items == 4 and s.variant == 'grid' %}<div class="card-txt">{{ m.t(it.title, 'h3') }}{{ m.t(it.text) }}</div>
+      {%- else %}{{ m.t(it.title, 'h3') }}{{ m.t(it.text) }}{% endif %}
+    </div>
+    {%- endfor %}
+  </div>
+</div>

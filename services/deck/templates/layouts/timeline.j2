@@ -1,0 +1,12 @@
+{{ m.head(s) }}
+<div class="s-body">
+  <div class="tl" style="--n:{{ s.events|length }}">
+    {%- for ev in s.events %}
+    <div class="ev">
+      <div class="date" data-t>{{ ev.date|rich }}</div>
+      <div class="pin"></div>
+      {{ m.t(ev.title, 'h3') }}{{ m.t(ev.text) }}
+    </div>
+    {%- endfor %}
+  </div>
+</div>

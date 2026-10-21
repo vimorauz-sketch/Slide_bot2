@@ -1,0 +1,51 @@
+{
+  "code": "10",
+  "name": "3D Future",
+  "category": "Sun’iy intellekt • Fan • Innovatsiya • Muhandislik",
+  "tagline": "Chuqur ko‘k fon, yaltiroq 3D shakllar, shisha kartalar",
+  "mode": "dark",
+  "fonts": {
+    "title": "exo-2",
+    "body": "raleway"
+  },
+  "pptx_fonts": {
+    "title": "Arial",
+    "body": "Arial"
+  },
+  "palette": {
+    "bg": "#030716",
+    "bg2": "#0E1A44",
+    "surface": "#0C1638",
+    "text": "#F5F8FF",
+    "muted": "#A3B3D4",
+    "primary": "#4F7CFF",
+    "secondary": "#22D3EE",
+    "accent": "#A855F7",
+    "on_primary": "#FFFFFF",
+    "ink": "#030716"
+  },
+  "art": "glossy3d",
+  "cover_variant": "full",
+  "cards_variant": "grid",
+  "image_style": "glossy 3D render, futuristic, blue and violet iridescent light, depth of field, octane render",
+  "writing_tone": "Visionary and forward-looking, still factual. Crisp, confident sentences.",
+  "pdf_mode": "raster",
+  "recipe": {
+    "type": "dark",
+    "seeds": "dark",
+    "kwargs": {
+      "bg_L": 0.14,
+      "bg_C": 0.05,
+      "prim_L": 0.7,
+      "prim_C": 0.18
+    }
+  },
+  "tags": [
+    "tech",
+    "science",
+    "dark"
+  ],
+  "sticker_style": "glass",
+  "sticker_place": "cards",
+  "art_sticker": true
+}

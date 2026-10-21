@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="{{ deck.language }}"><head><meta charset="utf-8">
+<style>{{ font_css|safe }}</style>
+<style>{{ base_css|safe }}</style>
+<style>{{ theme_css|safe }}</style>
+</head>
+<body class="theme-{{ theme.id }} mode-{{ theme.mode }}">
+<div class="deck {{ theme.get('trait_classes', '') }}">
+{%- for s in slides %}
+{%- set n = loop.index %}{% set total = slides|length %}
+{% include 'slide.j2' %}
+{%- endfor %}
+</div>
+</body></html>

@@ -1,0 +1,50 @@
+{
+  "code": "07",
+  "name": "Neon Creative",
+  "category": "Dizayn • Media • Reklama • Ijodkorlik • SMM",
+  "tagline": "Qora fon, laym-yashil neon, katta qalin sarlavhalar",
+  "mode": "dark",
+  "fonts": {
+    "title": "oswald",
+    "body": "fira-sans"
+  },
+  "pptx_fonts": {
+    "title": "Arial",
+    "body": "Arial"
+  },
+  "palette": {
+    "bg": "#07070C",
+    "bg2": "#15151F",
+    "surface": "#13131C",
+    "text": "#FAFAFA",
+    "muted": "#A6A6BA",
+    "primary": "#B6F23A",
+    "secondary": "#22D3EE",
+    "accent": "#8B5CF6",
+    "on_primary": "#0A0A0F",
+    "ink": "#07070C"
+  },
+  "art": "neon",
+  "cover_variant": "split",
+  "cards_variant": "row",
+  "image_style": "bold creative photography, high contrast, neon lime and cyan lighting, dark background, editorial",
+  "writing_tone": "Bold, punchy and energetic. Very short sentences; one strong idea per line.",
+  "recipe": {
+    "type": "dark",
+    "seeds": "dark",
+    "kwargs": {
+      "bg_L": 0.13,
+      "bg_C": 0.01,
+      "prim_L": 0.88,
+      "prim_C": 0.2
+    }
+  },
+  "tags": [
+    "creative",
+    "media",
+    "dark"
+  ],
+  "sticker_style": "chunky",
+  "sticker_place": "cards",
+  "art_sticker": true
+}

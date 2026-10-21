@@ -1,0 +1,50 @@
+{
+  "code": "08",
+  "name": "Medical Minimal",
+  "category": "Tibbiyot • Sog‘liq • Farmatsiya • Anatomiya • Ilmiy tadqiqot",
+  "tagline": "Toza oq va firuza ranglar, havodor kompozitsiya, ishonch",
+  "mode": "light",
+  "fonts": {
+    "title": "merriweather",
+    "body": "source-sans-3"
+  },
+  "pptx_fonts": {
+    "title": "Cambria",
+    "body": "Calibri"
+  },
+  "palette": {
+    "bg": "#F7FBFC",
+    "bg2": "#E3F2F4",
+    "surface": "#FFFFFF",
+    "text": "#12384A",
+    "muted": "#5A7A87",
+    "primary": "#0E7C86",
+    "secondary": "#3BA7C8",
+    "accent": "#7AD9D3",
+    "on_primary": "#FFFFFF",
+    "ink": "#0C3442"
+  },
+  "art": "medical",
+  "cover_variant": "split",
+  "cards_variant": "row",
+  "image_style": "clean medical photography, bright white and soft teal, calm, hygienic, professional healthcare",
+  "writing_tone": "Calm, precise, evidence-based. Reassuring clinical tone; no alarming language.",
+  "recipe": {
+    "type": "light",
+    "seeds": "light",
+    "kwargs": {
+      "tint": 0.012,
+      "bg_L": 0.985,
+      "prim_L": 0.5,
+      "prim_C": 0.1
+    }
+  },
+  "tags": [
+    "medicine",
+    "science",
+    "health"
+  ],
+  "sticker_style": "flat",
+  "sticker_place": "corner",
+  "art_sticker": true
+}

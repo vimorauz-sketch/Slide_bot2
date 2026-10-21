@@ -1,0 +1,6 @@
+{%- if s.image %}{{ m.media(s.image, 'media-bleed ' ~ side) }}{% endif %}
+<div class="sec">
+  <div class="sec-num" data-t>{{ s.number or ('%02d'|format(n)) }}</div>
+  {{ m.t(s.title, 'h2', 'sec-title') }}
+  {{ m.t(s.subtitle, 'p', 'sec-sub') }}
+</div>

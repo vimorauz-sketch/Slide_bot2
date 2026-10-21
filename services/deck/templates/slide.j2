@@ -1,0 +1,14 @@
+{%- import '_macros.j2' as m with context -%}
+{%- set bleed = s.image is not none and s.layout in ('text_image', 'icon_list', 'quote', 'section', 'stats', 'summary', 'agenda') -%}
+{%- set side = 'left' if s.variant == 'left' else 'right' -%}
+{%- set classes = ['slide', 'layout-' ~ s.layout] -%}
+{%- if bleed %}{% set classes = classes + ['with-bleed', 'media-' ~ side] %}{% endif -%}
+{%- if s.layout == 'cover' %}{% set classes = classes + ['v-' ~ s.cover_variant] %}{% if s.cover_variant in bleed_covers and s.image %}{% set classes = classes + ['with-bleed', 'media-left' if s.cover_variant == 'split-left' else 'media-right'] %}{% endif %}{% endif -%}
+{%- if s.layout in ('cover', 'highlight', 'closing', 'section') %}{% set classes = classes + ['no-foot'] %}{% endif -%}
+<section class="{{ classes|join(' ') }}" data-n="{{ n }}" data-layout="{{ s.layout }}" style="--fit:1">
+  {% include theme_decor ignore missing with context %}
+  {%- if s.pack_svg %}<div class="pack">{{ s.pack_svg|safe }}</div>{% endif %}
+  {%- if s.sticker %}<div class="stk">{{ s.sticker|safe }}</div>{% endif %}
+  {% include 'layouts/' ~ s.layout ~ '.j2' %}
+  {{ m.foot(deck, n, total) }}
+</section>

@@ -1,0 +1,50 @@
+{
+  "code": "17",
+  "name": "Glass Light",
+  "category": "Startap • IT • Biznes • Zamonaviy",
+  "tagline": "Yorug‘ gradient fon va shaffof shisha kartalar",
+  "mode": "light",
+  "fonts": {
+    "title": "manrope",
+    "body": "manrope"
+  },
+  "pptx_fonts": {
+    "title": "Arial",
+    "body": "Arial"
+  },
+  "palette": {
+    "bg": "#F5F6FF",
+    "bg2": "#E4E8FF",
+    "surface": "#FFFFFF",
+    "text": "#141833",
+    "muted": "#5A6085",
+    "primary": "#5B5BF0",
+    "secondary": "#26C6DA",
+    "accent": "#FF8FB1",
+    "on_primary": "#FFFFFF",
+    "ink": "#141833"
+  },
+  "art": "mesh",
+  "cover_variant": "center",
+  "cards_variant": "grid",
+  "image_style": "soft gradient light, modern 3D, clean, airy, pastel glass",
+  "writing_tone": "Modern and clear, product-like: benefits, numbers, short punchy lines.",
+  "recipe": {
+    "type": "light",
+    "seeds": "light",
+    "kwargs": {
+      "tint": 0.02,
+      "bg_L": 0.975,
+      "prim_L": 0.55,
+      "prim_C": 0.18
+    }
+  },
+  "tags": [
+    "tech",
+    "business",
+    "modern"
+  ],
+  "sticker_style": "glass",
+  "sticker_place": "corner",
+  "art_sticker": true
+}

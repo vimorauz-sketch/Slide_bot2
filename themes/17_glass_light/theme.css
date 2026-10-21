@@ -1,0 +1,35 @@
+:root {
+  --ov: color-mix(in srgb, var(--primary) 65%, var(--ink));
+  --bg: #F5F6FF; --bg2: #E4E8FF; --surface: #FFFFFF; --text: #141833; --muted: #5A6085;
+  --primary: #5B5BF0; --secondary: #26C6DA; --accent: #FF8FB1; --on-primary: #FFFFFF; --ink: #141833;
+  --title-weight: 800; --title-tracking: -0.035em; --title-lh: 1.04; --item-weight: 700; --num-weight: 800;
+  --radius: 30px; --radius-sm: 20px; --img-radius: 34px; --icon-radius: 18px;
+  --card-bg: color-mix(in srgb, #fff 62%, transparent); --card-border: 1.5px solid color-mix(in srgb, #fff 90%, transparent);
+  --card-shadow: 0 24px 60px color-mix(in srgb, var(--primary) 14%, transparent);
+  --icon-bg: linear-gradient(135deg, var(--primary), var(--secondary)); --icon-fg: #FFFFFF;
+  --takeaway-bg: linear-gradient(135deg, var(--primary), var(--secondary));
+  --th-bg: var(--primary);
+}
+.slide { background:
+  radial-gradient(800px 600px at 0% 0%, color-mix(in srgb, var(--primary) 26%, transparent), transparent 65%),
+  radial-gradient(900px 600px at 100% 10%, color-mix(in srgb, var(--secondary) 24%, transparent), transparent 65%),
+  radial-gradient(800px 600px at 60% 110%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 65%), var(--bg); }
+.card, .stat, .side, .step-card, .chart-card, .tbl-wrap, .term, .formula-box, .verdict { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.stat, .side, .step-card, .chart-card, .tbl-wrap, .term, .formula-box { background: color-mix(in srgb, #fff 62%, transparent); border: 1.5px solid color-mix(in srgb, #fff 90%, transparent); }
+.s-title, .layout-cover .c-title { background: linear-gradient(95deg, var(--text) 40%, var(--primary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.stat .val { background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.step .dot { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; box-shadow: 0 10px 24px color-mix(in srgb, var(--primary) 35%, transparent); }
+.step:not(:last-child)::after { background: linear-gradient(90deg, var(--primary), var(--secondary)); opacity: .5; }
+.bullets li .mk { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+.media-bleed { top: 60px; bottom: 60px; right: 60px; width: calc(44% - 60px); border-radius: 34px; border: 6px solid color-mix(in srgb, #fff 80%, transparent); box-shadow: 0 30px 70px color-mix(in srgb, var(--primary) 22%, transparent); }
+.media-bleed.left { left: 60px; right: auto; }
+.with-bleed.media-right { padding-right: calc(44% + 60px); }
+.with-bleed.media-left { padding-left: calc(44% + 60px); }
+.with-bleed.media-left .s-foot { left: calc(44% + 60px); }
+.with-bleed.media-right .s-foot { right: calc(44% + 60px); }
+.layout-cover.v-center .c-title { font-size: calc(116px * var(--fit)); }
+.layout-cover .bg-media.is-art::after { background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--bg) 78%, transparent), color-mix(in srgb, var(--bg) 35%, transparent) 75%); }
+.layout-cover.v-center .c-title, .layout-cover.v-center .kicker { color: var(--text); }
+.layout-cover.v-center .c-sub, .layout-cover.v-center .meta .k, .layout-cover.v-center .meta .v { color: var(--text); }
+.layout-cover.v-center .c-title { background: linear-gradient(95deg, var(--text) 30%, var(--primary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.cmp .vs { background: #fff; border-color: color-mix(in srgb, var(--primary) 25%, transparent); color: var(--primary); }

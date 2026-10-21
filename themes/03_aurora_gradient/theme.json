@@ -1,0 +1,52 @@
+{
+  "code": "03",
+  "name": "Aurora Gradient",
+  "category": "Biznes • Marketing • Startap • Ijodiy loyihalar",
+  "tagline": "Binafsha-moviy aurora gradientlari va shisha kartalar",
+  "mode": "dark",
+  "fonts": {
+    "title": "unbounded",
+    "body": "onest"
+  },
+  "pptx_fonts": {
+    "title": "Arial",
+    "body": "Arial"
+  },
+  "palette": {
+    "bg": "#0B0F2E",
+    "bg2": "#1A1650",
+    "surface": "#1C1C4A",
+    "text": "#FFFFFF",
+    "muted": "#C3CBF5",
+    "primary": "#8B5CF6",
+    "secondary": "#38BDF8",
+    "accent": "#F472B6",
+    "on_primary": "#FFFFFF",
+    "extra": "#6366F1",
+    "ink": "#0B0F2E"
+  },
+  "art": "aurora",
+  "cover_variant": "center",
+  "cards_variant": "row",
+  "image_style": "vibrant purple and blue gradient lighting, dreamy, modern, glossy, high contrast",
+  "writing_tone": "Energetic and visionary, but factual. Short punchy sentences.",
+  "pdf_mode": "raster",
+  "recipe": {
+    "type": "dark",
+    "seeds": "dark",
+    "kwargs": {
+      "bg_L": 0.2,
+      "bg_C": 0.07,
+      "prim_L": 0.68,
+      "prim_C": 0.2
+    }
+  },
+  "tags": [
+    "business",
+    "creative",
+    "dark"
+  ],
+  "sticker_style": "glass",
+  "sticker_place": "corner",
+  "art_sticker": true
+}

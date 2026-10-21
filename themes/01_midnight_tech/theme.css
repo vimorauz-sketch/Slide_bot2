@@ -1,0 +1,44 @@
+:root {
+  --bg: #050D1F; --bg2: #0C1C3A; --surface: #0B1D3B; --text: #EAF4FF; --muted: #8FB0CC;
+  --primary: #19E6FF; --secondary: #3B82F6; --accent: #20E3B2; --on-primary: #04111F; --ink: #050D1F;
+  --border: color-mix(in srgb, var(--primary) 22%, transparent); --rule: color-mix(in srgb, var(--muted) 22%, transparent);
+  --title-weight: 700; --title-tracking: -0.01em; --title-lh: 1.08;
+  --radius: 18px; --radius-sm: 12px; --img-radius: 18px; --icon-radius: 14px;
+  --card-bg: linear-gradient(160deg, color-mix(in srgb, var(--surface) 92%, var(--secondary)), color-mix(in srgb, var(--surface) 88%, var(--bg)));
+  --card-border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
+  --card-shadow: 0 18px 50px color-mix(in srgb, #000 45%, transparent), inset 0 1px 0 rgba(255,255,255,.06);
+  --icon-bg: color-mix(in srgb, var(--primary) 10%, transparent);
+  --title-color: color-mix(in srgb, var(--text) 85%, #fff);
+  --overlay: linear-gradient(90deg, color-mix(in srgb, var(--ink) 94%, transparent) 0%, color-mix(in srgb, var(--ink) 70%, transparent) 45%, color-mix(in srgb, var(--ink) 10%, transparent) 100%);
+  --th-bg: color-mix(in srgb, var(--primary) 14%, transparent); --th-fg: var(--primary);
+  --takeaway-bg: linear-gradient(135deg, color-mix(in srgb, var(--secondary) 45%, var(--bg)), color-mix(in srgb, var(--secondary) 25%, var(--bg))); --takeaway-fg: var(--text);
+  --formula-bg: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+.slide {
+  background:
+    linear-gradient(color-mix(in srgb, var(--primary) 5%, transparent) 1px, transparent 1px) 0 0 / 80px 80px,
+    linear-gradient(90deg, color-mix(in srgb, var(--primary) 5%, transparent) 1px, transparent 1px) 0 0 / 80px 80px,
+    radial-gradient(1100px 700px at 88% -5%, color-mix(in srgb, var(--secondary) 28%, transparent) 0%, transparent 60%),
+    radial-gradient(900px 600px at -5% 105%, color-mix(in srgb, var(--primary) 12%, transparent) 0%, transparent 60%),
+    var(--bg);
+}
+.eyebrow { font-family: var(--font-title); letter-spacing: .22em; }
+.eyebrow::before { width: 10px; height: 10px; border-radius: 2px; transform: rotate(45deg); box-shadow: 0 0 12px var(--primary); }
+.s-title { text-shadow: 0 0 40px color-mix(in srgb, var(--primary) 18%, transparent); }
+.media-bleed { -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%); mask-image: linear-gradient(90deg, transparent 0%, #000 22%); }
+.media-bleed.left { -webkit-mask-image: linear-gradient(270deg, transparent 0%, #000 22%); mask-image: linear-gradient(270deg, transparent 0%, #000 22%); }
+.media-bleed:not(.is-art)::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 10%, transparent), color-mix(in srgb, var(--bg) 35%, transparent)); mix-blend-mode: screen; }
+.icon-badge { border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent); box-shadow: 0 0 24px color-mix(in srgb, var(--primary) 15%, transparent); }
+.card::before { content: ""; position: absolute; top: 0; left: 28px; right: 28px; height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); opacity: .7; }
+.stat .val { background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.step .dot { background: var(--bg); color: var(--primary); border: 2px solid var(--primary); box-shadow: 0 0 0 10px var(--bg), 0 0 30px color-mix(in srgb, var(--primary) 45%, transparent); }
+.step:not(:last-child)::after { background: repeating-linear-gradient(90deg, var(--primary) 0 10px, transparent 10px 18px); height: 2px; }
+.bullets li .mk { border-radius: 2px; transform: rotate(45deg); width: 11px; height: 11px; box-shadow: 0 0 10px var(--primary); }
+.tl .pin { border-color: var(--primary); box-shadow: 0 0 16px color-mix(in srgb, var(--primary) 60%, transparent); background: var(--bg); }
+.cmp .vs { background: var(--bg); border-color: color-mix(in srgb, var(--primary) 40%, transparent); color: var(--primary); }
+.tbl tr:nth-child(even) td { background: color-mix(in srgb, var(--primary) 4%, transparent); }
+.layout-cover .c-title { text-shadow: 0 0 60px color-mix(in srgb, var(--primary) 25%, transparent); }
+.decor .hud { position: absolute; width: 46px; height: 46px; border-color: color-mix(in srgb, var(--primary) 55%, transparent); border-style: solid; border-width: 0; }
+.decor .tl-c { top: 36px; left: 36px; border-top-width: 2px; border-left-width: 2px; }
+.decor .br-c { bottom: 36px; right: 36px; border-bottom-width: 2px; border-right-width: 2px; }
+.decor .code { position: absolute; top: 42px; right: 96px; font: 500 15px/1 var(--font-title); letter-spacing: .3em; color: color-mix(in srgb, var(--primary) 55%, transparent); }

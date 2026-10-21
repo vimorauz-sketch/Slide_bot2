@@ -1,0 +1,50 @@
+{
+  "code": "11",
+  "name": "Swiss Minimal",
+  "category": "Dizayn • Arxitektura • Biznes • Minimal",
+  "tagline": "Oq fon, qalin tipografiya, qat’iy to‘r va bitta yorqin rang",
+  "mode": "light",
+  "fonts": {
+    "title": "inter",
+    "body": "inter"
+  },
+  "pptx_fonts": {
+    "title": "Arial",
+    "body": "Arial"
+  },
+  "palette": {
+    "bg": "#FFFFFF",
+    "bg2": "#F1F1F1",
+    "surface": "#FFFFFF",
+    "text": "#111111",
+    "muted": "#5E5E5E",
+    "primary": "#E3262F",
+    "secondary": "#1F4FD8",
+    "accent": "#FFC21A",
+    "on_primary": "#FFFFFF",
+    "ink": "#111111"
+  },
+  "art": "swiss",
+  "cover_variant": "split",
+  "cards_variant": "row",
+  "image_style": "minimal, high-contrast, graphic, clean studio photography",
+  "writing_tone": "Direct and minimal. Short, precise statements; no decoration in words either.",
+  "recipe": {
+    "type": "light",
+    "seeds": "light",
+    "kwargs": {
+      "tint": 0.0,
+      "bg_L": 1.0,
+      "prim_L": 0.55,
+      "prim_C": 0.2
+    }
+  },
+  "tags": [
+    "minimal",
+    "business",
+    "design"
+  ],
+  "sticker_style": "flat",
+  "sticker_place": "cards",
+  "art_sticker": true
+}

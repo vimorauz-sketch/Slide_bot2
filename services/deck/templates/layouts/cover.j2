@@ -1,0 +1,16 @@
+{%- set cv = s.cover_variant -%}
+{%- if s.image -%}
+{%- if cv in bleed_covers %}{{ m.media(s.image, 'media-bleed' ~ (' left' if cv == 'split-left' else '')) }}
+{%- elif cv in ('full', 'card', 'bottom') %}{{ m.media(s.image, 'bg-media') }}
+{%- else %}{{ m.media(s.image, 'bg-media cover-art') }}{% endif -%}
+{%- endif %}
+<div class="cover-text">
+  {%- if s.kicker %}<div class="kicker" data-t>{{ s.kicker|rich }}</div>{% endif %}
+  {{ m.t(s.title, 'h1', 'c-title') }}
+  {{ m.t(s.subtitle, 'p', 'c-sub') }}
+  {%- if s.meta %}
+  <div class="meta">
+    {%- for row in s.meta %}<span class="k" data-t>{{ row.k|rich }}</span><span class="v" data-t>{{ row.v|rich }}</span>{% endfor %}
+  </div>
+  {%- endif %}
+</div>

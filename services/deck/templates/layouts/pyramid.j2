@@ -1,0 +1,15 @@
+<div class="pyr-wrap">
+  <div class="pyr">
+    {%- for lv in s.pyramid_geo %}
+    <div class="lv" style="--w:{{ lv.w }};--h:{{ lv.h }};--l:{{ lv.l }}%;--r:{{ lv.r }}%;background:{{ lv.fill }}"><span data-t>{{ loop.index }}</span></div>
+    {%- endfor %}
+  </div>
+  <div class="s-body">
+    {{ m.head(s, lead=False) }}
+    <ol class="pyr-list" style="margin-top:20px">
+      {%- for lv in s.levels %}
+      <li style="height:{{ s.pyramid_geo[loop.index0].h + 10 }}px">{{ m.t(loop.index ~ '. ' ~ lv.title, 'h3') }}{{ m.t(lv.text) }}</li>
+      {%- endfor %}
+    </ol>
+  </div>
+</div>

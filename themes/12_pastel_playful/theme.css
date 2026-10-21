@@ -1,0 +1,31 @@
+:root {
+  --ov: color-mix(in srgb, var(--primary) 70%, var(--ink));
+  --bg: #FFF7F0; --bg2: #FFE3D3; --surface: #FFFFFF; --text: #2B2233; --muted: #6A5F72;
+  --primary: #7B4FD6; --secondary: #FF7AA2; --accent: #FFD24D; --on-primary: #FFFFFF; --ink: #2B2233;
+  --title-weight: 800; --title-tracking: -0.02em; --title-lh: 1.06; --item-weight: 800; --num-weight: 800;
+  --radius: 34px; --radius-sm: 22px; --img-radius: 44px; --icon-radius: 26px;
+  --card-border: 3px solid var(--text); --card-shadow: 8px 8px 0 var(--text);
+  --icon-bg: var(--accent); --icon-fg: var(--text);
+  --eyebrow-color: var(--secondary);
+  --th-bg: var(--primary);
+}
+.slide { background: radial-gradient(circle at 8% 12%, color-mix(in srgb, var(--accent) 35%, transparent) 0 120px, transparent 121px),
+  radial-gradient(circle at 96% 88%, color-mix(in srgb, var(--secondary) 28%, transparent) 0 180px, transparent 181px), var(--bg); }
+.card:nth-child(2) { --icon-bg: color-mix(in srgb, var(--secondary) 55%, #fff); transform: rotate(.6deg); }
+.card:nth-child(3) { --icon-bg: color-mix(in srgb, var(--primary) 35%, #fff); transform: rotate(-.6deg); }
+.icon-badge { border: 3px solid var(--text); transform: rotate(-4deg); }
+.step .step-card, .stat, .cmp .side, .term, .tbl-wrap, .chart-card { border: 3px solid var(--text); box-shadow: 8px 8px 0 var(--text); }
+.step .dot { background: var(--accent); color: var(--text); border: 3px solid var(--text); box-shadow: 0 0 0 8px var(--bg); }
+.step:not(:last-child)::after { background: var(--text); height: 3px; }
+.bullets li .mk { width: 22px; height: 22px; background: var(--accent); border: 3px solid var(--text); margin-top: .3em; }
+.media-bleed { top: 70px; bottom: 70px; right: 70px; width: calc(44% - 70px); border-radius: 44px; border: 4px solid var(--text); box-shadow: 14px 14px 0 var(--primary); }
+.media-bleed.left { left: 70px; right: auto; box-shadow: -14px 14px 0 var(--primary); }
+.with-bleed.media-right { padding-right: calc(44% + 80px); }
+.with-bleed.media-left { padding-left: calc(44% + 90px); }
+.with-bleed.media-left .s-foot { left: calc(44% + 90px); }
+.with-bleed.media-right .s-foot { right: calc(44% + 80px); }
+.takeaway { border: 3px solid var(--text); box-shadow: 8px 8px 0 var(--text); }
+.cmp .vs { background: var(--accent); border: 3px solid var(--text); color: var(--text); }
+.tl .pin { border-color: var(--text); background: var(--accent); }
+.checks li .ck { background: var(--accent); color: var(--text); border: 3px solid var(--text); }
+.agenda-list .n { color: var(--secondary); }

@@ -1,0 +1,27 @@
+:root {
+  --bg: #FBFCFE; --bg2: #EAF0F8; --surface: #FFFFFF; --text: #0F1E3D; --muted: #56657F;
+  --primary: #1D3F9E; --secondary: #3B82F6; --accent: #C8A24A; --on-primary: #FFFFFF; --ink: #0F1E3D;
+  --border: color-mix(in srgb, var(--primary) 14%, #fff); --rule: color-mix(in srgb, var(--primary) 16%, transparent);
+  --title-weight: 600; --title-tracking: -0.015em; --title-lh: 1.1; --item-weight: 600; --num-weight: 600;
+  --radius: 10px; --radius-sm: 8px; --img-radius: 10px; --icon-radius: 10px;
+  --card-border: 1px solid var(--border); --card-shadow: none;
+  --icon-bg: color-mix(in srgb, var(--primary) 9%, #fff);
+}
+.slide { background: var(--bg); }
+.slide::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 10px; background: var(--primary); z-index: 1; }
+.slide.layout-cover::before, .slide.layout-highlight::before, .slide.layout-closing::before { display: none; }
+.eyebrow { font-variant: small-caps; letter-spacing: .12em; text-transform: none; font-size: 24px; }
+.eyebrow::before { width: 28px; height: 2px; }
+.media-bleed { top: 70px; bottom: 70px; right: 70px; width: calc(44% - 70px); border-radius: 10px; border: 1px solid var(--border); box-shadow: 18px 18px 0 var(--bg2); }
+.media-bleed.left { left: 70px; right: auto; box-shadow: -18px 18px 0 var(--bg2); }
+.with-bleed.media-right { padding-right: calc(44% + 70px); }
+.with-bleed.media-left { padding-left: calc(44% + 76px); }
+.with-bleed.media-left .s-foot { left: calc(44% + 76px); }
+.with-bleed.media-right .s-foot { right: calc(44% + 70px); }
+.card, .stat { border-top: 4px solid var(--primary); }
+.bullets li .mk { border-radius: 0; width: 10px; height: 10px; }
+.step .dot { border-radius: 10px; }
+.tbl th { font-family: var(--font-body); letter-spacing: .03em; }
+.takeaway { font-family: var(--font-title); font-weight: 500; font-style: italic; }
+.layout-quote blockquote { font-style: italic; font-weight: 400; }
+.decor .pnum { position: absolute; right: 120px; top: 44px; font: 600 16px/1 var(--font-body); letter-spacing: .2em; color: var(--muted); opacity: .8; }

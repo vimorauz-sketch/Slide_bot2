@@ -1,0 +1,6 @@
+{{ m.head(s, lead=False) }}
+<div class="s-body" style="justify-content:flex-start">
+  <ol class="refs">
+    {%- for r in s.sources %}<li><span class="n" data-t>{{ loop.index }}.</span><span data-t>{{ r|rich }}</span></li>{% endfor %}
+  </ol>
+</div>

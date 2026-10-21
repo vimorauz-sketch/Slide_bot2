@@ -1,0 +1,15 @@
+{{ m.head(s, lead=False) }}
+<div class="chart-wrap">
+  <div class="chart-card">
+    {{ s.chart_svg|safe }}
+    {%- if s.chart.series|length > 1 %}
+    <div class="legend">{% for se in s.chart.series %}<span><i style="background:var(--c{{ loop.index }})"></i><span data-t>{{ se.name|rich }}</span></span>{% endfor %}</div>
+    {%- endif %}
+  </div>
+  <div class="chart-side">
+    {%- for ins in s.insights %}
+    <div class="insight">{{ m.icon_badge('trending-up' if loop.first else ('lightbulb' if loop.index == 2 else 'info')) }}<p data-t>{{ ins|rich }}</p></div>
+    {%- endfor %}
+    {%- if s.source %}<div class="source" data-t>{{ s.source|rich }}</div>{% endif %}
+  </div>
+</div>

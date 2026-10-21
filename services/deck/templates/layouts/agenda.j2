@@ -1,0 +1,9 @@
+{%- if s.image %}{{ m.media(s.image, 'media-bleed ' ~ side) }}{% endif %}
+<div class="agenda-wrap">
+  {{ m.head(s) }}
+  <ol class="agenda-list">
+    {%- for it in s['items'] %}
+    <li><span class="n" data-t>{{ '%02d'|format(loop.index) }}</span><div>{{ m.t(it.title, 'h3') }}{{ m.t(it.text) }}</div></li>
+    {%- endfor %}
+  </ol>
+</div>

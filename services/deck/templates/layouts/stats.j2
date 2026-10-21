@@ -1,0 +1,14 @@
+{%- if s.image %}{{ m.media(s.image, 'media-bleed ' ~ side) }}{% endif %}
+<div class="col-text">
+  {{ m.head(s) }}
+  <div class="s-body">
+    <div class="stats" style="--n:{{ s.stats|length }}">
+      {%- for st in s.stats %}
+      <div class="stat">
+        <div class="val" data-t>{{ st.value|rich }}</div>
+        <div>{{ m.t(st.label, 'div', 'lbl') }}{% if st.text %}<p data-t style="margin-top:10px">{{ st.text|rich }}</p>{% endif %}</div>
+      </div>
+      {%- endfor %}
+    </div>
+  </div>
+</div>
