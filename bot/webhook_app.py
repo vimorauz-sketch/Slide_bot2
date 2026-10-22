@@ -186,8 +186,50 @@ async def webapp_cover_handler(request: web.Request) -> web.StreamResponse:
     return web.FileResponse(path, headers={"Cache-Control": "public, max-age=604800"})
 
 
+async def tezcheck_webhook_handler(request: web.Request) -> web.Response:
+    """TezCheck payment events (register https://<domain>/payments/tezcheck/webhook in the cabinet)."""
+    import asyncio
+    from services.payment import tezcheck, orders
+
+    raw = await request.read()
+    if len(raw) > 256 * 1024:
+        raise web.HTTPRequestEntityTooLarge(max_size=256 * 1024, actual_size=len(raw))
+    if not tezcheck.verify_webhook(raw, request.headers.get("X-Checkout-Timestamp", ""),
+                                   request.headers.get("X-Checkout-Delivery", ""),
+                                   request.headers.get("X-Checkout-Signature", "")):
+        logger.warning("TezCheck webhook with a bad signature from %s", request.remote)
+        return web.json_response({"ok": False, "error": "bad signature"}, status=401)
+    try:
+        event = json.loads(raw)
+    except ValueError:
+        return web.json_response({"ok": False, "error": "bad json"}, status=400)
+    result, order_id = await orders.handle_webhook(event)
+    bot = request.app.get(BOT_KEY)
+    if order_id and bot is not None:
+        # answer TezCheck at once (15 s limit); the files are sent in the background
+        asyncio.ensure_future(_after_payment_event(bot, result, order_id))
+    return web.json_response({"ok": True, "result": result})
+
+
+async def _after_payment_event(bot, result: str, order_id: str) -> None:
+    from bot.delivery import deliver_order
+    from database import repository
+    from database.connection import AsyncSessionLocal
+    try:
+        if result == "paid":
+            await deliver_order(bot, order_id)
+        elif result in ("failed", "refunded"):
+            async with AsyncSessionLocal() as session:
+                order = await repository.get_presentation_order(session, order_id)
+            if order:
+                await bot.send_message(order.user_id, "❌ To‘lov o‘tmadi. To‘lov sahifasida qaytadan urinib ko‘ring."
+                                       if result == "failed" else "↩️ To‘lov qaytarildi.")
+    except Exception:  # noqa: BLE001
+        logger.exception("after-payment step for %s failed", order_id)
+
+
 def create_webhook_app(bot=None, dp=None) -> web.Application:
-    app = web.Application()
+    app = web.Application(client_max_size=12 * 1024 * 1024)  # broadcast photos up to 10 MB
     app[BOT_KEY], app[DP_KEY] = bot, dp
     if os.path.isdir(WEBAPP_DIR):
         app.router.add_get("/webapp", webapp_index_handler)
@@ -202,6 +244,9 @@ def create_webhook_app(bot=None, dp=None) -> web.Application:
     app.router.add_post("/payments/click/prepare", click_prepare_handler)
     app.router.add_post("/payments/click/complete", click_complete_handler)
     app.router.add_post("/payments/payme", payme_handler)
+    app.router.add_post("/payments/tezcheck/webhook", tezcheck_webhook_handler)
+    from bot.admin_web import setup_admin
+    setup_admin(app)
     return app
 
 
@@ -220,6 +265,16 @@ async def run_webhook_app(host: str, port: int, bot=None, dp=None):
     else:
         logger.warning("Mini App O'CHIQ: WEBAPP_URL yo'q yoki noto'g'ri (%r). Railway: Settings -> Networking -> Generate Domain.",
                        settings.WEBAPP_URL)
+    if bot is not None:
+        import asyncio
+        from services.payment.orders import reconcile_loop, payment_mode
+        from bot.delivery import deliver_order
+        if payment_mode() == "tezcheck":
+            logger.info("To'lovlar: TezCheck (webhook: /payments/tezcheck/webhook)")
+            _background.append(asyncio.ensure_future(reconcile_loop(lambda oid: deliver_order(bot, oid))))
+        else:
+            logger.warning("To'lovlar: %s rejimi — TEZCHECK_API_KEY va TEZCHECK_CASH_DESK_CODE kiritilmagan",
+                           payment_mode().upper())
     if os.getenv("GALLERY_WARMUP", "1") != "0":
         import asyncio
         from services.gallery import warm_up

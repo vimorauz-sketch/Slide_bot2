@@ -15,8 +15,11 @@ from bot.utils import escape_html
 from bot.keyboards.inline import (
     get_template_selection_inline_keyboard, get_confirmation_inline_keyboard,
     get_payment_inline_keyboard, get_production_payment_inline_keyboard, get_outline_inline_keyboard,
-    get_gallery_categories_keyboard, get_gallery_list_keyboard, get_gallery_colors_keyboard
+    get_gallery_categories_keyboard, get_gallery_list_keyboard, get_gallery_colors_keyboard,
+    get_tezcheck_pay_keyboard
 )
+from services.payment.orders import payment_mode
+from typing import Optional
 from bot.keyboards.reply import (
     get_level_keyboard, get_course_keyboard, get_language_keyboard, get_cancel_keyboard, get_webapp_keyboard,
     get_skip_keyboard, get_main_menu_keyboard, SKIP_TEXTS, get_subject_keyboard, get_slide_count_keyboard,
@@ -25,6 +28,7 @@ from bot.keyboards.reply import (
 from services import ai_service
 from services.presentation import build_presentation, start_files
 from services import prefetch
+from services import runtime
 from bot.progress import ProgressMessage
 import asyncio
 from services.deck import themes
@@ -546,11 +550,18 @@ _build_sem = None
 _build_waiting = 0
 
 
+_build_sem_size = 0
+
+
 def _sem():
-    global _build_sem
-    if _build_sem is None:
+    """The limit can be changed in the dashboard: a new semaphore is made when nobody is building."""
+    global _build_sem, _build_sem_size
+    from services import runtime
+    size = runtime.get_int("max_parallel_builds", int(settings.MAX_PARALLEL_BUILDS), lo=1, hi=20)
+    if _build_sem is None or (size != _build_sem_size and not _build_sem.locked()
+                              and getattr(_build_sem, "_value", 0) == _build_sem_size and not _build_waiting):
         import asyncio
-        _build_sem = asyncio.Semaphore(max(1, int(settings.MAX_PARALLEL_BUILDS)))
+        _build_sem, _build_sem_size = asyncio.Semaphore(size), size
     return _build_sem
 
 
@@ -587,7 +598,9 @@ class _build_slot:
 
 async def _preview_allowed(user_id: int) -> bool:
     """Unpaid previews per user per day (each one costs AI requests). Admins are not limited."""
-    if user_id in settings.admin_id_list or int(settings.MAX_PREVIEWS_PER_DAY) <= 0:
+    from services import runtime
+    limit = runtime.get_int("max_previews_per_day", int(settings.MAX_PREVIEWS_PER_DAY))
+    if runtime.is_admin(user_id) or limit <= 0:
         return True
     import datetime as _dt
     since = _dt.datetime.utcnow() - _dt.timedelta(days=1)
@@ -596,7 +609,7 @@ async def _preview_allowed(user_id: int) -> bool:
             n = await repository.count_user_orders_since(session, user_id, since)
     except Exception:  # noqa: BLE001 - never block a user because of a database hiccup
         return True
-    return n < int(settings.MAX_PREVIEWS_PER_DAY)
+    return n < limit
 
 
 def _project_root() -> str:
@@ -698,6 +711,15 @@ async def apply_outline_changes(message: Message, state: FSMContext):
         pass
 
 
+def _order_content(result, data) -> Optional[str]:
+    try:
+        from services.payment.orders import content_for_db
+        from services.presentation import theme_key_from_data
+        return content_for_db(result.content, theme_key_from_data(data))
+    except Exception:  # noqa: BLE001
+        return None
+
+
 async def _build_and_send(message: Message, user_id: int, state: FSMContext, back_state) -> None:
     """Makes the deck (reusing text written in the background when the answers still match),
     shows an animated progress bar, sends the previews and the payment buttons; the PDF and PPTX
@@ -707,7 +729,7 @@ async def _build_and_send(message: Message, user_id: int, state: FSMContext, bac
     if not await _preview_allowed(user_id):
         await state.set_state(back_state)
         await message.answer(
-            f"⚠️ Bugun {settings.MAX_PREVIEWS_PER_DAY} ta taqdimot namunasini yaratdingiz — bu kunlik chegara.\n"
+            f"⚠️ Bugun {runtime.get_int('max_previews_per_day', 10)} ta taqdimot namunasini yaratdingiz — bu kunlik chegara.\n"
             "Avvalgi buyurtmalaringizni to‘lab yuklab olishingiz mumkin yoki ertaga davom eting.")
         return
     # the main menu comes back here (the wizard's reply keyboards are no longer needed); the progress
@@ -762,7 +784,10 @@ async def _build_and_send(message: Message, user_id: int, state: FSMContext, bac
             template_id=tpl_id if isinstance(tpl_id, str) else "custom_ai",
             total_price=data.get("total_price", 3500),
             pptx_path=result.pptx_path,
-            pdf_path=result.pdf_path
+            pdf_path=result.pdf_path,
+            # the deck itself is kept in the database: the files can be rebuilt after a redeploy
+            content_json=_order_content(result, data),
+            language=data.get("language"),
         )
         order_id = order.id
 
@@ -792,16 +817,17 @@ async def _build_and_send(message: Message, user_id: int, state: FSMContext, bac
         f"⚠️ <b>Preview haqida</b>\n\n"
         f"Yuqorida ikki namuna slayd va barcha {slide_count} ta slaydning kichik ko‘rinishi berildi. "
         f"Ularda <code>SLIDELAB • PREVIEW • @SlideLabBot</code> belgisi bor.\n\n"
-        f"💳 <b>To‘lov amalga oshirilgandan so‘ng:</b>\n"
+        f"💳 <b>To‘lov amalga oshirilgandan so‘ng</b> (Click yoki Payme):\n"
         f"• barcha {slide_count} ta slayd to‘liq sifatda ochiladi;\n"
         f"• belgilar olib tashlanadi;\n"
-        f"• PowerPoint (.pptx, matnini tahrirlash mumkin) va PDF fayllar beriladi.\n\n"
+        f"• PowerPoint (.pptx, matnini tahrirlash mumkin) va PDF fayllar <b>avtomatik</b> shu yerga yuboriladi.\n\n"
         f"📊 <b>Slaydlar soni:</b> {slide_count} ta\n"
         f"💰 <b>Narxi:</b> {total_price} so'm"
     )
+    mode = payment_mode()
     payment_keyboard = (
-        get_production_payment_inline_keyboard(order_id, total_price)
-        if settings.PAYMENT_ENV.upper() == "PRODUCTION"
+        get_tezcheck_pay_keyboard(order_id, total_price) if mode == "tezcheck"
+        else get_production_payment_inline_keyboard(order_id, total_price) if mode == "legacy"
         else get_payment_inline_keyboard(order_id, total_price)
     )
     await message.answer(warning_text, reply_markup=payment_keyboard, parse_mode="HTML")

@@ -98,3 +98,18 @@ def get_download_format_inline_keyboard(order_id: str) -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="📦 Ikkalasi ham", callback_data=f"dl_both_{order_id}")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
+
+
+def get_tezcheck_pay_keyboard(order_id: str, amount: int) -> InlineKeyboardMarkup:
+    """TezCheck: one button; the bill is created when it is pressed."""
+    formatted_amount = f"{amount:,}".replace(",", " ")
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=f"💳 To‘lash — {formatted_amount} so‘m (Click · Payme)", callback_data=f"tc_pay_{order_id}")],
+    ])
+
+
+def get_tezcheck_link_keyboard(order_id: str, url: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="💳 To‘lov sahifasini ochish", url=url)],
+        [InlineKeyboardButton(text="✅ To‘ladim — tekshirish", callback_data=f"tc_chk_{order_id}")],
+    ])

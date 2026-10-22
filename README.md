@@ -204,3 +204,30 @@ tests/
 - Set `PAYMENT_ENV=PRODUCTION` only once a real Click/Payme payment-verification integration
   replaces the stub in `services/payment/providers.py` / the `TODO` in
   `bot/handlers/payment.py`'s `process_check_payment`.
+
+## Payments: TezCheck
+
+Customers pay on TezCheck's page with Click or Payme; the files are sent automatically.
+
+1. TezCheck cabinet: copy the API key (`aps_…`) and the cash desk code (`cdk_…`).
+2. Add a webhook endpoint `https://<your-domain>/payments/tezcheck/webhook` and copy its secret (`wbs_…`, shown once).
+3. Railway → Variables: `TEZCHECK_API_KEY`, `TEZCHECK_CASH_DESK_CODE`, `TEZCHECK_WEBHOOK_SECRET`.
+
+Every webhook is checked (HMAC-SHA256, 5-minute window) and processed once; an order is paid only
+when TezCheck reports `paid` with real money (`environment: live`) for at least the order's price.
+Unpaid bills are re-checked every 90 seconds, so a lost webhook never loses a sale. Without the
+TezCheck variables the bot runs in DEMO mode (no real payment).
+
+## Admin dashboard
+
+`https://<your-domain>/admin` — revenue and statistics, orders (mark paid, resend files, cancel, CSV),
+users (block, balance, message), TezCheck payments, broadcasts, settings (prices, limits, AI model,
+maintenance mode, admins) and system status. Sign in with the one-time link from `/admin` in the bot,
+or with `ADMIN_LOGIN` / `ADMIN_PASSWORD`.
+
+## Database on Railway
+
+Railway rebuilds the container on every deploy, so a SQLite file is lost. Add **PostgreSQL** to the
+project and set `DATABASE_URL=${{Postgres.DATABASE_URL}}` on the bot service; tables are created and
+upgraded automatically at start. Each order also keeps its deck in the database, so PDF/PPTX can be
+rebuilt even after `storage/` is wiped.

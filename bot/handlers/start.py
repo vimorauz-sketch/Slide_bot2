@@ -39,6 +39,13 @@ async def cmd_start(message: Message, state: FSMContext):
         )
         lang = user.language or "uz"
 
+    # t.me/<bot>?start=paid_<order>: back from the TezCheck payment page
+    if len(args) > 1 and args[1].startswith("paid_"):
+        from bot.handlers.payment import handle_paid_deeplink
+        await message.answer("👋 Xush kelibsiz!", reply_markup=get_main_menu_keyboard(lang))
+        await handle_paid_deeplink(message, args[1][5:])
+        return
+
     # t.me/<bot>?start=tpl_<template>[--<colour>] comes from the template gallery Mini App
     if len(args) > 1 and args[1].startswith("tpl_"):
         from bot.handlers.create_pres import apply_template_choice

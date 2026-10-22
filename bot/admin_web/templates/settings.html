@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Sozlamalar{% endblock %}
+{% block head %}<style>
+.pill{border:2px solid #E6E8F2;background:#fff;border-radius:12px;padding:10px 14px;font:700 13px 'Plus Jakarta Sans',sans-serif;color:#3D4266;cursor:pointer;min-height:46px;flex:1;display:flex;flex-direction:column;gap:2px;position:relative}
+.pill input{position:absolute;opacity:0;pointer-events:none}
+.pill:has(input:checked){border-color:#6E7BFF;background:#F4F5FF;color:#12153A}
+.pill:has(input:focus-visible){outline:2px solid #6E7BFF;outline-offset:2px}
+.sw{position:relative;width:60px;height:34px;border-radius:999px;flex:none;display:inline-block;cursor:pointer}
+.sw input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.sw .track{position:absolute;inset:0;border-radius:999px;background:#3B4370;transition:background .2s}
+.sw .knob{position:absolute;top:4px;left:4px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.3);transition:left .2s}
+.sw input:checked ~ .track{background:#F97316}
+.sw input:checked ~ .knob{left:30px}
+.sw input:focus-visible ~ .track{outline:2px solid #fff;outline-offset:2px}
+</style>{% endblock %}
+{% block content %}
+<form method="post" action="/admin/settings" style="display:flex;flex-direction:column;gap:22px">
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<header style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;justify-content:space-between">
+  <div style="display:flex;flex-direction:column;gap:4px"><h1>Sozlamalar</h1><span class="sub">Saqlangan zahoti kuchga kiradi — deploy kerak emas</span></div>
+  <button class="btn btn-p"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Saqlash</button>
+</header>
+
+<section aria-label="Texnik ishlar rejimi" style="background:{{ '#7C2D12' if v.maintenance else '#1B2150' }};border-radius:22px;padding:26px 28px;display:flex;flex-wrap:wrap;gap:22px;align-items:center;position:relative;overflow:hidden">
+  <div style="position:absolute;right:-40px;top:-70px;width:220px;height:220px;border-radius:50%;background:{{ '#9A3412' if v.maintenance else '#2B3470' }}"></div>
+  <div style="position:relative;width:58px;height:58px;border-radius:16px;background:{{ '#F97316' if v.maintenance else '#6E7BFF' }};display:flex;align-items:center;justify-content:center;color:#fff;flex:none"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></div>
+  <div style="position:relative;flex:1 1 300px;display:flex;flex-direction:column;gap:6px">
+    <h2 style="font-size:19px;color:#fff">Texnik ishlar rejimi</h2>
+    <span style="font-size:14px;color:#C6CCEF;line-height:1.5">Yoqilsa, bot adminlardan boshqa hammaga quyidagi xabarni yuboradi va yangi buyurtma qabul qilmaydi. To‘lov vebhuklari ishlashda davom etadi.</span>
+  </div>
+  <div style="position:relative;display:flex;align-items:center;gap:14px">
+    <span class="chip" style="{{ 'background:#F97316;color:#fff' if v.maintenance else 'background:rgba(52,211,153,.2);color:#6EE7B7' }}">{{ 'Yoqilgan — bot yopiq' if v.maintenance else 'O‘chiq — bot ishlayapti' }}</span>
+    <label class="sw" aria-label="Texnik ishlar rejimi"><input type="checkbox" name="maintenance" value="1" {{ 'checked' if v.maintenance }}><span class="track"></span><span class="knob"></span></label>
+  </div>
+  <div style="position:relative;flex:1 1 100%;display:flex;flex-direction:column;gap:8px">
+    <label for="mt" style="font-size:13px;font-weight:700;color:#C6CCEF">Foydalanuvchilarga xabar</label>
+    <textarea id="mt" name="maintenance_text" class="inp" rows="2" maxlength="500" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff">{{ v.maintenance_text }}</textarea>
+  </div>
+</section>
+
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(330px,1fr))">
+  <section class="card pad" style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:center;gap:12px"><span class="tile" style="background:#EEF0FF;color:#6E7BFF"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><h2>Narx va slaydlar</h2></div>
+    <div class="field"><label for="p1" class="lbl">1 slayd narxi, so‘m</label><input id="p1" name="price_per_slide" class="inp" type="number" min="1" max="1000000" required value="{{ v.price_per_slide }}"></div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+      <div class="field"><label for="p2" class="lbl">Minimum slayd</label><input id="p2" name="min_slides" class="inp" type="number" min="3" max="60" required value="{{ v.min_slides }}"></div>
+      <div class="field"><label for="p3" class="lbl">Maksimum slayd</label><input id="p3" name="max_slides" class="inp" type="number" min="3" max="60" required value="{{ v.max_slides }}"></div>
+    </div>
+    <div style="background:#F5F6FB;border-radius:12px;padding:14px;display:flex;justify-content:space-between;font-size:14px"><span style="color:#5A6080">10 slaydli taqdimot</span><b>{{ money(v.price_per_slide|int * 10) }} so‘m</b></div>
+    <span class="hint">TezCheck’da eng kichik to‘lov — 1 000 so‘m.</span>
+  </section>
+
+  <section class="card pad" style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:center;gap:12px"><span class="tile" style="background:#FDECEC;color:#E5484D"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><h2>Limitlar va himoya</h2></div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+      <div class="field"><label for="l1" class="lbl">Kunlik namuna</label><input id="l1" name="max_previews_per_day" class="inp" type="number" min="0" max="1000" required value="{{ v.max_previews_per_day }}"></div>
+      <div class="field"><label for="l2" class="lbl">Bir vaqtda yaratish</label><input id="l2" name="max_parallel_builds" class="inp" type="number" min="1" max="20" required value="{{ v.max_parallel_builds }}"></div>
+      <div class="field"><label for="l3" class="lbl">Spam: birdaniga</label><input id="l3" name="throttle_burst" class="inp" type="number" min="3" max="100" required value="{{ v.throttle_burst }}"></div>
+      <div class="field"><label for="l4" class="lbl">Blok, daqiqa</label><input id="l4" name="throttle_ban_minutes" class="inp" type="number" min="1" max="1440" required value="{{ v.throttle_ban_minutes }}"></div>
+    </div>
+    <span class="hint">Kunlik namuna — bitta foydalanuvchi sutkada yaratishi mumkin bo‘lgan bepul namunalar soni (0 = cheksiz). Adminlarga cheklov yo‘q.</span>
+  </section>
+
+  <section class="card pad" style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:center;gap:12px"><span class="tile" style="background:#F3EEFF;color:#8B5CF6"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 16l.9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9z"/></svg></span><h2>AI</h2></div>
+    <span class="lbl">Slayd yozish modeli</span>
+    <div role="radiogroup" aria-label="Model" style="display:flex;gap:8px;flex-wrap:wrap">
+      {% for code, name, note in models %}<label class="pill"><input type="radio" name="ai_fast_model" value="{{ code }}" {{ 'checked' if v.ai_fast_model == code }}><span>{{ name }}</span><span style="font-size:11px;font-weight:600;color:#6B7194">{{ note }}</span></label>{% endfor %}
+    </div>
+    <div class="field"><label for="a2" class="lbl">O‘ylash darajasi</label>
+      <select id="a2" name="ai_effort" class="inp">{% for code, name in efforts %}<option value="{{ code }}" {{ 'selected' if v.ai_effort == code }}>{{ name }}</option>{% endfor %}</select></div>
+    <span class="hint">Model hisobingizda bo‘lmasa, bot avtomatik ravishda asosiy modelga ({{ main_model }}) o‘tadi.</span>
+  </section>
+
+  <section class="card pad" style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:12px"><span class="tile" style="background:#E7F8F1;color:#10B981"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6"/></svg></span><h2>Adminlar</h2></div>
+    {% for a in admins %}
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #F0F1F6">
+      <span class="av" style="width:38px;height:38px;border-radius:12px;background:{{ avatar_color(a.id) }}">{{ initials(a.name) }}</span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column"><b class="ell" style="font-size:14px">{{ a.name }}</b><span class="num hint">{{ a.id }}</span></div>
+      {% if a.fixed %}<span class="chip" style="background:#1B2150;color:#fff">ADMIN_IDS</span>
+      {% else %}<label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#B91C1C"><input type="checkbox" name="remove_admin" value="{{ a.id }}">Olib tashlash</label>{% endif %}
+    </div>
+    {% endfor %}
+    <div class="field"><label for="ad" class="lbl">Yangi admin (Telegram ID)</label><input id="ad" name="add_admin" class="inp" inputmode="numeric" pattern="[0-9]{4,15}" placeholder="Masalan: 5812044913"></div>
+    <span class="hint">Railway’dagi ADMIN_IDS’dagi adminlarni faqat o‘sha yerdan o‘zgartirish mumkin.</span>
+  </section>
+</div>
+
+<section class="card pad" style="display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:center;gap:12px"><span class="tile" style="background:#FEF6E4;color:#F59E0B"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></span><h2>TezCheck to‘lov tizimi</h2>
+    <span class="chip {{ 'c-paid' if tc.ok else 'c-wait' if tc.configured else 'c-ref' }}" style="margin-left:auto">{{ tc.status }}</span></div>
+  <div class="kv">
+    <span>Kassa</span><span style="font-weight:600">{{ tc.desk or '—' }}</span>
+    <span>API kaliti</span><span style="font-weight:600">{{ tc.key_hint or 'kiritilmagan' }}</span>
+    <span>Vebhuk imzo kaliti</span><span style="font-weight:600">{{ 'kiritilgan' if tc.webhook_secret else 'kiritilmagan — vebhuklar rad etiladi' }}</span>
+    <span>Vebhuk manzili</span><span><code style="background:#F1F2F8;padding:3px 8px;border-radius:6px;font-size:12px;word-break:break-all">{{ tc.webhook_url }}</code></span>
+    <span>Test to‘lovlar</span><span style="font-weight:600">{{ 'qabul qilinadi (TEZCHECK_ACCEPT_TEST)' if tc.accept_test else 'qabul qilinmaydi' }}</span>
+  </div>
+  <span class="hint">Kalitlar Railway → Variables’da saqlanadi (xavfsizlik uchun bu yerdan o‘zgartirilmaydi).</span>
+</section>
+</form>
+{% endblock %}

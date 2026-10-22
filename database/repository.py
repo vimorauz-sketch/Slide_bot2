@@ -34,6 +34,14 @@ async def update_user_language(session: AsyncSession, telegram_id: int, language
     )
     await session.commit()
 
+async def ensure_user(session: AsyncSession, telegram_id: int) -> None:
+    """PostgreSQL enforces the users foreign key: someone who never pressed /start since the
+    database was created (e.g. after moving to PostgreSQL) still gets a row before their order."""
+    if await session.get(User, telegram_id) is None:
+        session.add(User(telegram_id=telegram_id))
+        await session.flush()
+
+
 async def create_presentation_order(
     session: AsyncSession,
     user_id: int,
@@ -43,19 +51,24 @@ async def create_presentation_order(
     template_id: str,
     total_price: int,
     pptx_path: Optional[str] = None,
-    pdf_path: Optional[str] = None
+    pdf_path: Optional[str] = None,
+    content_json: Optional[str] = None,
+    language: Optional[str] = None,
 ) -> PresentationOrder:
     order = PresentationOrder(
         user_id=user_id,
-        topic=topic,
-        subject=subject,
+        topic=topic[:255],
+        subject=(subject or "")[:255],
         slide_count=slide_count,
         template_id=template_id,
         total_price=total_price,
         pptx_path=pptx_path,
         pdf_path=pdf_path,
+        content_json=content_json,
+        language=language,
         status="PREVIEW_READY"
     )
+    await ensure_user(session, user_id)
     session.add(order)
     await session.commit()
     await session.refresh(order)
@@ -85,6 +98,7 @@ async def create_payment_transaction(
         provider=provider,
         status="WAITING_PAYMENT"
     )
+    await ensure_user(session, user_id)
     session.add(tx)
     await session.commit()
     await session.refresh(tx)
@@ -131,6 +145,7 @@ async def create_provider_transaction(
         status="WAITING_PAYMENT",
         provider_create_time=create_time
     )
+    await ensure_user(session, user_id)
     session.add(tx)
     await session.commit()
     await session.refresh(tx)

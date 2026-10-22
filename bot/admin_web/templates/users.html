@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Foydalanuvchilar{% endblock %}
+{% block content %}
+<header style="display:flex;flex-direction:column;gap:4px"><h1>Foydalanuvchilar</h1><span class="sub">Kim botdan foydalanmoqda, kim to‘layapti va kim spam qilmoqda</span></header>
+
+<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+  {% for c in cards %}
+  <div class="card" style="padding:18px 20px;display:flex;flex-direction:column;gap:10px"><span style="font-size:13px;color:#6B7194;font-weight:600">{{ c.label }}</span><span class="num" style="font-size:26px;font-weight:800">{{ c.value }}</span><div class="bar"><i style="width:{{ c.w }}%;background:{{ c.color }}"></i></div></div>
+  {% endfor %}
+</section>
+
+<form method="get" action="/admin/users" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+  <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A80A3" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <label for="uq" class="sr">Qidiruv</label><input id="uq" name="q" type="search" value="{{ q }}" placeholder="Ism, @username yoki Telegram ID"></div>
+  <input type="hidden" name="f" value="{{ f }}">
+  {% for key, label, n in filters %}<a class="flt {{ 'flt-on' if key == f }}" href="?f={{ key }}{% if q %}&q={{ q|urlencode }}{% endif %}">{{ label }}<span class="cnt">{{ n }}</span></a>{% endfor %}
+</form>
+
+<div class="row" style="align-items:flex-start">
+  <section class="card" style="flex:999 1 560px;min-width:0;overflow:hidden">
+    <div class="scroll">
+      <table class="table" style="min-width:700px">
+        <thead><tr><th>Foydalanuvchi</th><th>Telegram ID</th><th>Namuna</th><th>To‘lagan</th><th>Referal</th><th>Holat</th></tr></thead>
+        <tbody>
+        {% for u in rows %}
+        <tr class="clk {{ 'sel' if sel and sel.telegram_id == u.telegram_id }}" onclick="location.href='?{{ base_qs }}&u={{ u.telegram_id }}'">
+          <td><span style="display:flex;align-items:center;gap:12px;min-width:0"><span class="av" style="width:38px;height:38px;border-radius:12px;font-size:13px;background:{{ avatar_color(u.telegram_id) }}">{{ initials(u.full_name or u.username) }}</span><span style="display:flex;flex-direction:column;min-width:0"><a class="ell" style="font-weight:700;color:#12153A;max-width:190px" href="?{{ base_qs }}&u={{ u.telegram_id }}">{{ u.full_name or '—' }}</a><span style="font-size:12px;color:#8D93B3">{{ '@' ~ u.username if u.username else '—' }} · {{ lang_name(u.language) }}</span></span></span></td>
+          <td class="num" style="color:#5A6080">{{ u.telegram_id }}</td>
+          <td class="num" style="font-weight:700">{{ u.orders }}</td>
+          <td class="num" style="font-weight:700">{{ u.paid }}</td>
+          <td class="num" style="font-weight:700">{{ u.refs }}</td>
+          <td>{{ user_chip(u) }}</td>
+        </tr>
+        {% else %}<tr><td colspan="6" class="empty">Hech kim topilmadi</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-top:1px solid #F0F1F6;font-size:13px;color:#6B7194;flex-wrap:wrap;gap:10px">
+      <span>{{ shown_from }}–{{ shown_to }} / {{ money(total) }}</span>
+      <div style="display:flex;gap:6px">
+        {% if page > 1 %}<a class="btn btn-sm" href="?{{ base_qs }}&page={{ page - 1 }}" aria-label="Oldingi sahifa">←</a>{% endif %}
+        <span class="btn btn-sm btn-dark">{{ page }} / {{ pages }}</span>
+        {% if page < pages %}<a class="btn btn-sm" href="?{{ base_qs }}&page={{ page + 1 }}" aria-label="Keyingi sahifa">→</a>{% endif %}
+      </div>
+    </div>
+  </section>
+
+  {% if sel %}
+  <aside class="card" aria-label="Foydalanuvchi profili" style="flex:1 1 330px;min-width:0;overflow:hidden;display:flex;flex-direction:column">
+    <div style="background:#1B2150;padding:24px 22px 54px;position:relative;overflow:hidden">
+      <div style="position:absolute;right:-50px;top:-60px;width:180px;height:180px;border-radius:50%;background:#2B3470"></div>
+      <span class="chip" style="position:relative;{{ 'background:#E5484D;color:#fff' if sel.is_blocked else 'background:rgba(52,211,153,.2);color:#6EE7B7' }}">{{ 'Bloklangan' if sel.is_blocked else ('Botni bloklagan' if sel.bot_blocked else 'Faol') }}</span>
+    </div>
+    <div style="padding:0 22px 22px;display:flex;flex-direction:column;gap:16px;margin-top:-38px;position:relative">
+      <span style="width:76px;height:76px;border-radius:22px;background:{{ avatar_color(sel.telegram_id) }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;border:4px solid #fff">{{ initials(sel.full_name or sel.username) }}</span>
+      <div><h2 style="font-size:21px">{{ sel.full_name or '—' }}</h2><span class="sub" style="font-size:13px">{{ '@' ~ sel.username if sel.username else 'username yo‘q' }} · <span class="num">{{ sel.telegram_id }}</span></span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+        <div style="background:#EEF0FF;border-radius:12px;padding:12px"><span style="font-size:12px;color:#3240B8;font-weight:700">Namuna</span><div class="num" style="font-size:20px;font-weight:800">{{ sel_stats.orders }}</div></div>
+        <div style="background:#ECFDF5;border-radius:12px;padding:12px"><span style="font-size:12px;color:#047857;font-weight:700">To‘lagan</span><div class="num" style="font-size:20px;font-weight:800">{{ sel_stats.paid }}</div></div>
+        <div style="background:#FEF6E4;border-radius:12px;padding:12px"><span style="font-size:12px;color:#92400E;font-weight:700">Balans</span><div class="num" style="font-size:20px;font-weight:800">{{ money(sel.balance) }}</div></div>
+      </div>
+      <div class="kv">
+        <span>Ro‘yxatdan o‘tgan</span><span class="num" style="font-weight:600">{{ dt(sel.created_at) }}</span>
+        <span>Oxirgi faollik</span><span style="font-weight:600">{{ ago(sel.last_seen_at) }}</span>
+        <span>Jami to‘lagan</span><span class="num" style="font-weight:600">{{ money(sel_stats.spent) }} so‘m</span>
+        <span>Taklif qilganlari</span><span class="num" style="font-weight:600">{{ sel_stats.refs }}</span>
+        <span>Kim taklif qilgan</span><span style="font-weight:600">{% if sel.referred_by %}<a href="?u={{ sel.referred_by }}">{{ sel.referred_by }}</a>{% else %}—{% endif %}</span>
+        {% if sel.is_blocked and sel.blocked_reason %}<span>Blok sababi</span><span style="font-weight:600">{{ sel.blocked_reason }}</span>{% endif %}
+      </div>
+      <form method="post" action="/admin/users/{{ sel.telegram_id }}/message" style="display:flex;flex-direction:column;gap:8px">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <label for="m" class="lbl">Xabar yozish</label>
+        <textarea id="m" name="text" class="inp" rows="3" required maxlength="3500" placeholder="Foydalanuvchiga bot nomidan xabar"></textarea>
+        <button class="btn btn-p"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 3 2 11l7 2 2 7 3-5 5 4z"/></svg>Yuborish</button>
+      </form>
+      <form method="post" action="/admin/users/{{ sel.telegram_id }}/balance" style="display:flex;gap:8px;align-items:flex-end">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <div class="field" style="flex:1"><label for="b" class="lbl">Balansga qo‘shish (so‘m, minus ham mumkin)</label><input id="b" name="amount" type="number" class="inp" required step="1" placeholder="5000"></div>
+        <button class="btn">Qo‘shish</button>
+      </form>
+      <a class="btn" href="/admin/orders?q={{ sel.telegram_id }}">Buyurtmalari</a>
+      {% if sel.is_blocked %}
+      <form method="post" action="/admin/users/{{ sel.telegram_id }}/unblock"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn-ok" style="width:100%">Blokdan chiqarish</button></form>
+      {% else %}
+      <form method="post" action="/admin/users/{{ sel.telegram_id }}/block" style="display:flex;gap:8px;align-items:flex-end" onsubmit="return confirm('Foydalanuvchi bloklanadi: bot unga javob bermaydi. Davom etasizmi?')">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <div class="field" style="flex:1"><label for="r" class="lbl">Bloklash sababi</label><input id="r" name="reason" class="inp" maxlength="200" placeholder="Masalan: spam"></div>
+        <button class="btn btn-d">Bloklash</button>
+      </form>
+      {% endif %}
+    </div>
+  </aside>
+  {% endif %}
+</div>
+{% endblock %}

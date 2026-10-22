@@ -14,10 +14,14 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+from services import errorlog  # noqa: E402
+errorlog.install()  # the dashboard's "Tizim holati" shows the latest errors
 
 async def main():
     logger.info("Initializing database...")
     await init_db()
+    from services import runtime
+    await runtime.load()
 
     token = settings.BOT_TOKEN.strip()
     if not token or "YOUR_TELEGRAM_BOT_TOKEN" in token or "ExampleToken" in token:
@@ -63,7 +67,10 @@ async def main():
     from bot.middlewares.throttling import ThrottlingMiddleware
     dp.update.outer_middleware(ThrottlingMiddleware(
         rate=settings.THROTTLE_RATE, burst=settings.THROTTLE_BURST,
-        ban_seconds=settings.THROTTLE_BAN_SECONDS, admins=settings.admin_id_list))
+        ban_seconds=settings.THROTTLE_BAN_SECONDS, admins=settings.admin_id_list, dynamic=True))
+    # Blocked users, maintenance mode and "last seen" (all controlled from the admin dashboard)
+    from bot.middlewares.gate import GateMiddleware
+    dp.update.outer_middleware(GateMiddleware())
 
     # Register routers
     dp.include_router(start.router)

@@ -42,10 +42,15 @@ async def patched_handlers_db(db, monkeypatch):
     """
     import database.connection as dbc
     from bot.handlers import create_pres, ocr_task, payment, admin, start
-    from services.payment import click_webhook, payme_webhook
+    from services.payment import click_webhook, payme_webhook, orders
+    from services import broadcast
+    from bot import delivery
+    import bot.admin_web as admin_web
+    from bot.admin_web import stats as admin_stats
 
     monkeypatch.setattr(dbc, "AsyncSessionLocal", db)
-    for module in (create_pres, ocr_task, payment, admin, start, click_webhook, payme_webhook):
+    for module in (create_pres, ocr_task, payment, admin, start, click_webhook, payme_webhook,
+                   orders, broadcast, delivery, admin_web, admin_stats):
         monkeypatch.setattr(module, "AsyncSessionLocal", db)
     return db
 
@@ -95,3 +100,14 @@ async def finish_background_files():
     prefetch._jobs.clear()
     if tasks:
         await asyncio.gather(*tasks, return_exceptions=True)
+
+
+@pytest.fixture(autouse=True)
+def fresh_runtime_settings():
+    """Dashboard settings are cached in memory: every test starts from the defaults."""
+    from services import runtime
+    runtime._values.clear()
+    runtime.blocked_users.clear()
+    yield
+    runtime._values.clear()
+    runtime.blocked_users.clear()

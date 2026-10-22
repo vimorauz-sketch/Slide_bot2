@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Bosh sahifa{% endblock %}
+{% block head %}<meta http-equiv="refresh" content="120">{% endblock %}
+{% block content %}
+<header style="display:flex;flex-wrap:wrap;align-items:center;gap:14px;justify-content:space-between">
+  <div style="display:flex;flex-direction:column;gap:4px"><h1>Bosh sahifa</h1><span class="sub">Yangilandi: {{ now }} (Toshkent vaqti)</span></div>
+  <div style="display:flex;gap:4px;background:#fff;padding:4px;border-radius:12px;box-shadow:0 1px 2px rgba(16,20,48,.06)" role="group" aria-label="Davr">
+    {% for key, label in periods %}<a class="flt {{ 'flt-on' if key == s.period }}" style="box-shadow:none" href="?p={{ key }}">{{ label }}</a>{% endfor %}
+  </div>
+</header>
+
+<section class="row">
+  <div style="flex:999 1 520px;min-width:0;position:relative;overflow:hidden;border-radius:22px;background:#1B2150;color:#fff;padding:30px 32px;display:flex;flex-wrap:wrap;gap:24px;align-items:center;min-height:220px">
+    <div style="position:absolute;right:-60px;top:-80px;width:280px;height:280px;border-radius:50%;background:#2B3470"></div>
+    <div style="position:absolute;right:120px;bottom:-120px;width:220px;height:220px;border-radius:50%;background:#232A62"></div>
+    <div style="position:relative;flex:1 1 280px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-size:14px;color:#B9C0EA;font-weight:600">{{ greeting }}, {{ admin_label }}</span>
+      <span style="font-size:15px;color:#DDE1FA">Daromad · {{ s.period_label }}</span>
+      <span class="num" style="font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1">{{ money(s.revenue) }}<span style="font-size:20px;font-weight:700;color:#B9C0EA"> so‘m</span></span>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <span class="chip" style="background:rgba(52,211,153,.18);color:#6EE7B7">{{ s.revenue_delta[0] }} oldingi davrga</span>
+        <span class="chip" style="background:rgba(255,255,255,.1);color:#DDE1FA">{{ s.payments }} to‘lov · {{ s.previews }} namuna</span>
+      </div>
+    </div>
+    <div aria-hidden="true" style="position:relative;flex:0 1 280px;height:170px">
+      <div style="position:absolute;left:10px;top:30px;width:190px;height:112px;border-radius:10px;background:#F59E0B;transform:rotate(-9deg);box-shadow:0 16px 30px rgba(0,0,0,.25)"></div>
+      <div style="position:absolute;left:70px;top:18px;width:200px;height:120px;border-radius:10px;background:#fff;transform:rotate(5deg);box-shadow:0 18px 34px rgba(0,0,0,.3);padding:14px;display:flex;gap:12px">
+        <div style="flex:1;display:flex;flex-direction:column;gap:7px"><div style="width:85%;height:10px;border-radius:5px;background:#1B2150"></div><div style="height:6px;border-radius:3px;background:#D5D9EE"></div><div style="width:90%;height:6px;border-radius:3px;background:#D5D9EE"></div><div style="width:70%;height:6px;border-radius:3px;background:#D5D9EE"></div></div>
+        <div style="width:64px;border-radius:8px;background:#6E7BFF;position:relative;overflow:hidden"><div style="position:absolute;bottom:-10px;left:-6px;width:50px;height:40px;border-radius:50%;background:#34D399"></div><div style="position:absolute;top:10px;right:10px;width:14px;height:14px;border-radius:50%;background:#FDE68A"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card pad" style="flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h2>Konversiya</h2>
+      <span class="chip {{ 'c-up' if s.conversion_delta > 0 else 'c-down' if s.conversion_delta < 0 else 'c-flat' }}">{{ '↑' if s.conversion_delta > 0 else '↓' if s.conversion_delta < 0 else '' }} {{ s.conversion_delta|abs }} p.p.</span></div>
+    <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+      <svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Konversiya {{ s.conversion }} foiz">
+        <circle cx="60" cy="60" r="48" fill="none" stroke="#EEF0F6" stroke-width="14"/>
+        <circle cx="60" cy="60" r="48" fill="none" stroke="#6E7BFF" stroke-width="14" stroke-linecap="round" stroke-dasharray="{{ conv_dash }}" transform="rotate(-90 60 60)"/>
+        <text x="60" y="58" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="24" font-weight="800" fill="#12153A">{{ s.conversion }}%</text>
+        <text x="60" y="78" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="600" fill="#6B7194">to‘lov</text>
+      </svg>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+        <span style="color:#5A6080">Namunadan to‘lovgacha</span>
+        <span><b class="num" style="font-size:18px">{{ s.payments }}</b> <span style="color:#5A6080">/ {{ s.previews }} namuna</span></span>
+        <span style="color:#5A6080">O‘rtacha chek <b class="num" style="color:#12153A">{{ money(s.avg_check) }} so‘m</b></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))" aria-label="Asosiy ko‘rsatkichlar">
+  {% for k in kpis %}
+  <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div class="tile" style="background:{{ k.tint }};color:{{ k.color }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{ k.icon }}"/></svg></div>
+      <span class="chip c-{{ k.delta[1] }}">{{ k.delta[0] }}</span>
+    </div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px">
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;font-weight:600;color:#6B7194">{{ k.label }}</span><span class="num" style="font-size:26px;font-weight:800;letter-spacing:-.02em">{{ k.value }}</span></div>
+      {% if k.spark %}<svg width="90" height="38" viewBox="0 0 90 38" aria-hidden="true"><path d="{{ k.spark }}" fill="none" stroke="{{ k.color }}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</section>
+
+<section class="row">
+  <div class="card pad" style="flex:999 1 540px;min-width:0;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center">
+      <div style="display:flex;flex-direction:column;gap:4px"><h2>Daromad dinamikasi</h2><span class="sub" style="font-size:13px">Oxirgi 14 kun, so‘m</span></div>
+      <div style="display:flex;gap:16px;font-size:13px;color:#5A6080;font-weight:600">
+        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:3px;border-radius:2px;background:#6E7BFF"></span>Shu 14 kun</span>
+        <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;border-top:2px dashed #B4B9D4"></span>Oldingi 14 kun</span>
+      </div>
+    </div>
+    <svg viewBox="0 0 700 250" role="img" aria-label="Oxirgi 14 kunlik daromad grafigi" style="width:100%;height:auto;display:block">
+      <defs><linearGradient id="fillA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6E7BFF" stop-opacity="0.35"/><stop offset="1" stop-color="#6E7BFF" stop-opacity="0"/></linearGradient></defs>
+      <g stroke="#EEF0F6">{% for y in [20, 70, 120, 170, 220] %}<line x1="40" y1="{{ y }}" x2="690" y2="{{ y }}"/>{% endfor %}</g>
+      <g font-family="Plus Jakarta Sans, sans-serif" font-size="10" fill="#8D93B3">{% for y, t in yticks %}<text x="0" y="{{ y + 4 }}">{{ t }}</text>{% endfor %}</g>
+      <path d="{{ chart.prev }}" fill="none" stroke="#B4B9D4" stroke-width="2" stroke-dasharray="6 6"/>
+      <path d="{{ chart.line }} L690 220 L40 220 Z" fill="url(#fillA)"/>
+      <path d="{{ chart.line }}" fill="none" stroke="#6E7BFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      {% if chart.peak %}<circle cx="{{ chart.peak.x }}" cy="{{ chart.peak.y }}" r="6" fill="#fff" stroke="#6E7BFF" stroke-width="3"/>
+      <rect x="{{ chart.peak.x - 52 }}" y="{{ chart.peak.y - 44 }}" width="104" height="30" rx="8" fill="#1B2150"/>
+      <text x="{{ chart.peak.x }}" y="{{ chart.peak.y - 24 }}" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="700" fill="#fff">{{ chart.peak.t }}</text>{% endif %}
+      <g font-family="Plus Jakarta Sans, sans-serif" font-size="11" fill="#8D93B3" text-anchor="middle">{% for x, t in xlabels %}<text x="{{ x }}" y="244">{{ t }}</text>{% endfor %}</g>
+    </svg>
+  </div>
+  <div class="card pad" style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:18px">
+    <h2>Buyurtmalar holati · {{ s.period_label }}</h2>
+    <div style="display:flex;justify-content:center">
+      <svg width="190" height="190" viewBox="0 0 190 190" role="img" aria-label="Buyurtmalar holati bo‘yicha taqsimot">
+        <circle cx="95" cy="95" r="70" fill="none" stroke="#EEF0F6" stroke-width="26"/>
+        {% for d in donut %}<circle cx="95" cy="95" r="70" fill="none" stroke="{{ d.color }}" stroke-width="26" stroke-dasharray="{{ d.dash }}" stroke-dashoffset="{{ d.off }}" transform="rotate(-90 95 95)"/>{% endfor %}
+        <text x="95" y="92" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="28" font-weight="800" fill="#12153A">{{ donut_total }}</text>
+        <text x="95" y="114" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-weight="600" fill="#6B7194">buyurtma</text>
+      </svg>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+      {% for d in donut %}<div style="display:flex;gap:10px;align-items:flex-start"><span style="width:10px;height:10px;border-radius:3px;background:{{ d.color }};margin-top:4px;flex:none"></span><div style="display:flex;flex-direction:column"><span style="font-size:13px;color:#5A6080">{{ d.name }}</span><span class="num" style="font-weight:800">{{ d.n }}</span></div></div>{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="row">
+  <div class="card pad" style="flex:1 1 340px;min-width:0;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h2>Top shablonlar · 30 kun</h2></div>
+    {% for t in templates %}
+    <div style="display:flex;align-items:center;gap:14px">
+      <span class="num" style="width:18px;font-weight:800;color:#8D93B3">{{ loop.index }}</span>
+      <span class="thumb" aria-hidden="true" style="width:64px;height:36px;background:{{ t.bg }}"><i style="left:7px;top:8px;width:26px;height:4px;background:{{ t.fg }}"></i><i style="left:7px;top:16px;width:20px;height:3px;background:{{ t.fg }};opacity:.6"></i><i style="right:6px;top:6px;width:20px;height:24px;border-radius:4px;background:{{ t.ac }}"></i></span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;gap:8px;font-size:14px"><span class="ell" style="font-weight:700">{{ t.name }}</span><span class="num" style="color:#5A6080;font-weight:700">{{ t.n }}</span></div>
+        <div class="bar"><i style="width:{{ t.w }}%;background:{{ t.ac }}"></i></div>
+      </div>
+    </div>
+    {% else %}<div class="empty">Hali buyurtma yo‘q</div>{% endfor %}
+  </div>
+  <div class="card pad" style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:16px">
+    <h2>Fanlar bo‘yicha · 30 kun</h2>
+    {% if subjects %}
+    <div style="display:flex;align-items:flex-end;gap:12px;height:200px;padding-top:10px">
+      {% for sb in subjects %}
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;height:100%;min-width:0">
+        <span class="num" style="font-size:12px;font-weight:800">{{ sb.n }}</span>
+        <div style="width:100%;max-width:40px;height:{{ sb.h }}%;border-radius:10px;background:{{ sb.color }}"></div>
+        <span class="ell" style="font-size:11px;color:#5A6080;font-weight:600;max-width:100%">{{ sb.name }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<div class="empty">Hali buyurtma yo‘q</div>{% endif %}
+  </div>
+  <div class="card pad" style="flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:14px">
+    <h2>Foydalanuvchi yo‘li · {{ s.period_label }}</h2>
+    {% for f in funnel %}
+    <div style="display:flex;justify-content:center"><div style="width:{{ f.w }}%;min-width:150px;height:42px;border-radius:10px;background:{{ f.color }};color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:13px;font-weight:700"><span>{{ f.name }}</span><span class="num">{{ f.n }}</span></div></div>
+    {% endfor %}
+    <span class="hint" style="text-align:center">Jami foydalanuvchilar: <b>{{ money(s.total_users) }}</b></span>
+  </div>
+</section>
+
+<section class="card" style="overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:22px 22px 8px"><h2>So‘nggi buyurtmalar</h2><a href="/admin/orders" style="font-size:13px;font-weight:700">Hammasini ko‘rish →</a></div>
+  <div class="scroll">
+    <table class="table">
+      <thead><tr><th>Mavzu</th><th>Foydalanuvchi</th><th>Slayd</th><th>Summa</th><th>Holat</th><th>Sana</th></tr></thead>
+      <tbody>
+      {% for o in recent %}
+      <tr class="clk" onclick="location.href='/admin/orders?o={{ o.id }}'">
+        <td style="max-width:340px"><span style="display:flex;align-items:center;gap:12px;min-width:0">{{ thumb(o) }}<a class="ell" style="font-weight:700;color:#12153A" href="/admin/orders?o={{ o.id }}">{{ o.topic }}</a></span></td>
+        <td><span style="display:flex;align-items:center;gap:10px"><span class="av" style="background:{{ avatar_color(o.user_id) }}">{{ initials(o.user_name) }}</span><span class="ell" style="color:#3D4266;max-width:180px">{{ o.user_name }}</span></span></td>
+        <td class="num" style="font-weight:700">{{ o.slide_count }}</td>
+        <td class="num" style="font-weight:700">{{ money(o.total_price) }}</td>
+        <td>{{ status_chip(o.status) }}</td>
+        <td class="num" style="color:#8D93B3;font-size:13px">{{ dt(o.created_at) }}</td>
+      </tr>
+      {% else %}<tr><td colspan="6" class="empty">Hali buyurtma yo‘q</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

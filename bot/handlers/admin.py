@@ -10,29 +10,35 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 def is_admin(user_id: int) -> bool:
-    return user_id in settings.admin_id_list
+    from services import runtime
+    return runtime.is_admin(user_id)
 
 @router.message(Command("admin"))
 async def cmd_admin_panel(message: Message):
     if not is_admin(message.from_user.id):
         return
+    from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+    from bot.admin_web import auth, stats
 
-    async with AsyncSessionLocal() as session:
-        price_per_slide = await repository.get_setting(session, "price_per_slide", str(settings.DEFAULT_PRICE_PER_SLIDE))
-        min_slides = await repository.get_setting(session, "min_slides", str(settings.MIN_SLIDES_PER_ORDER))
-        max_slides = await repository.get_setting(session, "max_slides", str(settings.MAX_SLIDES_PER_ORDER))
-
+    s = await stats.overview("1")
     text = (
-        f"⚙️ <b>SlideLab Admin Paneli</b>\n\n"
-        f"💰 <b>1 slayd narxi:</b> {price_per_slide} so'm\n"
-        f"📑 <b>Minimum slayd soni:</b> {min_slides} ta\n"
-        f"📑 <b>Maksimum slayd soni:</b> {max_slides} ta\n\n"
-        f"<b>Admin buyruqlari:</b>\n"
-        f"/setprice [summa] — 1 slayd narxini o'zgartirish\n"
-        f"/setminslides [soni] — minimum slayd sonini o'zgartirish\n"
-        f"/setmaxslides [soni] — maksimum slayd sonini o'zgartirish"
+        f"⚙️ <b>SlideLab — bugun</b>\n\n"
+        f"💰 Daromad: <b>{stats.money(s['revenue'])} so‘m</b>\n"
+        f"💳 To‘lovlar: <b>{s['payments']}</b> · namunalar: <b>{s['previews']}</b>\n"
+        f"👥 Yangi foydalanuvchilar: <b>{s['new_users']}</b>\n"
+        f"⏳ To‘lov kutilmoqda: <b>{s['waiting']}</b>\n\n"
     )
-    await message.answer(text, parse_mode="HTML")
+    base = auth.public_base_url()
+    markup = None
+    if base:
+        token = await auth.create_login_token(message.from_user.id)
+        url = f"{base}/admin/login/tg?t={token}"
+        text += "🔐 Dashboardga kirish uchun tugmani bosing. Havola <b>10 daqiqa</b> amal qiladi va <b>bir marta</b> ishlaydi — hech kimga yubormang."
+        markup = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="📊 Admin panelni ochish", url=url)]])
+    else:
+        text += "⚠️ Server domeni topilmadi: Railway’da domen yarating (Settings → Networking) yoki WEBAPP_URL ni kiriting."
+    await message.answer(text, parse_mode="HTML", reply_markup=markup, disable_web_page_preview=True)
+
 
 @router.message(Command("setprice"))
 async def cmd_set_price(message: Message):

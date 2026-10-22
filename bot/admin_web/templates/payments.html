@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}To‘lovlar{% endblock %}
+{% block content %}
+<header style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;justify-content:space-between">
+  <div style="display:flex;flex-direction:column;gap:4px"><h1>To‘lovlar</h1><span class="sub">TezCheck orqali kelgan to‘lovlar (Click · Payme)</span></div>
+  <span class="chip {{ 'c-paid' if tc.configured else 'c-wait' }}" style="font-size:13px;padding:6px 12px"><span class="dot"></span>{{ tc.mode_label }}</span>
+</header>
+
+{% if not tc.configured %}
+<div class="card pad" style="display:flex;flex-direction:column;gap:10px;border:2px solid #FDE68A">
+  <h2>TezCheck ulanmagan</h2>
+  <p class="sub" style="margin:0;line-height:1.6">Railway → Variables bo‘limiga <b>TEZCHECK_API_KEY</b>, <b>TEZCHECK_CASH_DESK_CODE</b> va <b>TEZCHECK_WEBHOOK_SECRET</b> qo‘shing.
+  TezCheck kabinetida vebhuk manzili: <code style="background:#F1F2F8;padding:2px 6px;border-radius:6px">{{ tc.webhook_url }}</code></p>
+</div>
+{% endif %}
+
+<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+  {% for c in cards %}
+  <div class="card" style="padding:18px 20px;display:flex;align-items:center;gap:14px"><span class="tile" style="background:{{ c.tint }};color:{{ c.color }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{ c.icon }}"/></svg></span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:13px;color:#6B7194;font-weight:600">{{ c.label }}</span><span class="num" style="font-size:20px;font-weight:800">{{ c.value }}</span>{% if c.note %}<span class="hint">{{ c.note }}</span>{% endif %}</div></div>
+  {% endfor %}
+</section>
+
+{% if tc.error %}<div class="flash flash-err">TezCheck: {{ tc.error }}</div>{% endif %}
+
+<div class="row" style="align-items:flex-start">
+  <section class="card" style="flex:999 1 560px;min-width:0;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:22px 22px 8px;flex-wrap:wrap;gap:10px">
+      <h2>TezCheck tranzaksiyalari</h2>
+      <div style="display:flex;gap:6px">
+        <a class="flt {{ 'flt-on' if not problems }}" href="/admin/payments">Hammasi</a>
+        <a class="flt {{ 'flt-on' if problems }}" href="/admin/payments?problems=1">Muammolilar</a>
+      </div>
+    </div>
+    <div class="scroll">
+      <table class="table" style="min-width:820px">
+        <thead><tr><th>To‘lov</th><th>Buyurtma</th><th>Usul</th><th>Summa</th><th>Komissiya</th><th>Holat</th><th>Sana</th></tr></thead>
+        <tbody>
+        {% for t in remote %}
+        <tr>
+          <td class="num" style="font-size:12px">{{ t.reference or t.id }}{% if t.environment == 'test' %} <span class="chip c-wait">test</span>{% endif %}</td>
+          <td>{% if t.external_reference %}<a class="num" href="/admin/orders?o={{ t.external_reference }}">#{{ t.external_reference[:8] }}</a>{% else %}—{% endif %}</td>
+          <td style="text-transform:capitalize">{{ t.provider_code or '—' }}</td>
+          <td class="num" style="font-weight:700">{{ money((t.amount_minor or 0) // 100) }}</td>
+          <td class="num" style="color:#6B7194">{{ money((t.fee_minor or 0) // 100) }}</td>
+          <td>{{ pay_chip(t) }}</td>
+          <td class="num" style="color:#8D93B3;font-size:13px">{{ iso(t.succeeded_at or t.created_at) }}</td>
+        </tr>
+        {% else %}<tr><td colspan="7" class="empty">{{ 'TezCheck ulanmagan' if not tc.configured else 'To‘lovlar yo‘q' }}</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if next_cursor %}<div style="padding:14px 22px;border-top:1px solid #F0F1F6"><a class="btn btn-sm" href="?cursor={{ next_cursor }}{% if problems %}&problems=1{% endif %}">Keyingi sahifa →</a></div>{% endif %}
+  </section>
+
+  <section class="card" style="flex:1 1 330px;min-width:0;overflow:hidden">
+    <div style="padding:22px 22px 8px"><h2>Bot bazasidagi to‘lovlar</h2></div>
+    <div class="scroll">
+      <table class="table" style="min-width:0">
+        <thead><tr><th>Buyurtma</th><th>Summa</th><th>Kim</th></tr></thead>
+        <tbody>
+        {% for o in local %}
+        <tr class="clk" onclick="location.href='/admin/orders?o={{ o.id }}'">
+          <td><a class="ell" style="font-weight:700;color:#12153A;display:block;max-width:200px" href="/admin/orders?o={{ o.id }}">{{ o.topic }}</a><span class="num hint">{{ dt(o.paid_at) }}</span></td>
+          <td class="num" style="font-weight:700">{{ money(o.paid_amount or o.total_price) }}</td>
+          <td><span class="chip {{ 'c-paid' if o.paid_by == 'TEZCHECK' else 'c-prev' }}">{{ o.paid_by or '—' }}{% if o.payment_provider %} · {{ o.payment_provider }}{% endif %}</span></td>
+        </tr>
+        {% else %}<tr><td colspan="3" class="empty">Hali to‘lov yo‘q</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

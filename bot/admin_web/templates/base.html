@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>{% block title %}SlideLab Admin{% endblock %} · SlideLab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF0F6;--ink:#12153A;--muted:#6B7194;--muted2:#8D93B3;--line:#F0F1F6;--navy:#12163A;--navy2:#1B2150;--navy3:#2B3470;
+--indigo:#6E7BFF;--indigo-d:#3240B8;--amber:#F59E0B;--green:#10B981;--rose:#E5484D;--card:#FFFFFF}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;font-size:14px}
+a{color:#4F5BD5;text-decoration:none}a:hover{color:var(--indigo-d)}
+.layout{display:flex;flex-wrap:wrap;min-height:100vh}
+.side{flex:1 1 230px;max-width:100%;background:var(--navy);padding:26px 16px;display:flex;flex-direction:column;gap:4px}
+@media(min-width:900px){.side{max-width:250px;position:sticky;top:0;height:100vh;overflow:auto}}
+.brand{display:flex;align-items:center;gap:12px;padding:0 10px 26px}
+.logo{position:relative;width:38px;height:38px}
+.logo i{position:absolute;border-radius:5px}
+.sec{padding:16px 14px 8px;font-size:11px;font-weight:700;letter-spacing:.1em;color:#6D76A3}
+.nav-a{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;color:#A9B1D6;font-weight:600}
+.nav-a:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-on{background:var(--navy3);color:#fff}.nav-on svg{color:#9AA8FF}
+.badge{margin-left:auto;background:var(--amber);color:var(--navy);font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px}
+.side-foot{margin-top:auto;background:#1E2450;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;color:#A9B1D6;font-size:12px}
+main{flex:999 1 560px;min-width:0;padding:26px 32px 48px;display:flex;flex-direction:column;gap:22px}
+@media(max-width:700px){main{padding:18px 16px 40px}}
+h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em}
+h2{margin:0;font-size:17px;font-weight:800}
+.sub{font-size:14px;color:var(--muted)}
+.card{background:var(--card);border-radius:18px;box-shadow:0 1px 2px rgba(16,20,48,.05),0 8px 24px rgba(16,20,48,.05)}
+.pad{padding:22px 24px}
+.row{display:flex;flex-wrap:wrap;gap:20px}
+.grid{display:grid;gap:20px}
+.num{font-variant-numeric:tabular-nums}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.chip .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.c-paid{background:#ECFDF5;color:#047857}.c-prev{background:#EEF0FF;color:var(--indigo-d)}.c-wait{background:#FEF6E4;color:#92400E}
+.c-canc{background:#F1F2F6;color:#5A6080}.c-ref{background:#FEF2F2;color:#B91C1C}.c-up{background:#ECFDF5;color:#047857}.c-down{background:#FEF2F2;color:#B91C1C}.c-flat{background:#F1F2F6;color:#5A6080}
+.tile{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;min-height:44px;padding:0 18px;font:800 14px 'Plus Jakarta Sans',sans-serif;cursor:pointer;border:0;background:#F1F2F8;color:var(--ink);text-decoration:none}
+.btn:hover{background:#E6E8F2;color:var(--ink)}
+.btn-p{background:var(--indigo);color:#fff;box-shadow:0 8px 18px rgba(110,123,255,.35)}.btn-p:hover{background:#5C69F0;color:#fff}
+.btn-dark{background:var(--navy2);color:#fff}.btn-dark:hover{background:var(--navy3);color:#fff}
+.btn-d{background:#FEF2F2;color:#B91C1C}.btn-d:hover{background:#FDE3E3;color:#B91C1C}
+.btn-ok{background:#ECFDF5;color:#047857}
+.btn-sm{min-height:36px;padding:0 12px;font-size:13px}
+.inp{width:100%;border:2px solid #E6E8F2;border-radius:12px;padding:10px 14px;font:600 14px 'Plus Jakarta Sans',sans-serif;color:var(--ink);background:#fff;min-height:46px}
+.inp:focus{outline:0;border-color:var(--indigo)}
+textarea.inp{line-height:1.5;resize:vertical}
+label.lbl{font-size:13px;font-weight:700;color:#3D4266}
+.field{display:flex;flex-direction:column;gap:6px}
+.hint{font-size:12px;color:var(--muted);line-height:1.5}
+.search{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:0 14px;min-height:44px;box-shadow:0 1px 2px rgba(16,20,48,.06);flex:1 1 260px;max-width:420px}
+.search input{border:0;outline:0;flex:1;font:500 14px 'Plus Jakarta Sans',sans-serif;background:transparent;min-height:42px;color:var(--ink)}
+.flt{border:0;background:#fff;padding:9px 16px;border-radius:999px;font:700 13px 'Plus Jakarta Sans',sans-serif;color:#5A6080;min-height:40px;display:inline-flex;align-items:center;gap:8px;box-shadow:0 1px 2px rgba(16,20,48,.06)}
+.flt:hover{color:var(--ink)}
+.flt-on,.flt-on:hover{background:var(--navy2);color:#fff}
+.cnt{font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:#EEF0F6;color:#5A6080}
+.flt-on .cnt{background:var(--navy3);color:#fff}
+.table{width:100%;border-collapse:collapse;min-width:760px}
+.table th{text-align:left;font-size:12px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;padding:14px 14px}
+.table td:first-child,.table th:first-child{padding-left:20px}
+.table td{padding:12px 14px;border-top:1px solid var(--line);vertical-align:middle}
+.table tr.sel td{background:#EEF0FF}
+.table tr.clk:hover td{background:#F7F8FC;cursor:pointer}
+.ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.av{width:32px;height:32px;border-radius:10px;color:#fff;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.thumb{width:50px;height:30px;border-radius:6px;flex:none;position:relative;overflow:hidden;display:inline-block}
+.thumb i{position:absolute;border-radius:2px}
+.scroll{overflow-x:auto}
+.flash{padding:14px 18px;border-radius:14px;font-weight:700}
+.flash-ok{background:#ECFDF5;color:#047857}.flash-err{background:#FEF2F2;color:#B91C1C}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 16px;font-size:14px}
+.kv span:nth-child(odd){color:var(--muted)}
+.bar{height:6px;border-radius:3px;background:#EEF0F6}.bar i{display:block;height:6px;border-radius:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+/* phones: the menu becomes a compact bar with scrollable buttons */
+@media(max-width:899px){
+  .side{flex:1 1 100%;flex-direction:row;align-items:center;gap:6px;padding:12px 12px;overflow-x:auto;position:sticky;top:0;z-index:5}
+  .brand{padding:0 6px 0 2px}.brand span+span{display:none}
+  .sec,.side-foot div,.side-foot span{display:none}
+  .nav-a{flex:none;padding:9px 12px;white-space:nowrap;font-size:13px}
+  .side-foot{margin:0;background:none;padding:0;flex:none}
+  .side-foot form{margin:0!important}.side-foot .btn{width:auto!important;white-space:nowrap}
+}
+</style>
+{% block head %}{% endblock %}
+</head>
+<body>
+<div class="layout">
+<nav class="side" aria-label="Asosiy menyu">
+  <div class="brand">
+    <div class="logo"><i style="left:0;top:6px;width:30px;height:24px;background:#F59E0B;transform:rotate(-10deg)"></i><i style="left:7px;top:4px;width:30px;height:24px;background:#6E7BFF;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;font-style:normal">S</i></div>
+    <div style="display:flex;flex-direction:column"><span style="font-weight:800;font-size:17px;color:#fff">SlideLab</span><span style="font-size:12px;color:#8D95BE">Admin panel</span></div>
+  </div>
+  <span class="sec" style="padding-top:0">ASOSIY</span>
+  <a class="nav-a {{ 'nav-on' if active=='home' }}" href="/admin"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/></svg>Bosh sahifa</a>
+  <a class="nav-a {{ 'nav-on' if active=='orders' }}" href="/admin/orders"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></svg>Buyurtmalar{% if nav_waiting %}<span class="badge">{{ nav_waiting }}</span>{% endif %}</a>
+  <a class="nav-a {{ 'nav-on' if active=='users' }}" href="/admin/users"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M17 11a3 3 0 1 0 0-6M22 21c0-3-2-5-5-5.5"/></svg>Foydalanuvchilar</a>
+  <a class="nav-a {{ 'nav-on' if active=='payments' }}" href="/admin/payments"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg>To‘lovlar</a>
+  <span class="sec">BOSHQARUV</span>
+  <a class="nav-a {{ 'nav-on' if active=='broadcast' }}" href="/admin/broadcast"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11v2l13 5V6zM16 8a4 4 0 0 1 0 8M7 13v5h3"/></svg>Xabar tarqatish</a>
+  <a class="nav-a {{ 'nav-on' if active=='settings' }}" href="/admin/settings"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Sozlamalar</a>
+  <a class="nav-a {{ 'nav-on' if active=='system' }}" href="/admin/system"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Tizim holati</a>
+  <div class="side-foot">
+    {% if maintenance %}
+    <div style="display:flex;align-items:center;gap:8px;color:#fff;font-weight:700;font-size:13px"><span style="width:8px;height:8px;border-radius:50%;background:#F97316;box-shadow:0 0 0 4px rgba(249,115,22,.25)"></span>Texnik ishlar rejimi</div>
+    <span>Bot foydalanuvchilarga yopiq</span>
+    {% else %}
+    <div style="display:flex;align-items:center;gap:8px;color:#fff;font-weight:700;font-size:13px"><span style="width:8px;height:8px;border-radius:50%;background:#34D399;box-shadow:0 0 0 4px rgba(52,211,153,.2)"></span>Bot ishlayapti</div>
+    <span>{{ uptime }} · {{ building }} ta taqdimot yaratilmoqda</span>
+    {% endif %}
+    <form method="post" action="/admin/logout" style="margin:6px 0 0"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn-sm" style="width:100%;background:rgba(255,255,255,.08);color:#DDE1FA">Chiqish · {{ admin_label }}</button></form>
+  </div>
+</nav>
+<main>
+{% if flash %}<div class="flash {{ 'flash-err' if flash_err else 'flash-ok' }}" role="status">{{ flash }}</div>{% endif %}
+{% block content %}{% endblock %}
+</main>
+</div>
+</body>
+</html>
