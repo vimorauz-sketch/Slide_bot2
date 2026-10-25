@@ -29,7 +29,7 @@ async def test_valid_template_number_advances_to_subject_state(entered, expected
 
     await create_pres.process_template_number_text(message, state)
 
-    assert await state.get_state() == PresentationForm.subject
+    assert await state.get_state() == PresentationForm.style  # fonts/colour menu first
     assert (await state.get_data())["template_id"] == expected_id
 
 
@@ -72,7 +72,7 @@ async def test_template_selection_callback_with_a_real_template_sets_subject_sta
 
     await create_pres.process_template_selection(cb, state)
 
-    assert await state.get_state() == PresentationForm.subject
+    assert await state.get_state() == PresentationForm.style  # fonts/colour menu first
     assert (await state.get_data())["template_id"] == "05_nature_organic"
 
 
@@ -104,7 +104,7 @@ async def test_webapp_data_selects_theme_and_starts_wizard():
     message = _message("")
     message.web_app_data = SimpleNamespace(data=json.dumps({"theme": "082_suzani~cherry"}))
     await create_pres.process_webapp_choice(message, state)
-    assert await state.get_state() == PresentationForm.subject
+    assert await state.get_state() == PresentationForm.style  # fonts/colour menu first
     assert (await state.get_data())["template_id"] == "082_suzani~cherry"
 
 
@@ -153,7 +153,7 @@ async def test_deep_link_payload_selects_template_and_colour():
     state = FakeFSMContext()
     ok = await create_pres.apply_template_choice(_message("").bot, 1, state, "150_apollo--emerald")
     assert ok and (await state.get_data())["template_id"] == "150_apollo~emerald"
-    assert await state.get_state() == PresentationForm.subject
+    assert await state.get_state() == PresentationForm.style  # fonts/colour menu first
 
 
 # ---------------------------------------------------------------------------
@@ -315,7 +315,7 @@ async def test_custom_design_prompt_generates_spec_and_advances_to_subject(no_op
     assert data["template_id"] == "custom_ai"
     assert "custom_design_spec" in data
     assert data["custom_design_spec"]["primary_color"].startswith("#")
-    assert await state.get_state() == PresentationForm.subject
+    assert await state.get_state() == PresentationForm.style  # fonts/colour menu first
 
 
 @pytest.mark.asyncio

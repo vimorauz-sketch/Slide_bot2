@@ -124,13 +124,16 @@ async def apply_template_choice(bot, chat_id: int, state: FSMContext, key) -> bo
         if block is not None:
             await bot.send_message(chat_id, block.text, parse_mode="HTML")
             return True
-    if current in (None, PresentationForm.template_selection.state, PresentationForm.custom_design_prompt.state):
+    if current in (None, PresentationForm.template_selection.state, PresentationForm.custom_design_prompt.state,
+                   PresentationForm.style.state):
         if current is None:
             await state.set_data({})
         await state.update_data(template_id=tid)
-        await state.set_state(PresentationForm.subject)
-        started = True
-        text = f"✅ <b>{label}</b> tanlandi!\n\n{SUBJECT_PROMPT}"
+        # next: fonts and text colour (the menu shows the cover in the chosen style)
+        await state.set_state(PresentationForm.style)
+        from bot.handlers.style import show_menu
+        await show_menu(bot, chat_id, state, note=f"✅ <b>{label}</b> tanlandi!")
+        return True
     else:
         await state.update_data(template_id=tid)
         started = False
@@ -372,8 +375,9 @@ async def process_custom_design_prompt(message: Message, state: FSMContext):
     prompt_text = _clean(message.text)
     design_spec = await ai_service.generate_custom_design_spec(prompt_text)
     await state.update_data(template_id="custom_ai", custom_design_spec=design_spec)
-    await state.set_state(PresentationForm.subject)
-    await message.answer(SUBJECT_PROMPT, parse_mode="HTML", reply_markup=get_subject_keyboard())
+    await state.set_state(PresentationForm.style)
+    from bot.handlers.style import show_menu
+    await show_menu(message.bot, message.chat.id, state, note="✅ <b>AI dizayn tayyor!</b>")
 
 
 # ---------------------------------------------------------------- wizard: buttons for every common answer,
@@ -577,6 +581,11 @@ async def _finish_notes(message: Message, state: FSMContext, notes: str) -> None
             ("📅", "Sana", data.get("date")),
             ("🌐", "Til", LANG_NAMES.get(data.get("language"), data.get("language"))),
             ("📝", "Talablar", notes)]
+    if data.get("font_title") or data.get("font_body") or data.get("text_color"):
+        from bot.handlers.style import _font_name, _color_name
+        rows.insert(1, ("🔤", "Shriftlar", f"{_font_name(data.get('font_title'))} / {_font_name(data.get('font_body'))}"))
+        if data.get("text_color"):
+            rows.insert(2, ("🎨", "Yozuv rangi", _color_name(data.get("text_color"))))
     lines = "".join(f"{e} <b>{k}:</b> {escape_html(v)}\n" for e, k, v in rows if v)
     price_line = f"💰 <b>Jami narx:</b> {texts.som(total_price)}"
     if await credits.usable(message.from_user.id, slide_count):
@@ -971,7 +980,7 @@ async def cancel_presentation_creation(callback: CallbackQuery, state: FSMContex
 
 
 # ---------------------------------------------------------------- anything else (registered last)
-_BUTTON_STATES = (PresentationForm.confirmation, PresentationForm.outline_review)
+_BUTTON_STATES = (PresentationForm.confirmation, PresentationForm.outline_review, PresentationForm.style)
 _WAIT_STATES = (PresentationForm.outline_wait, PresentationForm.generating)
 
 

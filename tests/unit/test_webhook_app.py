@@ -215,7 +215,7 @@ async def test_webapp_select_sets_the_users_theme(monkeypatch):
         assert r.status == 200 and (await r.json())["ok"]
     state = dp.fsm.get_context(bot=bot, chat_id=777, user_id=777)
     assert (await state.get_data())["template_id"] == "150_apollo~emerald"
-    assert await state.get_state() == "PresentationForm:subject"
+    assert await state.get_state() == "PresentationForm:style"
     assert bot.sent_messages[0]["chat_id"] == 777
 
 

@@ -11,6 +11,7 @@ appends a :root block.
 from __future__ import annotations
 
 import copy
+import re
 import json
 from functools import lru_cache
 from pathlib import Path
@@ -179,10 +180,47 @@ def is_known_theme(key: Any) -> bool:
 
 
 def get_theme(key_or_spec: Any = DEFAULT_THEME) -> Dict[str, Any]:
-    """Returns a theme dict. A dict argument is an AI custom design spec (colours/fonts)."""
+    """Returns a theme dict. A dict argument is an AI custom design spec (colours/fonts), or a
+    style choice on top of a template: {"base": key-or-spec, "fonts": {"title", "body"}, "text_color"}."""
     if isinstance(key_or_spec, dict):
+        if "base" in key_or_spec:
+            return apply_style(get_theme(key_or_spec["base"]), key_or_spec)
         return theme_from_custom_spec(key_or_spec)
     return copy.deepcopy(_load(resolve_theme_id(key_or_spec)))
+
+
+def apply_style(t: Dict[str, Any], style: Dict[str, Any]) -> Dict[str, Any]:
+    """The user's own fonts (from the font library) and text colour on top of a template."""
+    from services.deck import fonts as _fonts
+    chosen = style.get("fonts") or {}
+    for role in ("title", "body"):
+        fid = chosen.get(role)
+        if fid and _fonts.is_library_font(fid):
+            t.setdefault("fonts", {})[role] = fid
+            # the PowerPoint file names the same font (the customer gets its TTF files to install)
+            t.setdefault("pptx_fonts", {})[role] = _fonts.family_name(fid)
+            if role == "title" and (_fonts.library_font(fid) or {}).get("category") == "hand":
+                # handwriting must not be spaced out in capitals (theme titles often are)
+                t["css"] = t.get("css", "") + ("\n:root{--title-transform:none !important;"
+                                               "--title-tracking:0 !important;}")
+    color = style.get("text_color")
+    if color and re.fullmatch(r"#[0-9A-Fa-f]{6}", str(color)):
+        t.setdefault("palette", {})["text"] = color
+        t["css"] = t.get("css", "") + (f"\n:root{{--text:{color} !important;--title-color:{color} !important;"
+                                       f"--muted:color-mix(in srgb, {color} 74%, var(--bg)) !important;}}")
+    t["style"] = {k: v for k, v in (("fonts", chosen), ("text_color", color)) if v}
+    return t
+
+
+def contrast(c1: str, c2: str) -> float:
+    """WCAG contrast ratio of two #rrggbb colours."""
+    def lum(h):
+        h = h.lstrip("#")
+        ch = [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+        ch = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in ch]
+        return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2]
+    a, b = lum(c1), lum(c2)
+    return (max(a, b) + 0.05) / (min(a, b) + 0.05)
 
 
 def theme_colors(theme_id: str) -> List[Dict[str, Any]]:

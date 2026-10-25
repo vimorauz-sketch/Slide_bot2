@@ -36,9 +36,20 @@ class BuildResult:
 
 def theme_key_from_data(data: Dict[str, Any]) -> Any:
     tpl = data.get("template_id", "05_nature_organic")
-    if tpl == "custom_ai" and data.get("custom_design_spec"):
-        return data["custom_design_spec"]
-    return tpl
+    base = data["custom_design_spec"] if tpl == "custom_ai" and data.get("custom_design_spec") else tpl
+    fonts = {r: data.get(f"font_{r}") for r in ("title", "body") if data.get(f"font_{r}")}
+    color = data.get("text_color")
+    if not fonts and not color:
+        return base
+    if data.get("language") == "ru":  # a Latin-only font cannot draw Russian
+        from services.deck.fonts import cyrillic_fallback
+        fonts = {r: cyrillic_fallback(f) for r, f in fonts.items()}
+    style: Dict[str, Any] = {"base": base}
+    if fonts:
+        style["fonts"] = fonts
+    if color:
+        style["text_color"] = color
+    return style
 
 
 def refresh_title(content: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:

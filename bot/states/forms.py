@@ -2,6 +2,7 @@ from aiogram.fsm.state import State, StatesGroup
 
 class PresentationForm(StatesGroup):
     template_selection = State()
+    style = State()          # fonts and text colour of the chosen template
     custom_design_prompt = State()
     ocr_photo_upload = State()
     subject = State()

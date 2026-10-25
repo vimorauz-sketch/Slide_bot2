@@ -153,7 +153,7 @@ async def test_start_with_template_payload_selects_the_design(patched_handlers_d
     await start_module.cmd_start(message, state)
 
     assert (await state.get_data())["template_id"] == "150_apollo~emerald"
-    assert await state.get_state() == PresentationForm.subject
+    assert await state.get_state() == PresentationForm.style
     assert not message.calls_for("answer")  # no welcome menu: the wizard continues straight away
     async with patched_handlers_db() as session:
         assert await repository.get_user(session, 111) is not None

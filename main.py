@@ -78,6 +78,8 @@ async def main():
     dp.include_router(start.router)
     dp.include_router(admin.router)
     dp.include_router(ocr_task.router)
+    from bot.handlers import style
+    dp.include_router(style.router)
     dp.include_router(create_pres.router)
     dp.include_router(payment.router)
 

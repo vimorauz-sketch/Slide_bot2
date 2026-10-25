@@ -616,9 +616,9 @@ async def render_deck(
 
         if want_pptx:
             from services.deck.pptx_export import build_pptx
-            from services.deck.fonts import FAMILY_NAMES
+            from services.deck.fonts import family_name
             pf = theme.get("pptx_fonts", {})
-            measured = await page.evaluate(_MEASURE_JS, [FAMILY_NAMES.get(theme["fonts"]["title"], ""),
+            measured = await page.evaluate(_MEASURE_JS, [family_name(theme["fonts"]["title"]),
                                                          pf.get("title", "Arial"), pf.get("body", "Arial")])
             await page.evaluate("document.body.classList.add('pptx-bg')")
             bgs = await _capture_slides(page, out_dir, "bg", n_slides, png_scale)

@@ -218,6 +218,18 @@ when TezCheck reports `paid` with real money (`environment: live`) for at least 
 Unpaid bills are re-checked every 90 seconds, so a lost webhook never loses a sale. Without the
 TezCheck variables the bot runs in DEMO mode (no real payment).
 
+## Fonts and text colour
+
+After a template is chosen the bot shows a design menu with the cover in the chosen style:
+**title font**, **body font** (160 families in `assets/fonts_lib`, grouped as modern / classic /
+display / handwriting / technical) and **text colour** (only colours readable on that template are
+offered). The choice is saved with the order (`font_title`, `font_body`, `text_color` →
+`{"base": template, "fonts": …, "text_color": …}` theme key), so files can be rebuilt later.
+The PDF embeds the fonts; the PPTX names them and the customer also receives
+`Shriftlar_….zip` with Regular and Bold TTF files to install. Russian decks automatically swap a
+Latin-only font for a similar Cyrillic one. Re-download or extend the library with
+`python tools/fetch_fonts.py`.
+
 ## Free first presentation and referrals
 
 - Every user's **first presentation is free** (once per Telegram account, up to `free_max_slides`
