@@ -54,6 +54,9 @@ class FakeBot:
     async def send_message(self, chat_id, text, **kwargs):
         self.sent_messages.append({"chat_id": chat_id, "text": text, **kwargs})
 
+    async def send_document(self, chat_id, document, caption=None, **kwargs):
+        self.sent_messages.append({"chat_id": chat_id, "text": caption, "document": document, **kwargs})
+
     async def send_photo(self, chat_id, photo, caption=None, **kwargs):
         self.sent_messages.append({"chat_id": chat_id, "text": caption, "photo": photo, **kwargs})
 
@@ -96,9 +99,9 @@ class FakeMessage(_RecordingMixin):
         self.reply_markup = None
         self.web_app_data = None
 
-    async def answer(self, text, reply_markup=None, parse_mode=None):
+    async def answer(self, text, reply_markup=None, parse_mode=None, **kwargs):
         sent = FakeMessage(text=text, from_user=self.from_user, chat_id=self.chat.id, bot=self.bot)
-        self._record("answer", text=text, reply_markup=reply_markup, parse_mode=parse_mode, returned=sent)
+        self._record("answer", text=text, reply_markup=reply_markup, parse_mode=parse_mode, returned=sent, **kwargs)
         return sent
 
     async def answer_photo(self, photo, caption=None, reply_markup=None, parse_mode=None):

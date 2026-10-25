@@ -108,11 +108,30 @@ async def build_presentation(data: Dict[str, Any], storage_dir: str, outline: Op
 _file_tasks: Dict[str, "asyncio.Task"] = {}
 
 
+def _missing_local_images(content: Dict[str, Any]) -> bool:
+    """True when the deck points at photo files this server no longer has (e.g. after a redeploy)."""
+    found = []
+
+    def walk(v):
+        if isinstance(v, dict):
+            src = v.get("src")
+            if isinstance(src, str) and src.startswith("file://"):
+                found.append(src[7:])
+            for x in v.values():
+                walk(x)
+        elif isinstance(v, list):
+            for x in v:
+                walk(x)
+    walk(content)
+    return any(not os.path.exists(p) for p in found)
+
+
 async def _make_files(storage_dir: str) -> None:
     with open(os.path.join(storage_dir, "content.json"), encoding="utf-8") as f:
         saved = json.load(f)
-    await render_deck(saved["content"], saved.get("theme", "05_nature_organic"), storage_dir,
-                      want_pngs=False, fetch_images=False)
+    content = saved["content"]
+    await render_deck(content, saved.get("theme", "05_nature_organic"), storage_dir,
+                      want_pngs=False, fetch_images=_missing_local_images(content))
 
 
 def start_files(storage_dir: str) -> "asyncio.Task":

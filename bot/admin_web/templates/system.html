@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Tizim holati{% endblock %}
+{% block head %}<meta http-equiv="refresh" content="30">{% endblock %}
+{% block content %}
+<header style="display:flex;flex-direction:column;gap:4px"><h1>Tizim holati</h1><span class="sub">Har 30 soniyada yangilanadi · {{ now }}</span></header>
+
+<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+  {% for c in cards %}
+  <div class="card" style="padding:18px 20px;display:flex;align-items:center;gap:14px"><span class="tile" style="background:{{ c.tint }};color:{{ c.color }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{ c.icon }}"/></svg></span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:13px;color:#6B7194;font-weight:600">{{ c.label }}</span><span class="num" style="font-size:20px;font-weight:800">{{ c.value }}</span></div></div>
+  {% endfor %}
+</section>
+
+<div class="row" style="align-items:flex-start">
+  <section class="card pad" style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:12px">
+    <h2>Xizmatlar</h2>
+    <div class="kv">
+      {% for k, val, ok in services %}<span>{{ k }}</span><span style="font-weight:600;color:{{ '#047857' if ok else '#B91C1C' if ok is sameas false else '#12153A' }}">{{ val }}</span>{% endfor %}
+    </div>
+  </section>
+  <section class="card" style="flex:999 1 520px;min-width:0;overflow:hidden">
+    <div style="padding:22px 22px 8px"><h2>Oxirgi xatolar</h2></div>
+    <div class="scroll"><table class="table" style="min-width:640px"><thead><tr><th>Vaqt</th><th>Joy</th><th>Xabar</th></tr></thead><tbody>
+      {% for e in errors %}<tr><td class="num" style="white-space:nowrap;color:#8D93B3;font-size:13px">{{ e.when }}</td><td style="font-size:12px;color:#5A6080">{{ e.where }}</td><td style="font-size:13px;word-break:break-word">{{ e.message }}</td></tr>
+      {% else %}<tr><td colspan="3" class="empty">Xato yo‘q — hammasi joyida 🎉</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+</div>
+
+<section class="card" style="overflow:hidden">
+  <div style="padding:22px 22px 8px"><h2>Admin amallari jurnali</h2></div>
+  <div class="scroll"><table class="table" style="min-width:640px"><thead><tr><th>Vaqt</th><th>Admin</th><th>Amal</th><th>Tafsilot</th></tr></thead><tbody>
+    {% for a in audit %}<tr><td class="num" style="white-space:nowrap;color:#8D93B3;font-size:13px">{{ dt(a.at) }}</td><td style="font-weight:600">{{ a.admin }}</td><td><span class="chip c-prev">{{ a.action }}</span></td><td style="font-size:13px;color:#3D4266;word-break:break-word">{{ a.details or '' }}</td></tr>
+    {% else %}<tr><td colspan="4" class="empty">Hali amal yo‘q</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

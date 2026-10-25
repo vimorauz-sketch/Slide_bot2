@@ -36,6 +36,21 @@ class Settings(BaseSettings):
     OPENAI_IMAGE_MODEL: str = "gpt-image-1"
     OPENAI_IMAGE_QUALITY: str = "medium"
 
+    # TezCheck (https://tezcheck.uz): customers pay with Click or Payme on TezCheck's page.
+    # When the API key and cash desk code are set, all payments go through TezCheck.
+    TEZCHECK_API_KEY: str = ""            # cabinet -> API: "aps_..." (Authorization: Bearer)
+    TEZCHECK_CASH_DESK_CODE: str = ""     # cabinet -> cash desk code "cdk_..." (X-Cash-Desk-Code)
+    TEZCHECK_WEBHOOK_SECRET: str = ""     # shown once when the webhook endpoint is added ("wbs_...")
+    TEZCHECK_API_URL: str = "https://api.tezcheck.uz/api/merchant/v1"
+    TEZCHECK_SIGN_REQUESTS: bool = False  # also sign every request with HMAC (cabinet: "only signed requests")
+    TEZCHECK_ACCEPT_TEST: bool = False    # accept payments made with TezCheck's "Test provider" (testing only!)
+    TEZCHECK_PROVIDERS: str = ""          # e.g. "click,payme"; empty = every method enabled on the cash desk
+
+    # Admin dashboard (https://<domain>/admin): one-time link from /admin in the bot, or login + password.
+    ADMIN_LOGIN: str = "admin"
+    ADMIN_PASSWORD: str = ""              # empty = password login is off (only the bot link works)
+    ADMIN_SECRET: str = ""                # signs dashboard sessions; empty = derived from BOT_TOKEN
+
     # Click Shop API (https://docs.click.uz) -- required only for PAYMENT_ENV=PRODUCTION
     CLICK_SERVICE_ID: str = ""
     CLICK_MERCHANT_ID: str = ""
@@ -63,7 +78,9 @@ class Settings(BaseSettings):
     # Expensive work: presentations built at the same time (others wait in a queue) and unpaid
     # previews one user may create per day (each one costs AI requests). Admins are not limited.
     MAX_PARALLEL_BUILDS: int = 2
-    MAX_PREVIEWS_PER_DAY: int = 10
+    MAX_PREVIEWS_PER_DAY: int = 3
+    # DEMO payments ("To'lovni tasdiqlash" marks an order paid without money): testing only!
+    ALLOW_DEMO_PAYMENTS: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",

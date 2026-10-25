@@ -35,9 +35,19 @@ class _Bucket:
         self.banned_until = 0.0
 
 
+_instances: list = []
+
+
+def banned_now() -> int:
+    """Users ignored right now for flooding (for the dashboard)."""
+    now = time.monotonic()
+    return sum(1 for m in _instances for b in m.buckets.values() if b.banned_until > now)
+
+
 class ThrottlingMiddleware(BaseMiddleware):
     def __init__(self, rate: float = 1.0, burst: int = 12, ban_seconds: int = 300, admins=(),
-                 clock: Callable[[], float] = time.monotonic):
+                 clock: Callable[[], float] = time.monotonic, dynamic: bool = False):
+        self.dynamic = dynamic
         self.rate = max(0.05, float(rate))
         self.burst = max(3, int(burst))
         self.ban_seconds = int(ban_seconds)
@@ -45,6 +55,8 @@ class ThrottlingMiddleware(BaseMiddleware):
         self.clock = clock
         self.buckets: Dict[int, _Bucket] = {}
         self._pruned = clock()
+        if dynamic:
+            _instances.append(self)
 
     # ------------------------------------------------------------------ helpers
     @staticmethod
@@ -70,8 +82,17 @@ class ThrottlingMiddleware(BaseMiddleware):
         for uid in [u for u, b in self.buckets.items() if now - b.stamp > full and b.banned_until < now]:
             del self.buckets[uid]
 
+    def _refresh_limits(self) -> None:
+        """Burst and ban time can be changed in the admin dashboard while the bot runs."""
+        if not self.dynamic:
+            return
+        from services import runtime
+        self.burst = max(3, runtime.get_int("throttle_burst", self.burst))
+        self.ban_seconds = 60 * max(1, runtime.get_int("throttle_ban_minutes", max(1, self.ban_seconds // 60)))
+
     def allow(self, user_id: int, cost: float = 1.0) -> Optional[str]:
         """None if the update may pass; otherwise "notice" (tell the user once) or "drop"."""
+        self._refresh_limits()
         now = self.clock()
         self._prune(now)
         b = self.buckets.get(user_id)
@@ -100,6 +121,10 @@ class ThrottlingMiddleware(BaseMiddleware):
     async def __call__(self, handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
                        event: TelegramObject, data: Dict[str, Any]) -> Any:
         user_id, ev = self._user_and_event(event)
+        if self.dynamic and user_id is not None:
+            from services import runtime
+            if runtime.is_admin(user_id):
+                return await handler(event, data)
         if user_id is None or user_id in self.admins:
             return await handler(event, data)
         verdict = self.allow(user_id, self._cost(ev))

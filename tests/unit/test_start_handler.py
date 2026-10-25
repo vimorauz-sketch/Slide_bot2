@@ -20,6 +20,8 @@ async def test_start_without_referral_creates_user_with_no_referrer(patched_hand
 
 @pytest.mark.asyncio
 async def test_start_with_valid_referral_payload_links_referrer(patched_handlers_db):
+    async with patched_handlers_db() as session:  # the inviter must be a real user of the bot
+        await repository.get_or_create_user(session, 555, "Inviter", "inv")
     message = FakeMessage(text="/start 555", from_user=FakeUser(id=111))
     state = FakeFSMContext()
 
@@ -70,7 +72,7 @@ async def test_start_does_not_overwrite_referrer_for_an_existing_user(patched_ha
 
 
 @pytest.mark.asyncio
-async def test_start_clears_any_existing_fsm_state():
+async def test_start_clears_any_existing_fsm_state(patched_handlers_db):
     message = FakeMessage(text="/start", from_user=FakeUser(id=111))
     state = FakeFSMContext()
     await state.update_data(leftover="from a previous wizard")
@@ -124,13 +126,13 @@ async def test_show_profile_reports_order_and_referral_counts(patched_handlers_d
 
 
 @pytest.mark.asyncio
-async def test_show_referral_builds_a_deep_link_with_the_users_id():
+async def test_show_referral_builds_a_deep_link_with_the_users_id(patched_handlers_db):
     message = FakeMessage(text="🎁 Referal", from_user=FakeUser(id=42424242))
 
     await start_module.show_referral(message)
 
     text = message.calls_for("answer")[0]["text"]
-    assert "start=42424242" in text
+    assert "start=ref_42424242" in text
 
 
 @pytest.mark.asyncio

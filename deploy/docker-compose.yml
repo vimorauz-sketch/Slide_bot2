@@ -1,0 +1,58 @@
+# SlideLab on your own server (Oracle Cloud Always Free or any VPS):
+#   bot (Telegram bot + Mini App + admin panel + TezCheck webhook) + PostgreSQL + Caddy (free HTTPS)
+# Start:   cd deploy && docker compose up -d --build
+# Logs:    docker compose logs -f bot
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: slidelab
+      POSTGRES_DB: slidelab
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is missing in deploy/.env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U slidelab -d slidelab"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  bot:
+    build: ..
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://slidelab:${POSTGRES_PASSWORD}@db:5432/slidelab
+      WEBAPP_URL: https://${DOMAIN:?DOMAIN is missing in deploy/.env}/webapp/
+      WEBHOOK_HOST: 0.0.0.0
+      WEBHOOK_PORT: "8080"
+    volumes:
+      - storage:/app/storage          # generated decks, photo cache: survive updates
+    shm_size: "1gb"                    # Chromium needs shared memory to draw slides
+    logging:
+      driver: json-file
+      options: {max-size: "20m", max-file: "5"}
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on: [bot]
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  storage:
+  caddy_data:
+  caddy_config:

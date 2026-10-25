@@ -42,10 +42,15 @@ async def patched_handlers_db(db, monkeypatch):
     """
     import database.connection as dbc
     from bot.handlers import create_pres, ocr_task, payment, admin, start
-    from services.payment import click_webhook, payme_webhook
+    from services.payment import click_webhook, payme_webhook, orders
+    from services import broadcast, guard, credits
+    from bot import delivery
+    import bot.admin_web as admin_web
+    from bot.admin_web import stats as admin_stats
 
     monkeypatch.setattr(dbc, "AsyncSessionLocal", db)
-    for module in (create_pres, ocr_task, payment, admin, start, click_webhook, payme_webhook):
+    for module in (create_pres, ocr_task, payment, admin, start, click_webhook, payme_webhook,
+                   orders, broadcast, delivery, admin_web, admin_stats, guard, credits):
         monkeypatch.setattr(module, "AsyncSessionLocal", db)
     return db
 
@@ -95,3 +100,23 @@ async def finish_background_files():
     prefetch._jobs.clear()
     if tasks:
         await asyncio.gather(*tasks, return_exceptions=True)
+
+
+@pytest.fixture(autouse=True)
+def fresh_runtime_settings():
+    """Dashboard settings are cached in memory: every test starts from the defaults — except the
+    free first presentation, which is off so the older tests see the paid flow (tests of the free
+    presentation turn it on with runtime._values["free_trial"] = "1")."""
+    from services import runtime
+    runtime._values.clear()
+    runtime.blocked_users.clear()
+    runtime._values["free_trial"] = "0"
+    yield
+    runtime._values.clear()
+    runtime.blocked_users.clear()
+
+
+@pytest.fixture(autouse=True)
+def demo_payments_in_tests(monkeypatch):
+    """The suite exercises the DEMO payment flow; production has it off (ALLOW_DEMO_PAYMENTS=false)."""
+    monkeypatch.setattr("config.settings.ALLOW_DEMO_PAYMENTS", True)

@@ -44,10 +44,14 @@ async def test_admin_can_open_admin_panel(monkeypatch, patched_handlers_db):
     monkeypatch.setattr("config.settings.ADMIN_IDS", "8371155553")
     message = FakeMessage(text="/admin", from_user=FakeUser(id=8371155553))
 
+    monkeypatch.setattr("config.settings.WEBAPP_URL", "https://bot.example.uz/webapp/")
     await admin_module.cmd_admin_panel(message)
 
     assert len(message.calls_for("answer")) == 1
-    assert "Admin Paneli" in message.calls_for("answer")[0]["text"]
+    answer = message.calls_for("answer")[0]
+    assert "bugun" in answer["text"]
+    url = answer["reply_markup"].inline_keyboard[0][0].url
+    assert url.startswith("https://bot.example.uz/admin/login/tg?t=")  # one-time dashboard link
 
 
 @pytest.mark.asyncio

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Buyurtmalar{% endblock %}
+{% block content %}
+<header style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;justify-content:space-between">
+  <div style="display:flex;flex-direction:column;gap:4px"><h1>Buyurtmalar</h1><span class="sub">Barcha namunalar va to‘lovlar bir joyda</span></div>
+  <a class="btn btn-dark" href="/admin/orders.csv?{{ qs }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Excel (CSV) yuklab olish</a>
+</header>
+
+<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+  {% for c in cards %}
+  <div class="card" style="padding:18px 20px;display:flex;align-items:center;gap:14px"><span class="tile" style="background:{{ c.tint }};color:{{ c.color }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{ c.icon }}"/></svg></span><div style="display:flex;flex-direction:column"><span style="font-size:13px;color:#6B7194;font-weight:600">{{ c.label }}</span><span class="num" style="font-size:22px;font-weight:800">{{ c.value }}</span></div></div>
+  {% endfor %}
+</section>
+
+<form method="get" action="/admin/orders" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+  <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A80A3" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <label for="q" class="sr">Qidiruv</label><input id="q" name="q" type="search" value="{{ q }}" placeholder="Mavzu, foydalanuvchi, @username yoki ID"></div>
+  <input type="hidden" name="f" value="{{ f }}">
+  {% for key, label, n in filters %}<a class="flt {{ 'flt-on' if key == f }}" href="?f={{ key }}{% if q %}&q={{ q|urlencode }}{% endif %}">{{ label }}<span class="cnt">{{ n }}</span></a>{% endfor %}
+</form>
+
+<div class="row" style="align-items:flex-start">
+  <section class="card" style="flex:999 1 560px;min-width:0;overflow:hidden">
+    <div class="scroll">
+      <table class="table" style="min-width:640px">
+        <thead><tr><th>Mavzu</th><th>Foydalanuvchi · sana</th><th>Slayd</th><th>Summa</th><th>Holat</th></tr></thead>
+        <tbody>
+        {% for o in rows %}
+        <tr class="clk {{ 'sel' if sel and sel.id == o.id }}" onclick="location.href='?{{ base_qs }}&o={{ o.id }}'">
+          <td style="max-width:280px"><span style="display:flex;align-items:center;gap:12px;min-width:0">{{ thumb(o) }}<span style="display:flex;flex-direction:column;min-width:0"><a class="ell" style="font-weight:700;color:#12153A" href="?{{ base_qs }}&o={{ o.id }}">{{ o.topic }}</a><span class="ell" style="font-size:12px;color:#8D93B3">{{ o.subject or '—' }} · <span class="num">#{{ o.id[:8] }}</span></span></span></span></td>
+          <td><span style="display:flex;align-items:center;gap:10px;min-width:0"><span class="av" style="background:{{ avatar_color(o.user_id) }}">{{ initials(o.user_name) }}</span><span style="display:flex;flex-direction:column;min-width:0"><span class="ell" style="color:#3D4266;max-width:150px">{{ o.user_name }}</span><span class="num" style="font-size:12px;color:#8D93B3;white-space:nowrap">{{ dt(o.created_at) }}</span></span></span></td>
+          <td class="num" style="font-weight:700">{{ o.slide_count }}</td>
+          <td class="num" style="font-weight:700">{{ money(o.total_price) }}</td>
+          <td>{{ status_chip(o.status) }}</td>
+        </tr>
+        {% else %}<tr><td colspan="5" class="empty">Hech narsa topilmadi</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-top:1px solid #F0F1F6;font-size:13px;color:#6B7194;flex-wrap:wrap;gap:10px">
+      <span>{{ shown_from }}–{{ shown_to }} / {{ money(total) }}</span>
+      <div style="display:flex;gap:6px">
+        {% if page > 1 %}<a class="btn btn-sm" href="?{{ base_qs }}&page={{ page - 1 }}" aria-label="Oldingi sahifa">←</a>{% endif %}
+        <span class="btn btn-sm btn-dark">{{ page }} / {{ pages }}</span>
+        {% if page < pages %}<a class="btn btn-sm" href="?{{ base_qs }}&page={{ page + 1 }}" aria-label="Keyingi sahifa">→</a>{% endif %}
+      </div>
+    </div>
+  </section>
+
+  {% if sel %}
+  <aside class="card" aria-label="Buyurtma tafsilotlari" style="flex:1 1 330px;min-width:0;overflow:hidden;display:flex;flex-direction:column">
+    <div style="background:{{ sel_colors.bg }};padding:22px;position:relative;height:{{ '190px' if sel_slides else '150px' }};overflow:hidden">
+      <span style="position:absolute;top:16px;right:16px">{{ status_chip(sel.status) }}</span>
+      {% if sel_slides %}
+      <div style="position:absolute;left:22px;right:22px;bottom:16px;display:grid;grid-template-columns:repeat({{ sel_slides|length }},minmax(0,1fr));gap:8px">
+        {% for n in sel_slides %}<a href="/admin/orders/{{ sel.id }}/slide/{{ n }}" target="_blank" rel="noopener"><img src="/admin/orders/{{ sel.id }}/slide/{{ n }}" alt="{{ n }}-slayd" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;box-shadow:0 8px 18px rgba(0,0,0,.25);display:block"></a>{% endfor %}
+      </div>
+      {% else %}
+      <div aria-hidden="true" style="position:absolute;left:28px;bottom:-14px;width:230px;height:120px;border-radius:10px;background:#fff;box-shadow:0 18px 34px rgba(0,0,0,.18);transform:rotate(-3deg);padding:16px;display:flex;gap:12px"><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="width:90%;height:11px;border-radius:5px;background:#1B2150"></div><div style="height:6px;border-radius:3px;background:#D5D9EE"></div><div style="width:80%;height:6px;border-radius:3px;background:#D5D9EE"></div></div><div style="width:70px;border-radius:8px;background:{{ sel_colors.ac }}"></div></div>
+      {% endif %}
+    </div>
+    <div style="padding:22px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:4px"><span class="num" style="font-size:13px;color:#8D93B3">#{{ sel.id[:8] }} · {{ dt(sel.created_at) }}</span><h2 style="font-size:20px;line-height:1.3">{{ sel.topic }}</h2></div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+        <div style="background:#F5F6FB;border-radius:12px;padding:12px 14px"><span style="font-size:12px;color:#6B7194;font-weight:600">Summa</span><div class="num" style="font-size:18px;font-weight:800">{{ money(sel.total_price) }} so‘m</div></div>
+        <div style="background:#F5F6FB;border-radius:12px;padding:12px 14px"><span style="font-size:12px;color:#6B7194;font-weight:600">Slaydlar</span><div class="num" style="font-size:18px;font-weight:800">{{ sel.slide_count }} ta</div></div>
+      </div>
+      <div class="kv">
+        <span>Foydalanuvchi</span><a href="/admin/users?u={{ sel.user_id }}" style="font-weight:700">{{ sel_user }}</a>
+        <span>Fan</span><span style="font-weight:600">{{ sel.subject or '—' }}</span>
+        <span>Shablon</span><span style="font-weight:600">{{ sel_template }}</span>
+        <span>To‘lov</span><span style="font-weight:600">{{ sel_payment }}</span>
+        {% if sel.paid_at %}<span>To‘langan</span><span class="num" style="font-weight:600">{{ dt(sel.paid_at) }}{% if sel.fee_amount %} · komissiya {{ money(sel.fee_amount) }}{% endif %}</span>{% endif %}
+        <span>Fayllar</span><span style="font-weight:600">{{ 'Yuborilgan ' ~ dt(sel.delivered_at) if sel.delivered_at else 'Yuborilmagan' }}</span>
+        {% if sel.bill_id %}<span>TezCheck</span><span class="num ell" style="font-size:12px">{{ sel.bill_id }}</span>{% endif %}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+        <a class="btn" href="/admin/orders/{{ sel.id }}/file/pdf"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>PDF</a>
+        <a class="btn" href="/admin/orders/{{ sel.id }}/file/pptx"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>PPTX</a>
+      </div>
+      {% if sel.status != 'PAID' %}
+      {% if sel.bill_id %}<form method="post" action="/admin/orders/{{ sel.id }}/check"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn" style="width:100%">TezCheck’da tekshirish</button></form>{% endif %}
+      <form method="post" action="/admin/orders/{{ sel.id }}/mark-paid" onsubmit="return confirm('Buyurtma to‘langan deb belgilanadi va fayllar mijozga yuboriladi. Davom etasizmi?')"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn-p" style="width:100%">To‘langan deb belgilash va yuborish</button></form>
+      {% else %}
+      <form method="post" action="/admin/orders/{{ sel.id }}/resend"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn-p" style="width:100%">Mijozga fayllarni qayta yuborish</button></form>
+      {% endif %}
+      {% if sel.status not in ('PAID', 'CANCELLED', 'REFUNDED') %}
+      <form method="post" action="/admin/orders/{{ sel.id }}/cancel" onsubmit="return confirm('Buyurtma bekor qilinadi (to‘lov havolasi ham o‘chadi). Davom etasizmi?')"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn-d" style="width:100%">Buyurtmani bekor qilish</button></form>
+      {% endif %}
+    </div>
+  </aside>
+  {% endif %}
+</div>
+{% endblock %}

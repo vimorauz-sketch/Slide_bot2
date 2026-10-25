@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Kirish · SlideLab Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:#12153A;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.wrap{min-height:100vh;display:flex;flex-wrap:wrap}
+.art{flex:1 1 460px;background:#12163A;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:48px;min-height:380px}
+.form{flex:1 1 420px;display:flex;align-items:center;justify-content:center;padding:48px 24px}
+.inp{width:100%;border:2px solid #E6E8F2;border-radius:12px;padding:12px 16px;font:600 15px 'Plus Jakarta Sans',sans-serif;color:#12153A;min-height:52px}
+.inp:focus{outline:0;border-color:#6E7BFF}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;border:0;cursor:pointer;width:100%;color:#fff;font:800 15px 'Plus Jakarta Sans',sans-serif;border-radius:13px;min-height:54px;text-decoration:none}
+.step{flex:none;width:32px;height:32px;border-radius:10px;background:#EEF0FF;color:#3240B8;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+.err{background:#FEF2F2;color:#B91C1C;padding:12px 14px;border-radius:12px;font-weight:700;font-size:14px}
+@media(max-width:700px){.art{padding:28px;min-height:280px}.stack{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="art" aria-hidden="true">
+    <div style="position:absolute;right:-140px;top:-140px;width:480px;height:480px;border-radius:50%;background:#1B2150"></div>
+    <div style="position:absolute;left:-120px;bottom:-160px;width:380px;height:380px;border-radius:50%;background:#1A1F4A"></div>
+    <div style="position:relative;display:flex;align-items:center;gap:12px">
+      <div style="position:relative;width:44px;height:44px"><div style="position:absolute;left:0;top:8px;width:34px;height:27px;border-radius:6px;background:#F59E0B;transform:rotate(-10deg)"></div><div style="position:absolute;left:8px;top:5px;width:34px;height:27px;border-radius:6px;background:#6E7BFF;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px">S</div></div>
+      <span style="font-weight:800;font-size:20px;color:#fff">SlideLab</span>
+    </div>
+    <div class="stack" style="position:relative;height:280px;margin:30px 0">
+      <div style="position:absolute;left:6%;top:40px;width:62%;height:180px;border-radius:14px;background:#F59E0B;transform:rotate(-10deg);box-shadow:0 24px 40px rgba(0,0,0,.35)"></div>
+      <div style="position:absolute;left:18%;top:20px;width:66%;height:190px;border-radius:14px;background:#fff;transform:rotate(4deg);box-shadow:0 28px 48px rgba(0,0,0,.4);padding:22px;display:flex;gap:18px">
+        <div style="flex:1;display:flex;flex-direction:column;gap:12px"><div style="width:80%;height:16px;border-radius:8px;background:#1B2150"></div><div style="height:8px;border-radius:4px;background:#D5D9EE"></div><div style="width:90%;height:8px;border-radius:4px;background:#D5D9EE"></div><div style="width:70%;height:8px;border-radius:4px;background:#D5D9EE"></div></div>
+        <div style="width:34%;border-radius:12px;background:#6E7BFF;position:relative;overflow:hidden"><div style="position:absolute;bottom:-20px;left:-10px;width:110px;height:80px;border-radius:50%;background:#34D399"></div><div style="position:absolute;top:16px;right:16px;width:24px;height:24px;border-radius:50%;background:#FDE68A"></div></div>
+      </div>
+    </div>
+    <div style="position:relative;display:flex;flex-direction:column;gap:10px;max-width:420px">
+      <span style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;letter-spacing:-.02em">Botingiz qanday ishlayotganini bir qarashda ko‘ring</span>
+      <span style="font-size:15px;color:#A9B1D6;line-height:1.5">Daromad, buyurtmalar, foydalanuvchilar va sozlamalar — hammasi bir joyda.</span>
+    </div>
+  </section>
+  <section class="form">
+    <div style="width:100%;max-width:420px;display:flex;flex-direction:column;gap:22px">
+      <div><h1 style="margin:0;font-size:30px;font-weight:800">Xush kelibsiz</h1><p style="margin:6px 0 0;color:#6B7194;font-size:15px">Admin panelga kiring</p></div>
+      {% if error %}<div class="err" role="alert">{{ error }}</div>{% endif %}
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;gap:14px;align-items:flex-start"><span class="step">1</span><p style="margin:5px 0 0;font-size:15px;line-height:1.5">Botga <b>/admin</b> buyrug‘ini yuboring.</p></div>
+        <div style="display:flex;gap:14px;align-items:flex-start"><span class="step">2</span><p style="margin:5px 0 0;font-size:15px;line-height:1.5">Bot <b>10 daqiqa</b> amal qiladigan bir martalik havola yuboradi — uni bosing.</p></div>
+        {% if bot_url %}<a class="btn" href="{{ bot_url }}" style="background:#229ED9;box-shadow:0 10px 20px rgba(34,158,217,.3)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 3 2 11l7 2 2 7 3-5 5 4z"/><path d="m9 13 7-6"/></svg>Botni ochish</a>{% endif %}
+      </div>
+      {% if password_enabled %}
+      <div style="display:flex;align-items:center;gap:12px;color:#8D93B3;font-size:13px;font-weight:700"><span style="flex:1;height:1px;background:#E6E8F2"></span>yoki<span style="flex:1;height:1px;background:#E6E8F2"></span></div>
+      <form method="post" action="/admin/login" style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:8px"><label for="login" style="font-size:14px;font-weight:700">Login</label><input id="login" name="login" class="inp" autocomplete="username" required></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><label for="pw" style="font-size:14px;font-weight:700">Parol</label><input id="pw" name="password" type="password" class="inp" autocomplete="current-password" required></div>
+        <button class="btn" style="background:#6E7BFF;box-shadow:0 10px 20px rgba(110,123,255,.35)">Kirish</button>
+      </form>
+      {% endif %}
+      <p style="margin:0;font-size:13px;color:#6B7194">Faqat adminlar kira oladi. 5 marta noto‘g‘ri parol — 15 daqiqa blok.</p>
+    </div>
+  </section>
+</div>
+</body>
+</html>

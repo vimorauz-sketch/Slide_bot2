@@ -15,8 +15,11 @@ from bot.utils import escape_html
 from bot.keyboards.inline import (
     get_template_selection_inline_keyboard, get_confirmation_inline_keyboard,
     get_payment_inline_keyboard, get_production_payment_inline_keyboard, get_outline_inline_keyboard,
-    get_gallery_categories_keyboard, get_gallery_list_keyboard, get_gallery_colors_keyboard
+    get_gallery_categories_keyboard, get_gallery_list_keyboard, get_gallery_colors_keyboard,
+    get_tezcheck_pay_keyboard
 )
+from services.payment.orders import payment_mode
+from typing import Optional
 from bot.keyboards.reply import (
     get_level_keyboard, get_course_keyboard, get_language_keyboard, get_cancel_keyboard, get_webapp_keyboard,
     get_skip_keyboard, get_main_menu_keyboard, SKIP_TEXTS, get_subject_keyboard, get_slide_count_keyboard,
@@ -25,6 +28,9 @@ from bot.keyboards.reply import (
 from services import ai_service
 from services.presentation import build_presentation, start_files
 from services import prefetch
+from services import runtime
+from services import credits
+from bot import texts
 from bot.progress import ProgressMessage
 import asyncio
 from services.deck import themes
@@ -112,6 +118,12 @@ async def apply_template_choice(bot, chat_id: int, state: FSMContext, key) -> bo
     current = await state.get_state()
     current = getattr(current, "state", current)
     label = f"№ {int(t.get('code') or 0)} · {escape_html(t.get('name', tid))} · {escape_html(t.get('color_name', ''))}"
+    if current is None:
+        from services import guard
+        block = await guard.check(chat_id)
+        if block is not None:
+            await bot.send_message(chat_id, block.text, parse_mode="HTML")
+            return True
     if current in (None, PresentationForm.template_selection.state, PresentationForm.custom_design_prompt.state):
         if current is None:
             await state.set_data({})
@@ -144,8 +156,25 @@ async def apply_template_choice(bot, chat_id: int, state: FSMContext, key) -> bo
     "🖼 Shablonlar", "🖼 Шаблоны", "🖼 Templates",
 ]))
 async def start_pres_wizard(message: Message, state: FSMContext):
-    prefetch.drop(message.from_user.id)
+    await _open_wizard(message, message.from_user.id, state)
+
+
+@router.callback_query(F.data == "new_pres")
+async def start_pres_wizard_button(callback: CallbackQuery, state: FSMContext):
+    """«✨ Taqdimot yaratish» under the free/referral messages."""
+    await _safe_answer(callback)
+    cur = await state.get_state()
+    if getattr(cur, "state", cur) == PresentationForm.generating.state:
+        await callback.message.answer("⏳ Taqdimot allaqachon tayyorlanmoqda — tayyor bo‘lgach yuboriladi.")
+        return
+    await _open_wizard(callback.message, callback.from_user.id, state)
+
+
+async def _open_wizard(message: Message, user_id: int, state: FSMContext) -> None:
+    prefetch.drop(user_id)
     await state.clear()
+    if await _blocked(message, user_id):  # say it now, not after 13 questions
+        return
     await state.set_state(PresentationForm.template_selection)
 
     global _webapp_disabled
@@ -358,6 +387,12 @@ async def _limits():
     return min_slides, max_slides, price
 
 
+async def _free_only(user_id: int) -> bool:
+    """A free presentation is the only way this user can make one now (no payments, creation closed)."""
+    from services import guard
+    return not runtime.is_admin(user_id) and not guard.creation_open() and await credits.usable(user_id)
+
+
 def _today():
     import datetime as _dt
     now = _dt.datetime.now(_dt.timezone(_dt.timedelta(hours=5)))  # Tashkent time
@@ -376,10 +411,18 @@ async def process_topic(message: Message, state: FSMContext):
     await state.update_data(topic=_clean(message.text))
     await state.set_state(PresentationForm.slide_count)
     min_slides, max_slides, price_per_slide = await _limits()
+    free_line = ""
+    have = await credits.available(message.from_user.id)
+    if have.total > 0:
+        free_max = credits.max_slides()
+        if await _free_only(message.from_user.id) and free_max > 0:
+            max_slides = max(min_slides, min(max_slides, free_max))
+        free_line = texts.free_slide_hint(free_max, not await _free_only(message.from_user.id), trial=have.trial) + "\n\n"
     await message.answer(
         f"📑 <b>Nechta slayd bo‘lishini xohlaysiz?</b>\n\n"
         f"Minimum: {min_slides}, maksimum: {max_slides} slayd\n"
-        f"Narxi: 1 slayd = {price_per_slide} so‘m\n\n"
+        f"Narxi: 1 slayd = {texts.som(price_per_slide)}\n\n"
+        f"{free_line}"
         f"<i>Tugmani bosing yoki sonini yozing (masalan: 10):</i>",
         parse_mode="HTML", reply_markup=get_slide_count_keyboard(min_slides, max_slides)
     )
@@ -400,6 +443,10 @@ async def process_slide_count(message: Message, state: FSMContext):
 
     if slide_count > max_slides:
         await message.answer(f"⚠️ Maksimum buyurtma miqdori: {max_slides} ta slayd. Qayta kiriting:")
+        return
+
+    if not credits.covers(slide_count) and await _free_only(message.from_user.id):
+        await message.answer(texts.free_too_big_text(credits.max_slides()), parse_mode="HTML")
         return
 
     await state.update_data(slide_count=slide_count)
@@ -429,7 +476,8 @@ async def process_level(message: Message, state: FSMContext):
 async def _prefetch(message: Message, state: FSMContext) -> None:
     """Starts (or restarts, if an answer changed) writing the text in the background."""
     try:
-        if await _preview_allowed(message.from_user.id):
+        from services import guard
+        if await guard.may_prefetch(message.from_user.id):
             prefetch.ensure(message.from_user.id, await state.get_data())
     except Exception:  # noqa: BLE001 - the deck is simply written later
         logger.exception("prefetch could not start")
@@ -530,9 +578,12 @@ async def _finish_notes(message: Message, state: FSMContext, notes: str) -> None
             ("🌐", "Til", LANG_NAMES.get(data.get("language"), data.get("language"))),
             ("📝", "Talablar", notes)]
     lines = "".join(f"{e} <b>{k}:</b> {escape_html(v)}\n" for e, k, v in rows if v)
+    price_line = f"💰 <b>Jami narx:</b> {texts.som(total_price)}"
+    if await credits.usable(message.from_user.id, slide_count):
+        price_line = texts.free_price_line(total_price, trial=(await credits.available(message.from_user.id)).trial)
     summary_text = (
         f"📊 <b>BUYURTMA TASDIQLASH:</b>\n\n{lines}"
-        f"💰 <b>Jami narx:</b> {total_price} so‘m\n\n"
+        f"{price_line}\n\n"
         f"Prezentatsiyani generatsiya qilishni tasdiqlaysizmi?"
     )
 
@@ -546,11 +597,18 @@ _build_sem = None
 _build_waiting = 0
 
 
+_build_sem_size = 0
+
+
 def _sem():
-    global _build_sem
-    if _build_sem is None:
+    """The limit can be changed in the dashboard: a new semaphore is made when nobody is building."""
+    global _build_sem, _build_sem_size
+    from services import runtime
+    size = runtime.get_int("max_parallel_builds", int(settings.MAX_PARALLEL_BUILDS), lo=1, hi=20)
+    if _build_sem is None or (size != _build_sem_size and not _build_sem.locked()
+                              and getattr(_build_sem, "_value", 0) == _build_sem_size and not _build_waiting):
         import asyncio
-        _build_sem = asyncio.Semaphore(max(1, int(settings.MAX_PARALLEL_BUILDS)))
+        _build_sem, _build_sem_size = asyncio.Semaphore(size), size
     return _build_sem
 
 
@@ -585,9 +643,29 @@ class _build_slot:
         return False
 
 
+async def _blocked(message, user_id: int, slide_count: Optional[int] = None) -> bool:
+    """Tells the user why they cannot make a new presentation now (True) — closed creation,
+    unpaid previews, daily limits. See services/guard.py."""
+    from services import guard
+    from bot.keyboards.inline import get_tezcheck_pay_keyboard as _pay_kb
+    block = await guard.check(user_id, slide_count)
+    if block is None:
+        return False
+    markup = None
+    if block.pay_order_id and payment_mode() == "tezcheck":
+        async with AsyncSessionLocal() as session:
+            o = await repository.get_presentation_order(session, block.pay_order_id)
+        if o:
+            markup = _pay_kb(o.id, o.total_price)
+    await message.answer(block.text, parse_mode="HTML", reply_markup=markup)
+    return True
+
+
 async def _preview_allowed(user_id: int) -> bool:
     """Unpaid previews per user per day (each one costs AI requests). Admins are not limited."""
-    if user_id in settings.admin_id_list or int(settings.MAX_PREVIEWS_PER_DAY) <= 0:
+    from services import runtime
+    limit = runtime.get_int("max_previews_per_day", int(settings.MAX_PREVIEWS_PER_DAY))
+    if runtime.is_admin(user_id) or limit <= 0:
         return True
     import datetime as _dt
     since = _dt.datetime.utcnow() - _dt.timedelta(days=1)
@@ -596,7 +674,7 @@ async def _preview_allowed(user_id: int) -> bool:
             n = await repository.count_user_orders_since(session, user_id, since)
     except Exception:  # noqa: BLE001 - never block a user because of a database hiccup
         return True
-    return n < int(settings.MAX_PREVIEWS_PER_DAY)
+    return n < limit
 
 
 def _project_root() -> str:
@@ -698,17 +776,23 @@ async def apply_outline_changes(message: Message, state: FSMContext):
         pass
 
 
+def _order_content(result, data) -> Optional[str]:
+    try:
+        from services.payment.orders import content_for_db
+        from services.presentation import theme_key_from_data
+        return content_for_db(result.content, theme_key_from_data(data))
+    except Exception:  # noqa: BLE001
+        return None
+
+
 async def _build_and_send(message: Message, user_id: int, state: FSMContext, back_state) -> None:
     """Makes the deck (reusing text written in the background when the answers still match),
     shows an animated progress bar, sends the previews and the payment buttons; the PDF and PPTX
     are finished in the background."""
     await state.set_state(PresentationForm.generating)  # a second press of the button is ignored
     data = await state.get_data()
-    if not await _preview_allowed(user_id):
+    if await _blocked(message, user_id, int(data.get("slide_count", 10))):
         await state.set_state(back_state)
-        await message.answer(
-            f"⚠️ Bugun {settings.MAX_PREVIEWS_PER_DAY} ta taqdimot namunasini yaratdingiz — bu kunlik chegara.\n"
-            "Avvalgi buyurtmalaringizni to‘lab yuklab olishingiz mumkin yoki ertaga davom eting.")
         return
     # the main menu comes back here (the wizard's reply keyboards are no longer needed); the progress
     # message is separate because messages with a reply keyboard cannot be edited later
@@ -762,7 +846,10 @@ async def _build_and_send(message: Message, user_id: int, state: FSMContext, bac
             template_id=tpl_id if isinstance(tpl_id, str) else "custom_ai",
             total_price=data.get("total_price", 3500),
             pptx_path=result.pptx_path,
-            pdf_path=result.pdf_path
+            pdf_path=result.pdf_path,
+            # the deck itself is kept in the database: the files can be rebuilt after a redeploy
+            content_json=_order_content(result, data),
+            language=data.get("language"),
         )
         order_id = order.id
 
@@ -770,6 +857,13 @@ async def _build_and_send(message: Message, user_id: int, state: FSMContext, bac
         await status.delete()
     except Exception:
         pass
+
+    free_kind = await credits.claim(user_id, slide_count)
+    if free_kind:
+        await _deliver_free(message, user_id, order_id, data, slide_count, free_kind)
+        if await _state_is(state, PresentationForm.generating):
+            await state.clear()
+        return
 
     media_group = []
     for idx, p_path in enumerate(result.previews):
@@ -792,21 +886,56 @@ async def _build_and_send(message: Message, user_id: int, state: FSMContext, bac
         f"⚠️ <b>Preview haqida</b>\n\n"
         f"Yuqorida ikki namuna slayd va barcha {slide_count} ta slaydning kichik ko‘rinishi berildi. "
         f"Ularda <code>SLIDELAB • PREVIEW • @SlideLabBot</code> belgisi bor.\n\n"
-        f"💳 <b>To‘lov amalga oshirilgandan so‘ng:</b>\n"
+        f"💳 <b>To‘lov amalga oshirilgandan so‘ng</b> (Click yoki Payme):\n"
         f"• barcha {slide_count} ta slayd to‘liq sifatda ochiladi;\n"
         f"• belgilar olib tashlanadi;\n"
-        f"• PowerPoint (.pptx, matnini tahrirlash mumkin) va PDF fayllar beriladi.\n\n"
+        f"• PowerPoint (.pptx, matnini tahrirlash mumkin) va PDF fayllar <b>avtomatik</b> shu yerga yuboriladi.\n\n"
         f"📊 <b>Slaydlar soni:</b> {slide_count} ta\n"
         f"💰 <b>Narxi:</b> {total_price} so'm"
     )
+    mode = payment_mode()
     payment_keyboard = (
-        get_production_payment_inline_keyboard(order_id, total_price)
-        if settings.PAYMENT_ENV.upper() == "PRODUCTION"
-        else get_payment_inline_keyboard(order_id, total_price)
+        get_tezcheck_pay_keyboard(order_id, total_price) if mode == "tezcheck"
+        else get_production_payment_inline_keyboard(order_id, total_price) if mode == "legacy"
+        else get_payment_inline_keyboard(order_id, total_price) if mode == "demo"
+        # no payment system: only an admin gets the test button (to try the whole flow)
+        else get_payment_inline_keyboard(order_id, total_price) if runtime.is_admin(user_id)
+        else None  # everybody else: never a button that could give the files away
     )
+    if mode == "off" and payment_keyboard is not None:
+        warning_text += ("\n\n🧪 <b>Admin sinovi:</b> to‘lov tizimi ulanmagan — «To‘lovni tasdiqlash» faqat siz uchun "
+                         "pulsiz ishlaydi (daromadga qo‘shilmaydi).")
+    if payment_keyboard is None:
+        warning_text += "\n\n🛠 <i>To‘lov tizimi tez orada ulanadi — shu buyurtmani o‘shanda to‘laysiz.</i>"
     await message.answer(warning_text, reply_markup=payment_keyboard, parse_mode="HTML")
     if await _state_is(state, PresentationForm.generating):  # never wipe a new order started meanwhile
         await state.clear()
+
+
+async def _deliver_free(message: Message, user_id: int, order_id: str, data: dict, slide_count: int,
+                        kind: str) -> None:
+    """The first presentation (or a referral bonus) is free: the files are sent straight away."""
+    from services.payment import orders
+    from bot.delivery import deliver_order
+    from bot.keyboards.inline import after_free_keyboard
+    await orders.mark_paid(order_id, by=kind, amount=0, provider="free")  # also rewards the inviter ("first")
+    note = texts.free_ready_text(data.get("topic", ""), slide_count, kind)
+    try:
+        delivered = await deliver_order(message.bot, order_id, note=note)
+    except Exception:  # noqa: BLE001
+        logger.exception("free order %s not delivered", order_id)
+        delivered = False
+    if not delivered:
+        logger.error("free order %s (%s) could not be delivered", order_id, kind)
+        await message.answer("⚠️ Fayllarni yuborishda muammo bo‘ldi — admin tez orada yuboradi. "
+                             "Taqdimotingiz saqlanib qoldi.")
+        return
+    _, _, price = await _limits()
+    left = (await credits.available(user_id)).total
+    await message.answer(
+        texts.after_free_text(price, left, runtime.get_int("referral_bonus", 1, lo=0, hi=100),
+                              runtime.get("referral_trigger", "paid")),
+        parse_mode="HTML", reply_markup=after_free_keyboard(left > 0))
 
 
 @router.callback_query(PresentationForm.confirmation, F.data.startswith("confirm_pres_"))

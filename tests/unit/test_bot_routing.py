@@ -213,13 +213,13 @@ async def test_whole_wizard_with_buttons(env):
 
 
 @pytest.mark.asyncio
-async def test_daily_preview_limit(env, monkeypatch):
+async def test_daily_preview_limit(env, monkeypatch, patched_handlers_db):
     *_, ctx = env
     monkeypatch.setattr("config.settings.MAX_PREVIEWS_PER_DAY", 1)
-
-    async def many(*a, **k):
-        return 1
-    monkeypatch.setattr(create_pres.repository, "count_user_orders_since", many)
+    from database import repository
+    async with patched_handlers_db() as s:  # one (paid) order today already
+        o = await repository.create_presentation_order(s, 7, "T", "S", 5, "05_nature_organic", 1750)
+        await repository.update_order_status(s, o.id, "PAID")
     built = []
 
     async def fake_build(*a, **k):
@@ -248,3 +248,101 @@ async def test_builds_wait_in_a_queue(monkeypatch):
 
     await asyncio.gather(*(job() for _ in range(10)))
     assert peak == 2
+
+
+# ---------------------------------------------------------------------- abuse protection
+async def _orders(db, user_id, n, status="PREVIEW_READY"):
+    from database import repository
+    async with db() as s:
+        for _ in range(n):
+            o = await repository.create_presentation_order(s, user_id, "T", "S", 30, "05_nature_organic", 10500)
+            if status != "PREVIEW_READY":
+                await repository.update_order_status(s, o.id, status)
+
+
+@pytest.mark.asyncio
+async def test_without_payments_creation_is_closed_and_demo_button_gives_nothing(env, monkeypatch, patched_handlers_db):
+    *_, ctx = env
+    monkeypatch.setattr("config.settings.ALLOW_DEMO_PAYMENTS", False)   # production default
+    monkeypatch.setattr("config.settings.PAYMENT_ENV", "DEMO")
+    monkeypatch.setattr("config.settings.TEZCHECK_API_KEY", "")
+    texts = await _feed(env, _msg("🎨 Presentation yaratish"))
+    assert any("vaqtincha to‘xtatilgan" in t for t in texts)
+    assert await ctx.get_state() is None
+    # an old message's "✅ To'lovni tasdiqlash" must not mark the order paid any more
+    await _orders(patched_handlers_db, 7, 1)
+    from database.models import PresentationOrder
+    from sqlalchemy import select
+    async with patched_handlers_db() as s:
+        oid = (await s.execute(select(PresentationOrder.id))).scalars().first()
+    await _feed(env, _cb(f"check_pay_{oid}"))
+    async with patched_handlers_db() as s:
+        assert (await s.get(PresentationOrder, oid)).status != "PAID"
+
+
+@pytest.mark.asyncio
+async def test_unpaid_previews_must_be_paid_before_a_new_one(env, monkeypatch, patched_handlers_db):
+    *_, ctx = env
+    await _orders(patched_handlers_db, 7, 2)
+    texts = await _feed(env, _msg("🎨 Presentation yaratish"))
+    assert any("to‘lanmagan namuna" in t for t in texts)
+    assert await ctx.get_state() is None
+
+
+@pytest.mark.asyncio
+async def test_admin_can_open_creation_and_admins_are_never_limited(env, monkeypatch, patched_handlers_db):
+    *_, ctx = env
+    from services import guard, runtime
+    monkeypatch.setattr("config.settings.ALLOW_DEMO_PAYMENTS", False)
+    monkeypatch.setattr("config.settings.TEZCHECK_API_KEY", "")
+    assert not guard.creation_open()
+    runtime._values["orders_mode"] = "open"
+    assert guard.creation_open()
+    runtime._values["orders_mode"] = "closed"
+    monkeypatch.setattr("config.settings.ADMIN_IDS", "7")
+    await _orders(patched_handlers_db, 7, 5)
+    assert await guard.check(7) is None
+
+
+@pytest.mark.asyncio
+async def test_global_daily_cap(env, monkeypatch, patched_handlers_db):
+    from services import guard, runtime
+    runtime._values["daily_preview_cap"] = "3"
+    await _orders(patched_handlers_db, 8, 3, status="PAID")
+    block = await guard.check(9)
+    assert block is not None and block.reason == "cap"
+
+
+@pytest.mark.asyncio
+async def test_background_writing_only_for_customers_who_paid(env, patched_handlers_db):
+    from services import guard
+    assert not await guard.may_prefetch(7)
+    await _orders(patched_handlers_db, 7, 1, status="PAID")
+    assert await guard.may_prefetch(7)
+
+
+@pytest.mark.asyncio
+async def test_admin_can_test_the_whole_flow_while_payments_are_off(env, monkeypatch, patched_handlers_db):
+    """Payments not connected: an admin still gets the test button and it marks the order paid
+    (without money, so revenue stays 0); for everybody else it gives nothing."""
+    *_, ctx = env
+    monkeypatch.setattr("config.settings.ALLOW_DEMO_PAYMENTS", False)
+    monkeypatch.setattr("config.settings.TEZCHECK_API_KEY", "")
+    monkeypatch.setattr("config.settings.PAYMENT_ENV", "DEMO")
+    from database import repository
+    from database.models import PresentationOrder
+    async with patched_handlers_db() as s:
+        mine = await repository.create_presentation_order(s, 7, "T", "S", 5, "05_nature_organic", 1750)
+    monkeypatch.setattr("config.settings.ADMIN_IDS", "7")
+    texts = await _feed(env, _msg("🎨 Presentation yaratish"))
+    assert not any("to‘xtatilgan" in t for t in texts)          # creation is open for the admin
+    await _feed(env, _cb(f"check_pay_{mine.id}"))
+    async with patched_handlers_db() as s:
+        o = await s.get(PresentationOrder, mine.id)
+    assert o.status == "PAID" and o.paid_by == "TEST" and o.paid_amount == 0
+    monkeypatch.setattr("config.settings.ADMIN_IDS", "999")
+    async with patched_handlers_db() as s:
+        other = await repository.create_presentation_order(s, 7, "T", "S", 5, "05_nature_organic", 1750)
+    await _feed(env, _cb(f"check_pay_{other.id}"))
+    async with patched_handlers_db() as s:
+        assert (await s.get(PresentationOrder, other.id)).status != "PAID"

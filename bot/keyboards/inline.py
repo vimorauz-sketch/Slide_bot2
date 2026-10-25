@@ -98,3 +98,41 @@ def get_download_format_inline_keyboard(order_id: str) -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="📦 Ikkalasi ham", callback_data=f"dl_both_{order_id}")]
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
+
+
+def get_tezcheck_pay_keyboard(order_id: str, amount: int) -> InlineKeyboardMarkup:
+    """TezCheck: one button; the bill is created when it is pressed."""
+    formatted_amount = f"{amount:,}".replace(",", " ")
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=f"💳 To‘lash — {formatted_amount} so‘m (Click · Payme)", callback_data=f"tc_pay_{order_id}")],
+    ])
+
+
+def get_tezcheck_link_keyboard(order_id: str, url: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="💳 To‘lov sahifasini ochish", url=url)],
+        [InlineKeyboardButton(text="✅ To‘ladim — tekshirish", callback_data=f"tc_chk_{order_id}")],
+    ])
+
+
+# ---------------------------------------------------------------- free presentation and referrals
+def create_now_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="✨ Taqdimot yaratish", callback_data="new_pres")],
+    ])
+
+
+def after_free_keyboard(has_credits: bool) -> InlineKeyboardMarkup:
+    rows = [[InlineKeyboardButton(text="🎨 Yangi taqdimot yaratish", callback_data="new_pres")]]
+    if not has_credits:
+        rows.insert(0, [InlineKeyboardButton(text="🎁 Do‘stlarni taklif qilish — bepul taqdimot", callback_data="ref_open")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+def referral_keyboard(link: str, share_text: str, has_credits: bool) -> InlineKeyboardMarkup:
+    from urllib.parse import quote
+    rows = [[InlineKeyboardButton(text="📤 Do‘stlarga yuborish",
+                                  url=f"https://t.me/share/url?url={quote(link, safe='')}&text={quote(share_text, safe='')}")]]
+    if has_credits:
+        rows.append([InlineKeyboardButton(text="✨ Bepul taqdimot yaratish", callback_data="new_pres")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)

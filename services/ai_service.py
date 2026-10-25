@@ -238,8 +238,9 @@ _fast_failed = False  # set when the fast model / effort setting is rejected: th
 def _fast_kwargs() -> Dict[str, Any]:
     """Model and reasoning effort for writing slides: a low-latency model thinking briefly is several
     times faster than a big model thinking at its default (medium) effort, and good enough for slides."""
-    kw: Dict[str, Any] = {"model": (getattr(settings, "OPENAI_FAST_MODEL", "") or _model()).strip()}
-    effort = (getattr(settings, "OPENAI_REASONING_EFFORT", "") or "").strip().lower()
+    from services import runtime  # the admin dashboard can change both while the bot runs
+    kw: Dict[str, Any] = {"model": (runtime.get("ai_fast_model", getattr(settings, "OPENAI_FAST_MODEL", "")) or _model()).strip()}
+    effort = (runtime.get("ai_effort", getattr(settings, "OPENAI_REASONING_EFFORT", "")) or "").strip().lower()
     if effort and effort != "default":
         kw["reasoning_effort"] = effort
     return kw

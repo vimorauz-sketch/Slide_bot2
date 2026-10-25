@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Xabar tarqatish{% endblock %}
+{% block head %}{% if any_running %}<meta http-equiv="refresh" content="5">{% endif %}
+<style>
+.opt{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:16px;border:2px solid #E6E8F2;border-radius:14px;background:#fff;cursor:pointer;position:relative}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt:has(input:checked){border-color:#6E7BFF;background:#F4F5FF}
+.opt:has(input:focus-visible){outline:2px solid #6E7BFF;outline-offset:2px}
+.step{width:30px;height:30px;border-radius:10px;background:#1B2150;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+</style>{% endblock %}
+{% block content %}
+<header style="display:flex;flex-direction:column;gap:4px"><h1>Xabar tarqatish</h1><span class="sub">Xabar Telegram cheklovlariga mos tezlikda yuboriladi — sekundiga ~20 ta</span></header>
+
+<div class="row" style="align-items:flex-start">
+  <form class="card" method="post" action="/admin/broadcast" enctype="multipart/form-data" style="flex:999 1 520px;min-width:0;padding:26px;display:flex;flex-direction:column;gap:22px">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <div style="display:flex;align-items:center;gap:12px"><span class="step">1</span><h2>Kimga yuboramiz?</h2></div>
+    <fieldset style="border:0;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+      <legend class="sr">Qabul qiluvchilar</legend>
+      {% for key, label, n, color, tint, icon in segments %}
+      <label class="opt"><input type="radio" name="segment" value="{{ key }}" {{ 'checked' if loop.first }}>
+        <span style="width:40px;height:40px;border-radius:12px;background:{{ tint }};color:{{ color }};display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{ icon }}"/></svg></span>
+        <span style="font-size:14px;font-weight:700;line-height:1.35">{{ label }}</span>
+        <span class="num" style="font-size:22px;font-weight:800">{{ money(n) }}</span>
+      </label>
+      {% endfor %}
+    </fieldset>
+
+    <div style="display:flex;align-items:center;gap:12px"><span class="step">2</span><h2>Xabar</h2></div>
+    <div class="field">
+      <label for="msg" class="lbl">Matn</label>
+      <textarea id="msg" name="text" class="inp" rows="6" required maxlength="3500" placeholder="Masalan: Yangi 200 ta “Real foto” shablon qo‘shildi!"></textarea>
+      <span class="hint">&lt;b&gt;qalin&lt;/b&gt;, &lt;i&gt;kursiv&lt;/i&gt;, &lt;a href="https://…"&gt;havola&lt;/a&gt; ishlaydi. Rasm bilan yuborilsa, matn 1024 belgigacha.</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:14px">
+      <div class="field" style="flex:1 1 220px"><label for="ph" class="lbl">Rasm (ixtiyoriy, JPG/PNG, 10 MB gacha)</label><input id="ph" name="photo" type="file" accept="image/jpeg,image/png,image/webp" class="inp" style="padding:10px"></div>
+      <div style="flex:1 1 240px;display:flex;flex-direction:column;gap:8px">
+        <div class="field"><label for="bt" class="lbl">Tugma matni (ixtiyoriy)</label><input id="bt" name="button_text" class="inp" maxlength="60" placeholder="Taqdimot yaratish"></div>
+        <div class="field"><label for="bu" class="lbl">Tugma havolasi</label><input id="bu" name="button_url" class="inp" maxlength="250" placeholder="https://t.me/{{ bot_username or 'SizningBot' }}"></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;border-top:1px solid #F0F1F6;padding-top:20px">
+      <button class="btn" name="action" value="test">Avval menga sinov uchun</button>
+      <button class="btn btn-p" name="action" value="send" onclick="return confirm('Xabar tanlangan foydalanuvchilarga yuboriladi. Davom etasizmi?')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>Yuborish</button>
+    </div>
+  </form>
+
+  <aside style="flex:1 1 330px;min-width:0;display:flex;flex-direction:column;gap:20px">
+    <div class="card pad" style="display:flex;flex-direction:column;gap:16px">
+      <h2 style="font-size:15px">Tarqatishlar</h2>
+      {% for b in history %}
+      <div style="display:flex;gap:14px;align-items:center;padding-bottom:12px;border-bottom:1px solid #F0F1F6">
+        <svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true" style="flex:none"><circle cx="26" cy="26" r="21" fill="none" stroke="#EEF0F6" stroke-width="6"/><circle cx="26" cy="26" r="21" fill="none" stroke="{{ b.color }}" stroke-width="6" stroke-linecap="round" stroke-dasharray="{{ b.dash }}" transform="rotate(-90 26 26)"/><text x="26" y="30" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="11" font-weight="800" fill="#12153A">{{ b.pct }}%</text></svg>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span class="ell" style="font-size:14px;font-weight:700">{{ b.title }}</span><span class="chip {{ b.chip }}">{{ b.status }}</span></div>
+          <span class="num hint">{{ b.meta }}</span>
+          {% if b.running %}<form method="post" action="/admin/broadcast/{{ b.id }}/stop"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn-sm btn-d">To‘xtatish</button></form>{% endif %}
+        </div>
+      </div>
+      {% else %}<div class="empty" style="padding:20px">Hali tarqatish bo‘lmagan</div>{% endfor %}
+    </div>
+  </aside>
+</div>
+{% endblock %}
