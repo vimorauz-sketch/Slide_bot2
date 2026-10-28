@@ -1,0 +1,2231 @@
+{
+ "categories": {
+  "modern": "Zamonaviy",
+  "classic": "Klassik",
+  "display": "Ko‘zga tashlanadigan",
+  "hand": "Qo‘lyozma",
+  "tech": "Texnik"
+ },
+ "fonts": [
+  {
+   "id": "inter",
+   "name": "Inter",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Inter_opsz_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "roboto",
+   "name": "Roboto",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Roboto_wdth_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "opensans",
+   "name": "Open Sans",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "OpenSans_wdth_wght_.ttf",
+     "weight": "300 800",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "montserrat",
+   "name": "Montserrat",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Montserrat_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "raleway",
+   "name": "Raleway",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Raleway_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "nunito",
+   "name": "Nunito",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Nunito_wght_.ttf",
+     "weight": "200 1000",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "poppins",
+   "name": "Poppins",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Poppins-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "Poppins-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "rubik",
+   "name": "Rubik",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Rubik_wght_.ttf",
+     "weight": "300 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "manrope",
+   "name": "Manrope",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Manrope_wght_.ttf",
+     "weight": "200 800",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "worksans",
+   "name": "Work Sans",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "WorkSans_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "lato",
+   "name": "Lato",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Lato-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "Lato-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "sourcesans3",
+   "name": "Source Sans 3",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "SourceSans3_wght_.ttf",
+     "weight": "200 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "firasans",
+   "name": "Fira Sans",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "FiraSans-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "FiraSans-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "ptsans",
+   "name": "PT Sans",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "PT_Sans-Web-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "PT_Sans-Web-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "notosans",
+   "name": "Noto Sans",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "NotoSans_wdth_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "ibmplexsans",
+   "name": "IBM Plex Sans",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "IBMPlexSans_wdth_wght_.ttf",
+     "weight": "100 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "mulish",
+   "name": "Mulish",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Mulish_wght_.ttf",
+     "weight": "200 1000",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "quicksand",
+   "name": "Quicksand",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Quicksand_wght_.ttf",
+     "weight": "300 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "karla",
+   "name": "Karla",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Karla_wght_.ttf",
+     "weight": "200 800",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "dmsans",
+   "name": "DM Sans",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "DMSans_opsz_wght_.ttf",
+     "weight": "100 1000",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "plusjakartasans",
+   "name": "Plus Jakarta Sans",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "PlusJakartaSans_wght_.ttf",
+     "weight": "200 800",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "outfit",
+   "name": "Outfit",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Outfit_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "urbanist",
+   "name": "Urbanist",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Urbanist_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "lexend",
+   "name": "Lexend",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Lexend_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "onest",
+   "name": "Onest",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Onest_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "golostext",
+   "name": "Golos Text",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "GolosText_wght_.ttf",
+     "weight": "400 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "exo2",
+   "name": "Exo 2",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Exo2_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "ubuntu",
+   "name": "Ubuntu",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Ubuntu-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "Ubuntu-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "josefinsans",
+   "name": "Josefin Sans",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "JosefinSans_wght_.ttf",
+     "weight": "100 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "barlow",
+   "name": "Barlow",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Barlow-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "Barlow-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "cabin",
+   "name": "Cabin",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Cabin_wdth_wght_.ttf",
+     "weight": "400 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "titilliumweb",
+   "name": "Titillium Web",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "TitilliumWeb-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "TitilliumWeb-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "arimo",
+   "name": "Arimo",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Arimo_wght_.ttf",
+     "weight": "400 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "heebo",
+   "name": "Heebo",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Heebo_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "sora",
+   "name": "Sora",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Sora_wght_.ttf",
+     "weight": "100 800",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "spacegrotesk",
+   "name": "Space Grotesk",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "SpaceGrotesk_wght_.ttf",
+     "weight": "300 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "redhatdisplay",
+   "name": "Red Hat Display",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "RedHatDisplay_wght_.ttf",
+     "weight": "300 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "figtree",
+   "name": "Figtree",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Figtree_wght_.ttf",
+     "weight": "300 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "albertsans",
+   "name": "Albert Sans",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "AlbertSans_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "publicsans",
+   "name": "Public Sans",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "PublicSans_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "archivo",
+   "name": "Archivo",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Archivo_wdth_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "robotocondensed",
+   "name": "Roboto Condensed",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "RobotoCondensed_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "oswald",
+   "name": "Oswald",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Oswald_wght_.ttf",
+     "weight": "200 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "commissioner",
+   "name": "Commissioner",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Commissioner_FLAR_VOLM_slnt_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "jost",
+   "name": "Jost",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Jost_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "montserratalternates",
+   "name": "Montserrat Alternates",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "MontserratAlternates-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "MontserratAlternates-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "varelaround",
+   "name": "Varela Round",
+   "category": "modern",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "VarelaRound-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "comfortaa",
+   "name": "Comfortaa",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Comfortaa_wght_.ttf",
+     "weight": "300 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "alumnisans",
+   "name": "Alumni Sans",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "AlumniSans_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "geologica",
+   "name": "Geologica",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Geologica_CRSV_SHRP_slnt_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "wixmadefordisplay",
+   "name": "Wix Madefor Display",
+   "category": "modern",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "WixMadeforDisplay_wght_.ttf",
+     "weight": "400 800",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "playfairdisplay",
+   "name": "Playfair Display",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "PlayfairDisplay_wght_.ttf",
+     "weight": "400 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "lora",
+   "name": "Lora",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Lora_wght_.ttf",
+     "weight": "400 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "ptserif",
+   "name": "PT Serif",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "PT_Serif-Web-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "PT_Serif-Web-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "sourceserif4",
+   "name": "Source Serif 4",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "SourceSerif4_opsz_wght_.ttf",
+     "weight": "200 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "cormorantgaramond",
+   "name": "Cormorant Garamond",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "CormorantGaramond_wght_.ttf",
+     "weight": "300 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "ebgaramond",
+   "name": "EB Garamond",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "EBGaramond_wght_.ttf",
+     "weight": "400 800",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "librebaskerville",
+   "name": "Libre Baskerville",
+   "category": "classic",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "LibreBaskerville_wght_.ttf",
+     "weight": "400 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "crimsontext",
+   "name": "Crimson Text",
+   "category": "classic",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "CrimsonText-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "CrimsonText-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "notoserif",
+   "name": "Noto Serif",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "NotoSerif_wdth_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "alegreya",
+   "name": "Alegreya",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Alegreya_wght_.ttf",
+     "weight": "400 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "robotoslab",
+   "name": "Roboto Slab",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "RobotoSlab_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "bitter",
+   "name": "Bitter",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Bitter_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "spectral",
+   "name": "Spectral",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Spectral-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "Spectral-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "prata",
+   "name": "Prata",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Prata-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "oldstandardtt",
+   "name": "Old Standard TT",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "OldStandard-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "OldStandard-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "cormorant",
+   "name": "Cormorant",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Cormorant_wght_.ttf",
+     "weight": "300 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "frankruhllibre",
+   "name": "Frank Ruhl Libre",
+   "category": "classic",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "FrankRuhlLibre_wght_.ttf",
+     "weight": "300 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "dmserifdisplay",
+   "name": "DM Serif Display",
+   "category": "classic",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "DMSerifDisplay-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "zillaslab",
+   "name": "Zilla Slab",
+   "category": "classic",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "ZillaSlab-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "ZillaSlab-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "arvo",
+   "name": "Arvo",
+   "category": "classic",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Arvo-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "Arvo-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "literata",
+   "name": "Literata",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Literata_opsz_wght_.ttf",
+     "weight": "200 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "vollkorn",
+   "name": "Vollkorn",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Vollkorn_wght_.ttf",
+     "weight": "400 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "gelasio",
+   "name": "Gelasio",
+   "category": "classic",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Gelasio_wght_.ttf",
+     "weight": "400 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "cardo",
+   "name": "Cardo",
+   "category": "classic",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Cardo-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "Cardo-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "ibmplexserif",
+   "name": "IBM Plex Serif",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "IBMPlexSerif-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "IBMPlexSerif-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "tinos",
+   "name": "Tinos",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Tinos-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "Tinos-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "rozhaone",
+   "name": "Rozha One",
+   "category": "classic",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "RozhaOne-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "forum",
+   "name": "Forum",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Forum-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "marcellus",
+   "name": "Marcellus",
+   "category": "classic",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Marcellus-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "cinzel",
+   "name": "Cinzel",
+   "category": "classic",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Cinzel_wght_.ttf",
+     "weight": "400 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "tenorsans",
+   "name": "Tenor Sans",
+   "category": "classic",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "TenorSans-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "bebasneue",
+   "name": "Bebas Neue",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "BebasNeue-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "anton",
+   "name": "Anton",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Anton-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "russoone",
+   "name": "Russo One",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "RussoOne-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "unbounded",
+   "name": "Unbounded",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Unbounded_wght_.ttf",
+     "weight": "200 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "righteous",
+   "name": "Righteous",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Righteous-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "lobster",
+   "name": "Lobster",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Lobster-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "alfaslabone",
+   "name": "Alfa Slab One",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "AlfaSlabOne-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "bungee",
+   "name": "Bungee",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Bungee-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "fredoka",
+   "name": "Fredoka",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Fredoka_wdth_wght_.ttf",
+     "weight": "300 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "blackopsone",
+   "name": "Black Ops One",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "BlackOpsOne-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "rubikmonoone",
+   "name": "Rubik Mono One",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "RubikMonoOne-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "tektur",
+   "name": "Tektur",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Tektur_wdth_wght_.ttf",
+     "weight": "400 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "audiowide",
+   "name": "Audiowide",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Audiowide-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "monoton",
+   "name": "Monoton",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Monoton-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "yesevaone",
+   "name": "Yeseva One",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "YesevaOne-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "abrilfatface",
+   "name": "Abril Fatface",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "AbrilFatface-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "philosopher",
+   "name": "Philosopher",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Philosopher-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "Philosopher-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "poiretone",
+   "name": "Poiret One",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "PoiretOne-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "kellyslab",
+   "name": "Kelly Slab",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "KellySlab-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "ruslandisplay",
+   "name": "Ruslan Display",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "RuslanDisplay-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "pressstart2p",
+   "name": "Press Start 2P",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "PressStart2P-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "archivoblack",
+   "name": "Archivo Black",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "ArchivoBlack-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "bowlbyonesc",
+   "name": "Bowlby One SC",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "BowlbyOneSC-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "chakrapetch",
+   "name": "Chakra Petch",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "ChakraPetch-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "ChakraPetch-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "rubikglitch",
+   "name": "Rubik Glitch",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "RubikGlitch-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "rubikbeastly",
+   "name": "Rubik Beastly",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "RubikBeastly-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "rubikmoonrocks",
+   "name": "Rubik Moonrocks",
+   "category": "display",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "RubikMoonrocks-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "staatliches",
+   "name": "Staatliches",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Staatliches-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "passionone",
+   "name": "Passion One",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "PassionOne-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "PassionOne-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "bangers",
+   "name": "Bangers",
+   "category": "display",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Bangers-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "caveat",
+   "name": "Caveat",
+   "category": "hand",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Caveat_wght_.ttf",
+     "weight": "400 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "dancingscript",
+   "name": "Dancing Script",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "DancingScript_wght_.ttf",
+     "weight": "400 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "greatvibes",
+   "name": "Great Vibes",
+   "category": "hand",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "GreatVibes-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "satisfy",
+   "name": "Satisfy",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Satisfy-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "kaushanscript",
+   "name": "Kaushan Script",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "KaushanScript-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "amaticsc",
+   "name": "Amatic SC",
+   "category": "hand",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "AmaticSC-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "AmaticSC-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "marckscript",
+   "name": "Marck Script",
+   "category": "hand",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "MarckScript-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "shadowsintolight",
+   "name": "Shadows Into Light",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "ShadowsIntoLight.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "indieflower",
+   "name": "Indie Flower",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "IndieFlower-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "patrickhand",
+   "name": "Patrick Hand",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "PatrickHand-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "gloriahallelujah",
+   "name": "Gloria Hallelujah",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "GloriaHallelujah.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "sacramento",
+   "name": "Sacramento",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Sacramento-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "permanentmarker",
+   "name": "Permanent Marker",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "PermanentMarker-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "neucha",
+   "name": "Neucha",
+   "category": "hand",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Neucha.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "badscript",
+   "name": "Bad Script",
+   "category": "hand",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "BadScript-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "pangolin",
+   "name": "Pangolin",
+   "category": "hand",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Pangolin-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "comforter",
+   "name": "Comforter",
+   "category": "hand",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Comforter-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "caveatbrush",
+   "name": "Caveat Brush",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "CaveatBrush-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "pacifico",
+   "name": "Pacifico",
+   "category": "hand",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "Pacifico-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "courgette",
+   "name": "Courgette",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Courgette-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "cookie",
+   "name": "Cookie",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Cookie-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "yellowtail",
+   "name": "Yellowtail",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Yellowtail-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "kalam",
+   "name": "Kalam",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Kalam-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "Kalam-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "architectsdaughter",
+   "name": "Architects Daughter",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "ArchitectsDaughter-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "handlee",
+   "name": "Handlee",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Handlee-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "gochihand",
+   "name": "Gochi Hand",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "GochiHand-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "alexbrush",
+   "name": "Alex Brush",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "AlexBrush-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "allura",
+   "name": "Allura",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Allura-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "parisienne",
+   "name": "Parisienne",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Parisienne-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "tangerine",
+   "name": "Tangerine",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Tangerine-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "Tangerine-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "pinyonscript",
+   "name": "Pinyon Script",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "PinyonScript-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "ruthie",
+   "name": "Ruthie",
+   "category": "hand",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Ruthie-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "jetbrainsmono",
+   "name": "JetBrains Mono",
+   "category": "tech",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "JetBrainsMono_wght_.ttf",
+     "weight": "100 800",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "firacode",
+   "name": "Fira Code",
+   "category": "tech",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "FiraCode_wght_.ttf",
+     "weight": "300 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "spacemono",
+   "name": "Space Mono",
+   "category": "tech",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "SpaceMono-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "SpaceMono-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "robotomono",
+   "name": "Roboto Mono",
+   "category": "tech",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "RobotoMono_wght_.ttf",
+     "weight": "100 700",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "ibmplexmono",
+   "name": "IBM Plex Mono",
+   "category": "tech",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "IBMPlexMono-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "IBMPlexMono-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "sourcecodepro",
+   "name": "Source Code Pro",
+   "category": "tech",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "SourceCodePro_wght_.ttf",
+     "weight": "200 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "ubuntumono",
+   "name": "Ubuntu Mono",
+   "category": "tech",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "UbuntuMono-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "UbuntuMono-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "ptmono",
+   "name": "PT Mono",
+   "category": "tech",
+   "cyrillic": true,
+   "files": [
+    {
+     "file": "PTM55FT.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "sharetechmono",
+   "name": "Share Tech Mono",
+   "category": "tech",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "ShareTechMono-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "majormonodisplay",
+   "name": "Major Mono Display",
+   "category": "tech",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "MajorMonoDisplay-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "vt323",
+   "name": "VT323",
+   "category": "tech",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "VT323-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "syncopate",
+   "name": "Syncopate",
+   "category": "tech",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Syncopate-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "Syncopate-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "michroma",
+   "name": "Michroma",
+   "category": "tech",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Michroma-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "saira",
+   "name": "Saira",
+   "category": "tech",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Saira_wdth_wght_.ttf",
+     "weight": "100 900",
+     "variable": true
+    }
+   ]
+  },
+  {
+   "id": "rajdhani",
+   "name": "Rajdhani",
+   "category": "tech",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Rajdhani-Bold.ttf",
+     "weight": "700",
+     "variable": false
+    },
+    {
+     "file": "Rajdhani-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  },
+  {
+   "id": "electrolize",
+   "name": "Electrolize",
+   "category": "tech",
+   "cyrillic": false,
+   "files": [
+    {
+     "file": "Electrolize-Regular.ttf",
+     "weight": "400",
+     "variable": false
+    }
+   ]
+  }
+ ]
+}
