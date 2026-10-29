@@ -12,6 +12,7 @@ own webhook mechanism. In production, put this behind an HTTPS reverse proxy
 It also serves the template gallery Mini App (webapp/) at /webapp/ and its selection endpoint
 /webapp/api/select. Set WEBAPP_URL=https://<your-domain>/webapp/ to enable it in the bot.
 """
+import mimetypes
 import json
 import logging
 import os
@@ -96,6 +97,13 @@ def _check_rate(request: web.Request) -> None:
         raise web.HTTPTooManyRequests(text="Too many requests")
 
 
+mimetypes.add_type("image/webp", ".webp")  # also for the static Mini App thumbnails
+
+# Explicit type for the .webp previews: Python 3.10's mimetypes table has no .webp, so aiohttp
+# would send them as application/octet-stream (some Telegram clients then show no picture).
+WEBP_HEADERS = {"Cache-Control": "public, max-age=604800", "Content-Type": "image/webp"}
+
+
 async def webapp_index_handler(request: web.Request) -> web.StreamResponse:
     if not request.path.endswith("/"):
         raise web.HTTPFound(request.path + "/")
@@ -143,7 +151,7 @@ async def webapp_preview_handler(request: web.Request) -> web.StreamResponse:
     path = await preview_path(request.match_info["key"], n)
     if not path:
         raise web.HTTPNotFound()
-    return web.FileResponse(path, headers={"Cache-Control": "public, max-age=604800"})
+    return web.FileResponse(path, headers=WEBP_HEADERS)
 
 
 async def diag_handler(request: web.Request) -> web.Response:
@@ -183,7 +191,7 @@ async def webapp_cover_handler(request: web.Request) -> web.StreamResponse:
     path = await cover_path(request.match_info["key"])
     if not path:
         raise web.HTTPNotFound()
-    return web.FileResponse(path, headers={"Cache-Control": "public, max-age=604800"})
+    return web.FileResponse(path, headers=WEBP_HEADERS)
 
 
 async def tezcheck_webhook_handler(request: web.Request) -> web.Response:

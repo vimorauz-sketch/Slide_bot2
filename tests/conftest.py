@@ -103,6 +103,14 @@ async def finish_background_files():
 
 
 @pytest.fixture(autouse=True)
+def isolated_image_cache(tmp_path, monkeypatch):
+    """Every test finds photos from scratch: a photo cached by an earlier test (or an earlier run in
+    storage/image_cache) must never make a test pass or fail."""
+    from services.deck import images
+    monkeypatch.setattr(images, "CACHE_DIR", tmp_path / "image_cache")
+
+
+@pytest.fixture(autouse=True)
 def fresh_runtime_settings():
     """Dashboard settings are cached in memory: every test starts from the defaults — except the
     free first presentation, which is off so the older tests see the paid flow (tests of the free
