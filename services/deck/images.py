@@ -315,9 +315,11 @@ class ImageResolver:
             if first:
                 found = await asyncio.gather(*(self._from_provider(session, p, query, prompt, orientation, slot)
                                                for p in first), return_exceptions=True)
-                for prov, img in zip(first, found):
-                    if img and not isinstance(img, BaseException) and img[1].get("id") not in self.used:
-                        return keep(prov, img)
+                valid = [(prov, img) for prov, img in zip(first, found) if img and not isinstance(img, BaseException)]
+                for _prov, img in valid[1:]:  # photos reserved by the source that did not win go back to the pool
+                    self.used.discard(img[1].get("id"))
+                if valid:
+                    return keep(*valid[0])
             for prov in [p for p in order if p not in first]:
                 img = await self._from_provider(session, prov, query, prompt, orientation, slot)
                 if img:
@@ -340,9 +342,14 @@ class ImageResolver:
         if prov == "local" and all(c["id"] in self.used for c in candidates):
             self.used -= {c["id"] for c in candidates}  # development pool is small: allow repeats
         for c in [c for c in candidates if c["id"] not in self.used][:3]:  # never wait on a long list
+            if c["id"] in self.used:  # taken meanwhile by another card of the same deck
+                continue
+            # reserved before the first await: cards resolved at the same time never get the same photo
+            self.used.add(c["id"])
             raw = Path(c["path"]).read_bytes() if c.get("path") else await _get_bytes(session, c["url"])
             data = _crop_cover(raw, slot) if raw else None
             if not data:
+                self.used.discard(c["id"])
                 continue
             if c.get("ping"):  # Unsplash API guidelines: report the download
                 asyncio.ensure_future(_get_bytes(session, c["ping"] + f"&client_id={_cfg('UNSPLASH_ACCESS_KEY')}"))

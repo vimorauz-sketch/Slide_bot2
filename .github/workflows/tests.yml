@@ -25,6 +25,11 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
+      # The slides, PDF and previews are drawn by Chromium through Playwright; pip installs only the
+      # Python package, the browser (matching that Playwright version) and its system libraries come here.
+      - name: Install Playwright Chromium
+        run: python -m playwright install --with-deps chromium
+
       - name: Lint with ruff
         run: ruff check . --exclude .venv
 

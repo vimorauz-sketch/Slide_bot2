@@ -95,7 +95,7 @@ async def test_item_photos_are_resolved_for_cards(monkeypatch, tmp_path):
     monkeypatch.setattr("config.settings.LOCAL_PHOTO_DIR", str(folder))
     content = {"title_slide": {"title": "Ekotizim"}, "slides": [
         {"layout": "cards", "title": "T", "items": [{"title": "Suv", "photo": "lake water"}, {"title": "Tuproq"}, {"title": "Havo"}]}]}
-    found = await images.resolve_images(content, {"photo": True})
+    await images.resolve_images(content, {"photo": True})
     items = content["slides"][0]["items"]
     assert all(it.get("image", {}).get("src", "").startswith("file:") for it in items)
     assert images.item_photo_query(items[1], content["slides"][0], "Ekotizim").endswith("Tuproq")
