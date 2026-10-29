@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import math
 import random
-from typing import Callable, Dict, List
+from typing import Callable, Dict
 
 W, H = 1920, 1080
 

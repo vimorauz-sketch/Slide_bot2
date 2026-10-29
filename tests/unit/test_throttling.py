@@ -1,7 +1,6 @@
 import pytest
 
-from bot.middlewares.throttling import ThrottlingMiddleware, FLOOD_BAN
-
+from bot.middlewares.throttling import ThrottlingMiddleware
 
 class Clock:
     def __init__(self):
