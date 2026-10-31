@@ -30,7 +30,8 @@ def welcome_text(name: Optional[str], *, trial: bool, bonus: int, max_slides: in
             "• 🎨 Zamonaviy dizayn shablonlari\n"
             "• 🖼 Har bir slaydga mos rasmlar\n"
             "• 📊 PowerPoint (.pptx) — matnini tahrirlash mumkin\n"
-            "• 📄 PDF — chop etish va ko‘rsatish uchun\n\n")
+            "• 📄 PDF — chop etish va ko‘rsatish uchun\n"
+            "• 📝 <b>Referatlar</b> — 50 ta shablon, Word va PDF, xohlasangiz haqiqiy rasmlar bilan\n\n")
     if trial:
         text += (f"🎁 <b>Sizga sovg‘a: birinchi taqdimot — BEPUL!</b>{_slides_note(max_slides)}\n\n"
                  "👇 Boshlash uchun <b>«🎨 Presentation yaratish»</b> tugmasini bosing.")
@@ -63,9 +64,15 @@ def free_too_big_text(max_slides: int) -> str:
             f"Iltimos, {max_slides} yoki kamroq slayd tanlang:")
 
 
-def free_ready_text(topic: str, slide_count: int, kind: str) -> str:
-    title = "🎁 <b>Bepul taqdimotingiz tayyor!</b>" if kind == "TRIAL" \
-        else "🎁 <b>Bonus taqdimotingiz tayyor!</b> Do‘stlaringiz uchun rahmat 💛"
+def free_ready_text(topic: str, slide_count: int, kind: str, referat: bool = False) -> str:
+    what = "referatingiz" if referat else "taqdimotingiz"
+    title = f"🎁 <b>Bepul {what} tayyor!</b>" if kind == "TRIAL" \
+        else f"🎁 <b>Bonus {what} tayyor!</b> Do‘stlaringiz uchun rahmat 💛"
+    if referat:
+        return (f"{title}\n\n"
+                f"📌 «{escape_html((topic or '')[:120])}» — {slide_count} bet, belgilarsiz va to‘liq.\n"
+                "📎 Word va PDF fayllar pastda 👇\n\n"
+                "<i>Word faylidagi matn va ma’lumotlarni bemalol tahrirlashingiz mumkin.</i>")
     return (f"{title}\n\n"
             f"📌 «{escape_html((topic or '')[:120])}» — {slide_count} ta slayd, belgilarsiz va to‘liq sifatda.\n"
             "📎 PowerPoint va PDF fayllar pastda 👇\n\n"

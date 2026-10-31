@@ -80,6 +80,8 @@ async def main():
     dp.include_router(ocr_task.router)
     from bot.handlers import style
     dp.include_router(style.router)
+    from bot.handlers import referat
+    dp.include_router(referat.router)
     dp.include_router(create_pres.router)
     dp.include_router(payment.router)
 

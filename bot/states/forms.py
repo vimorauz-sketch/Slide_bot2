@@ -30,3 +30,22 @@ class PaymentForm(StatesGroup):
 class AdminForm(StatesGroup):
     set_price_per_slide = State()
     set_min_slides = State()
+
+
+class ReferatForm(StatesGroup):
+    template = State()
+    subject = State()
+    topic = State()
+    size = State()
+    author = State()
+    level = State()
+    institution = State()
+    group = State()
+    teacher = State()
+    city = State()
+    language = State()
+    images = State()
+    notes_choice = State()
+    notes = State()
+    confirmation = State()
+    generating = State()

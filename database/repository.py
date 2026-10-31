@@ -54,6 +54,7 @@ async def create_presentation_order(
     pdf_path: Optional[str] = None,
     content_json: Optional[str] = None,
     language: Optional[str] = None,
+    kind: str = "pres",
 ) -> PresentationOrder:
     order = PresentationOrder(
         user_id=user_id,
@@ -66,6 +67,7 @@ async def create_presentation_order(
         pdf_path=pdf_path,
         content_json=content_json,
         language=language,
+        kind=kind,
         status="PREVIEW_READY"
     )
     await ensure_user(session, user_id)

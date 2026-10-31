@@ -55,6 +55,7 @@ class PresentationOrder(Base):
     delivered_at = Column(DateTime, nullable=True)
     content_json = Column(Text, nullable=True)           # deck text + photos: files can be rebuilt after a redeploy
     language = Column(String(10), nullable=True)
+    kind = Column(String(20), default="pres", nullable=True)  # pres (presentation) / referat
 
     user = relationship("User", back_populates="orders")
     transactions = relationship("PaymentTransaction", back_populates="order")

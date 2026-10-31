@@ -41,7 +41,7 @@ async def patched_handlers_db(db, monkeypatch):
     not enough -- every module that imported the name must be patched individually.
     """
     import database.connection as dbc
-    from bot.handlers import create_pres, ocr_task, payment, admin, start
+    from bot.handlers import create_pres, ocr_task, payment, admin, start, referat
     from services.payment import click_webhook, payme_webhook, orders
     from services import broadcast, guard, credits
     from bot import delivery
@@ -49,7 +49,7 @@ async def patched_handlers_db(db, monkeypatch):
     from bot.admin_web import stats as admin_stats
 
     monkeypatch.setattr(dbc, "AsyncSessionLocal", db)
-    for module in (create_pres, ocr_task, payment, admin, start, click_webhook, payme_webhook,
+    for module in (create_pres, ocr_task, payment, admin, start, referat, click_webhook, payme_webhook,
                    orders, broadcast, delivery, admin_web, admin_stats, guard, credits):
         monkeypatch.setattr(module, "AsyncSessionLocal", db)
     return db

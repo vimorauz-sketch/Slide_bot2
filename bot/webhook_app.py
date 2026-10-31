@@ -134,6 +134,10 @@ async def webapp_select_handler(request: web.Request) -> web.Response:
 
     user_id = int(data["user"]["id"])
     state = dp.fsm.get_context(bot=bot, chat_id=user_id, user_id=user_id)
+    if body.get("referat"):  # the referat templates Mini App
+        from bot.handlers.referat import apply_template_choice as referat_choice
+        ok = await referat_choice(bot, user_id, state, str(body["referat"]))
+        return web.json_response({"ok": ok}, status=200 if ok else 404)
     ok = await apply_template_choice(bot, user_id, state, str(body.get("theme", "")))
     return web.json_response({"ok": ok}, status=200 if ok else 404)
 
@@ -194,6 +198,35 @@ async def webapp_cover_handler(request: web.Request) -> web.StreamResponse:
     return web.FileResponse(path, headers=WEBP_HEADERS)
 
 
+async def referat_index_handler(request: web.Request) -> web.StreamResponse:
+    """The referat templates Mini App; the template list is put into the page."""
+    if not request.path.endswith("/"):
+        raise web.HTTPFound(request.path + "/")
+    from services.deck import fonts
+    from services.referat import designs
+    catalog = [{"id": t["id"], "n": t["code"], "name": t["name"], "cover": designs.COVERS[t["cover"]],
+                "heading": designs.HEADINGS[t["heading"]], "palette": t["palette"]["name"],
+                "colors": [t["palette"]["accent"], t["palette"]["accent2"]],
+                "fonts": fonts.family_name(t["fonts"]["title"])} for t in designs.TEMPLATES]
+    with open(os.path.join(WEBAPP_DIR, "referat", "index.html"), encoding="utf-8") as f:
+        html = f.read().replace("__CATALOG__", json.dumps(catalog, ensure_ascii=False).replace("</", "<\\/"))
+    return web.Response(text=html, content_type="text/html", headers={"Cache-Control": "no-cache"})
+
+
+async def referat_page_handler(request: web.Request) -> web.StreamResponse:
+    """Title page (1) or inner page (4) of a referat template."""
+    from services.referat import designs, gallery as rgallery
+    tid, n = request.match_info["tid"], int(request.match_info["n"])
+    if tid not in designs.BY_ID or n not in rgallery.PAGES:
+        raise web.HTTPNotFound()
+    if not rgallery.path(tid, n):
+        _check_rate(request)
+    path = await rgallery.page_path(tid, n)
+    if not path:
+        raise web.HTTPNotFound()
+    return web.FileResponse(path, headers={"Cache-Control": "public, max-age=604800"})
+
+
 async def tezcheck_webhook_handler(request: web.Request) -> web.Response:
     """TezCheck payment events (register https://<domain>/payments/tezcheck/webhook in the cabinet)."""
     import asyncio
@@ -245,6 +278,9 @@ def create_webhook_app(bot=None, dp=None) -> web.Application:
         app.router.add_post("/webapp/api/select", webapp_select_handler)
         app.router.add_get(r"/webapp/preview/{key}/{n:\d+}.webp", webapp_preview_handler)
         app.router.add_get(r"/webapp/cover/{key}.webp", webapp_cover_handler)
+        app.router.add_get("/webapp/referat", referat_index_handler)
+        app.router.add_get("/webapp/referat/", referat_index_handler)
+        app.router.add_get(r"/webapp/referat/page/{tid:r\d{2}}_{n:\d}.jpg", referat_page_handler)
         app.router.add_static("/webapp/", WEBAPP_DIR, show_index=False)
     app.router.add_get("/health", health_handler)
     app.router.add_get("/", health_handler)

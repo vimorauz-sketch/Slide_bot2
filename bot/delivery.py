@@ -12,6 +12,7 @@ from datetime import datetime
 from aiogram.types import FSInputFile
 from sqlalchemy import update
 
+from bot.utils import escape_html
 from database import repository
 from database.connection import AsyncSessionLocal
 from database.models import PresentationOrder
@@ -39,9 +40,16 @@ INSTALL_TXT = (
 def chosen_fonts(order) -> list:
     """Library fonts the customer picked for this order (from the saved theme)."""
     try:
-        theme = json.loads(order.content_json or "{}").get("theme")
+        saved = json.loads(order.content_json or "{}")
     except ValueError:
         return []
+    if isinstance(saved.get("referat"), dict):  # a referat's Word file uses its template's fonts
+        from services.referat.docx_export import WINDOWS_TWINS
+        from services.referat.render import resolve_template
+        r = saved["referat"]
+        t = resolve_template(r.get("template", ""), r.get("style"), (r.get("doc") or {}).get("language", "uz"))
+        return [f for f in dict.fromkeys(t["fonts"].values()) if f not in WINDOWS_TWINS]
+    theme = saved.get("theme")
     if not isinstance(theme, dict):
         return []
     from services.deck.fonts import is_library_font
@@ -79,6 +87,11 @@ async def font_pack(order) -> str:
         return ""
 
 
+REFERAT_NOTE = ("🎉 <b>To‘lov qabul qilindi!</b>\n\n"
+                "«{topic}» referatingiz tayyor — fayllar pastda.\n"
+                "Word faylidagi matn, ism-familiya va boshqa ma’lumotlarni bemalol tahrirlashingiz mumkin.")
+
+
 def file_name(topic: str, ext: str) -> str:
     """Safe download name: no / \\ : * ? " < > | characters (they break the file on Windows/phones)."""
     name = re.sub(r'[\\/:*?"<>|\r\n\t]+', " ", topic or "")
@@ -96,14 +109,18 @@ async def deliver_order(bot, order_id: str, *, force: bool = False, note: str = 
         return False
     if order.delivered_at and not force:
         return False
+    referat = getattr(order, "kind", None) == "referat"
+    default_note = (REFERAT_NOTE if referat else PAID_NOTE).format(topic=escape_html(order.topic[:120]))
     try:
-        await bot.send_message(order.user_id, note or PAID_NOTE.format(topic=order.topic[:120]), parse_mode="HTML")
+        await bot.send_message(order.user_id, note or default_note, parse_mode="HTML")
     except Exception as e:  # noqa: BLE001 - the user may have blocked the bot
         logger.warning("order %s: user %s cannot be messaged: %s", order_id, order.user_id, e)
         return False
     pdf, pptx = await order_files(order)
     sent = False
-    for path, ext, caption in ((pptx, "pptx", "📊 <b>PowerPoint (.pptx)</b> — tahrirlash mumkin"),
+    editable = (("docx", "📝 <b>Word (.docx)</b> — matnini bemalol tahrirlash mumkin") if referat
+                else ("pptx", "📊 <b>PowerPoint (.pptx)</b> — tahrirlash mumkin"))
+    for path, ext, caption in ((pptx, editable[0], editable[1]),
                                (pdf, "pdf", "📄 <b>PDF</b> — chop etish va ko‘rsatish uchun")):
         if not path:
             continue

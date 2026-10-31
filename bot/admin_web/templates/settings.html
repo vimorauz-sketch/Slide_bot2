@@ -47,6 +47,8 @@
       <div class="field"><label for="p3" class="lbl">Maksimum slayd</label><input id="p3" name="max_slides" class="inp" type="number" min="3" max="60" required value="{{ v.max_slides }}"></div>
     </div>
     <div style="background:#F5F6FB;border-radius:12px;padding:14px;display:flex;justify-content:space-between;font-size:14px"><span style="color:#5A6080">10 slaydli taqdimot</span><b>{{ money(v.price_per_slide|int * 10) }} so‘m</b></div>
+    <div class="field"><label for="p4" class="lbl">Referat: 1 bet narxi, so‘m</label><input id="p4" name="referat_price_per_page" class="inp" type="number" min="50" max="1000000" required value="{{ v.referat_price_per_page }}"></div>
+    <div style="background:#F5F6FB;border-radius:12px;padding:14px;display:flex;justify-content:space-between;font-size:14px"><span style="color:#5A6080">8–10 betli referat</span><b>{{ money(v.referat_price_per_page|int * 9) }} so‘m</b></div>
     <span class="hint">TezCheck’da eng kichik to‘lov — 1 000 so‘m.</span>
   </section>
 

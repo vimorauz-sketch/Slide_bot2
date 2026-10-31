@@ -219,7 +219,10 @@ async def _process_event(etype: str, data: Dict[str, Any], event_id: str) -> Tup
 
 # ---------------------------------------------------------------------- files after payment
 async def order_files(order) -> Tuple[Optional[str], Optional[str]]:
-    """PDF and PPTX of an order, rebuilt from the saved deck if the server lost them (redeploy)."""
+    """PDF and PPTX (a referat: PDF and DOCX) of an order, rebuilt from the saved content if the
+    server lost them (redeploy)."""
+    if getattr(order, "kind", None) == "referat":
+        return await _referat_files(order)
     from services.presentation import ensure_files
     storage = os.path.dirname(order.pdf_path or order.pptx_path or "") or os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "storage", order.id)
@@ -240,6 +243,34 @@ async def order_files(order) -> Tuple[Optional[str], Optional[str]]:
                                   .values(pdf_path=pdf, pptx_path=pptx))
             await session.commit()
     return (pdf if os.path.exists(pdf) else None), (pptx if os.path.exists(pptx) else None)
+
+
+async def _referat_files(order) -> Tuple[Optional[str], Optional[str]]:
+    from services.referat import builder
+    storage = os.path.dirname(order.pdf_path or order.pptx_path or "") or os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "storage", order.id)
+    saved_path = os.path.join(storage, builder.SAVE_NAME)
+    if not os.path.exists(saved_path) and order.content_json:
+        try:
+            saved = json.loads(order.content_json).get("referat")
+        except ValueError:
+            saved = None
+        if saved:
+            os.makedirs(storage, exist_ok=True)
+            with open(saved_path, "w", encoding="utf-8") as f:
+                json.dump(saved, f, ensure_ascii=False)
+    try:
+        res = await builder.ensure_files(storage)
+    except Exception:  # noqa: BLE001
+        logger.exception("referat files for order %s could not be built", order.id)
+        return None, None
+    if (order.pdf_path or "") != res.pdf_path or (order.pptx_path or "") != res.docx_path:
+        async with AsyncSessionLocal() as session:
+            await session.execute(update(PresentationOrder).where(PresentationOrder.id == order.id)
+                                  .values(pdf_path=res.pdf_path, pptx_path=res.docx_path))
+            await session.commit()
+    return ((res.pdf_path if os.path.exists(res.pdf_path) else None),
+            (res.docx_path if res.docx_path and os.path.exists(res.docx_path) else None))
 
 
 def content_for_db(content: Dict[str, Any], theme_key: Any) -> str:

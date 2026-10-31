@@ -1,97 +1,399 @@
 {
-  "language": "uz",
-  "title_slide": {
-    "title": "Fotosintez jarayoni va uning ahamiyati",
-    "subtitle": "Quyosh nuri qanday qilib oziq va kislorodga aylanadi",
-    "subject": "Biologiya",
-    "author": "Doniyorbek Normurodov",
-    "institution": "Toshkent davlat axborot texnologiyalari universiteti",
-    "teacher": "B. Karimova",
-    "visual": {"kind": "photo", "query": "sunlight through green leaves", "icon": "leaf"}
+ "language": "uz",
+ "title_slide": {
+  "title": "Fotosintez jarayoni va uning ahamiyati",
+  "subtitle": "Quyosh nuri qanday qilib oziq va kislorodga aylanadi",
+  "subject": "Biologiya",
+  "author": "Doniyorbek Normurodov",
+  "institution": "Toshkent davlat axborot texnologiyalari universiteti",
+  "teacher": "B. Karimova",
+  "visual": {
+   "kind": "photo",
+   "query": "sunlight through green leaves",
+   "icon": "leaf"
+  }
+ },
+ "slides": [
+  {
+   "layout": "agenda",
+   "title": "Reja",
+   "items": [
+    {
+     "title": "Fotosintez nima?",
+     "text": "Taʼrif va umumiy tenglama"
+    },
+    {
+     "title": "Yorug'lik bosqichi",
+     "text": "Tilakoidlarda energiya to'planishi"
+    },
+    {
+     "title": "Kalvin sikli",
+     "text": "Stromada glyukoza hosil bo'lishi"
+    },
+    {
+     "title": "Taʼsir etuvchi omillar",
+     "text": "Yorug'lik, CO2, harorat va suv"
+    },
+    {
+     "title": "Biosferadagi ahamiyati",
+     "text": "Kislorod, oziq zanjiri va iqlim"
+    }
+   ]
   },
-  "slides": [
-    {"layout": "agenda", "title": "Reja", "items": [
-      {"title": "Fotosintez nima?", "text": "Taʼrif va umumiy tenglama"},
-      {"title": "Yorug'lik bosqichi", "text": "Tilakoidlarda energiya to'planishi"},
-      {"title": "Kalvin sikli", "text": "Stromada glyukoza hosil bo'lishi"},
-      {"title": "Taʼsir etuvchi omillar", "text": "Yorug'lik, CO2, harorat va suv"},
-      {"title": "Biosferadagi ahamiyati", "text": "Kislorod, oziq zanjiri va iqlim"}
-    ]},
-    {"layout": "text_image", "section": "Kirish", "title": "Fotosintez nima?",
-     "lead": "Fotosintez — yashil o'simliklar, suvo'tlar va ayrim bakteriyalar quyosh nuri energiyasidan foydalanib, anorganik moddalardan organik modda hosil qiladigan jarayon.",
-     "bullets": ["Xloroplastlarda, xlorofill pigmenti ishtirokida boradi", "Xomashyo: karbonat angidrid (CO₂) va suv (H₂O)", "Mahsulot: glyukoza va atmosferaga chiqadigan kislorod (O₂)"],
-     "visual": {"kind": "photo", "query": "green leaf macro chloroplast", "icon": "leaf"},
-     "notes": "Fotosintez yer yuzidagi deyarli barcha hayotning energiya manbai ekanini taʼkidlang."},
-    {"layout": "cards", "title": "Jarayon uchun nimalar kerak?", "lead": "To'rt omil bir vaqtda mavjud bo'lsagina fotosintez boradi.", "items": [
-      {"icon": "sun", "title": "Yorug'lik", "text": "Quyosh nuri energiya manbai bo'lib, xlorofill uni yutadi."},
-      {"icon": "droplets", "title": "Suv", "text": "Ildiz orqali so'riladi, parchalanib elektron va kislorod beradi."},
-      {"icon": "wind", "title": "Karbonat angidrid", "text": "Barg og'izchalari orqali havodan kiradi, uglerod manbai."},
-      {"icon": "leaf", "title": "Xlorofill", "text": "Xloroplastdagi yashil pigment, asosan qizil va ko'k nurni yutadi."}
-    ]},
-    {"layout": "formula", "title": "Fotosintezning umumiy tenglamasi", "formula": "6CO2 + 6H2O → C6H12O6 + 6O2",
-     "caption": "Yorug'lik energiyasi va xlorofill ishtirokida 6 molekula CO₂ va 6 molekula suvdan bitta glyukoza va 6 molekula kislorod hosil bo'ladi.",
-     "terms": [
-       {"symbol": "CO2", "meaning": "Karbonat angidrid — havodan olinadi"},
-       {"symbol": "H2O", "meaning": "Suv — ildiz orqali keladi"},
-       {"symbol": "C6H12O6", "meaning": "Glyukoza — energiya zaxirasi"},
-       {"symbol": "O2", "meaning": "Kislorod — atmosferaga chiqadi"}
-     ]},
-    {"layout": "process", "section": "1-bosqich", "title": "Yorug'lik bosqichi", "lead": "Tilakoid membranalarida yorug'lik energiyasi kimyoviy energiyaga aylanadi.", "steps": [
-      {"title": "Nurni yutish", "text": "Xlorofill foton energiyasini yutib, elektronlarni qo'zg'aladi."},
-      {"title": "Suv fotolizi", "text": "Suv molekulasi parchalanadi: elektron, proton va O₂ ajraladi."},
-      {"title": "Elektron tashish", "text": "Elektronlar tashuvchilar zanjiri bo'ylab harakatlanadi."},
-      {"title": "ATF va NADF·H", "text": "Energiya ATF va NADF·H molekulalarida to'planadi."}
-    ]},
-    {"layout": "cycle", "section": "2-bosqich", "title": "Kalvin sikli", "center": "Kalvin sikli", "stages": [
-      {"title": "Uglerod fiksatsiyasi", "text": "RuBisCO fermenti CO₂ ni ribulozabisfosfatga biriktiradi."},
-      {"title": "Qaytarilish", "text": "ATF va NADF·H energiyasi hisobiga glitseraldegid-3-fosfat hosil bo'ladi."},
-      {"title": "Regeneratsiya", "text": "Molekulalarning bir qismi qayta ribulozabisfosfatga aylanadi va sikl davom etadi."}
-    ]},
-    {"layout": "comparison", "title": "Ikki bosqich taqqoslanganda", "left": {"title": "Yorug'lik bosqichi", "points": ["Tilakoid membranalarida boradi", "Yorug'lik bevosita kerak", "Suv parchalanadi, O₂ ajraladi", "ATF va NADF·H hosil bo'ladi"]},
-     "right": {"title": "Kalvin sikli", "points": ["Stromada boradi", "Yorug'lik bevosita kerak emas", "CO₂ o'zlashtiriladi", "Glyukoza sintezlanadi"]},
-     "verdict": "Birinchi bosqich energiya to'playdi, ikkinchisi shu energiya bilan organik modda quradi."},
-    {"layout": "table", "title": "Bosqichlar: joyi, xomashyosi va mahsuloti", "headers": ["Bosqich", "Joyi", "Kerakli moddalar", "Mahsulotlar"],
-     "rows": [["Yorug'lik bosqichi", "Tilakoid membranasi", "H₂O, yorug'lik, ADF, NADF⁺", "O₂, ATF, NADF·H"],
-              ["Kalvin sikli", "Stroma", "CO₂, ATF, NADF·H", "Glyukoza, ADF, NADF⁺"]],
-     "note": "ATF — adenozintrifosfat; NADF·H — nikotinamidadenindinukleotidfosfatning qaytarilgan shakli."},
-    {"layout": "icon_list", "title": "Fotosintez tezligiga taʼsir qiluvchi omillar", "items": [
-      {"icon": "sun", "title": "Yorug'lik intensivligi", "text": "Ma'lum chegaragacha yorug'lik ortsa, tezlik ham ortadi."},
-      {"icon": "wind", "title": "CO2 konsentratsiyasi", "text": "Havodagi CO₂ ko'paysa, Kalvin sikli tezlashadi."},
-      {"icon": "thermometer", "title": "Harorat", "text": "Fermentlar uchun qulay harorat — taxminan 25–35 °C."},
-      {"icon": "droplet", "title": "Suv", "text": "Suv tanqisligida og'izchalar yopilib, CO₂ kirishi kamayadi."}
-    ], "visual": {"kind": "photo", "query": "greenhouse plants sunlight", "icon": "thermometer"}},
-    {"layout": "stats", "title": "Raqamlarda fotosintez", "stats": [
-      {"value": "≈50%", "label": "Kislorod okeandan", "text": "Yer kislorodining kamida yarmini okean fitoplanktoni hosil qiladi."},
-      {"value": "≈105", "label": "mlrd t uglerod", "text": "Har yili fotosintez orqali organik moddaga aylanadi."},
-      {"value": "1–2%", "label": "Samaradorlik", "text": "Ekinlar quyosh energiyasining shuncha qismini biomassaga aylantiradi."}
-    ]},
-    {"layout": "chart", "title": "Yillik birlamchi mahsulot: quruqlik va okean", "chart": {"type": "donut", "labels": ["Quruqlik", "Okean"], "series": [{"name": "mlrd t C", "values": [56.4, 48.5]}], "unit": "mlrd t"},
-     "insights": ["Quruqlik o'simliklari yiliga taxminan 56,4 mlrd t uglerod bog'laydi.", "Okean fitoplanktoni — 48,5 mlrd t, ya'ni deyarli yarmi.", "Ikkalasi birga ≈105 mlrd t uglerodni organik moddaga aylantiradi."],
-     "source": "Manba: Field va boshq., Science, 1998"},
-    {"layout": "timeline", "title": "Fotosintezning kashf etilishi", "events": [
-      {"date": "1771", "title": "J. Pristli", "text": "O'simlik \"buzilgan\" havoni tozalashini ko'rsatdi."},
-      {"date": "1779", "title": "Y. Ingenxaus", "text": "Bu jarayon uchun yorug'lik zarurligini isbotladi."},
-      {"date": "1782", "title": "J. Senebye", "text": "O'simliklar CO₂ ni yutishini aniqladi."},
-      {"date": "1804", "title": "N. de Sossyur", "text": "Suv ham jarayonda ishtirok etishini ko'rsatdi."},
-      {"date": "1961", "title": "M. Kalvin", "text": "Uglerod fiksatsiyasi sikli uchun Nobel mukofoti oldi."}
-    ]},
-    {"layout": "pyramid", "title": "Oziq zanjirining asosi — fotosintez", "levels": [
-      {"title": "Uchlamchi konsumentlar", "text": "Yirtqichlar: energiyaning eng kichik ulushi"},
-      {"title": "Ikkilamchi konsumentlar", "text": "Boshqa hayvonlar bilan oziqlanadiganlar"},
-      {"title": "Birlamchi konsumentlar", "text": "O'simlikxo'r hayvonlar"},
-      {"title": "Produtsentlar", "text": "Fotosintez qiluvchi o'simlik va suvo'tlar — butun piramidaning tayanchi"}
-    ]},
-    {"layout": "highlight", "eyebrow": "Muhim fakt", "statement": "Har bir nafasimizdagi kislorod — fotosintez mahsuli", "text": "Atmosferadagi deyarli barcha erkin kislorod milliardlab yillar davomida fotosintez orqali to'plangan.",
-     "visual": {"kind": "photo", "query": "forest aerial view sunlight", "icon": "trees"}},
-    {"layout": "section", "number": "03", "title": "Fotosintez va inson", "subtitle": "Qishloq xo'jaligi, iqlim va energetika uchun ahamiyati", "visual": {"kind": "photo", "query": "wheat field farm", "icon": "wheat"}},
-    {"layout": "summary", "title": "Xulosa", "points": ["Fotosintez quyosh energiyasini kimyoviy energiyaga aylantiradi", "Yorug'lik bosqichi ATF va NADF·H beradi, kislorod ajraladi", "Kalvin siklida CO₂ dan glyukoza sintezlanadi", "Barcha oziq zanjirlari va atmosfera kislorodi fotosintezga bog'liq"],
-     "takeaway": "Fotosintezsiz Yerda na kislorodli havo, na oziq-ovqat bo'lardi."},
-    {"layout": "references", "title": "Foydalanilgan adabiyotlar", "sources": [
-      "Campbell N. A., Reece J. B. Biology. 11th ed. — Pearson, 2017.",
-      "Field C. B. et al. Primary production of the biosphere // Science. — 1998. — Vol. 281.",
-      "Taiz L., Zeiger E. Plant Physiology and Development. 6th ed. — Sinauer, 2015.",
-      "Biologiya: 9-sinf uchun darslik. — Toshkent, 2020."
-    ]},
-    {"layout": "closing", "visual": {"kind": "photo", "query": "sunrise over green field", "icon": "sun"}}
-  ]
+  {
+   "layout": "text_image",
+   "section": "Kirish",
+   "title": "Fotosintez nima?",
+   "lead": "Fotosintez — yashil o'simliklar, suvo'tlar va ayrim bakteriyalar quyosh nuri energiyasidan foydalanib, anorganik moddalardan organik modda hosil qiladigan jarayon.",
+   "bullets": [
+    "Xloroplastlarda, xlorofill pigmenti ishtirokida boradi",
+    "Xomashyo: karbonat angidrid (CO₂) va suv (H₂O)",
+    "Mahsulot: glyukoza va atmosferaga chiqadigan kislorod (O₂)"
+   ],
+   "visual": {
+    "kind": "photo",
+    "query": "green leaf macro chloroplast",
+    "icon": "leaf"
+   },
+   "notes": "Fotosintez yer yuzidagi deyarli barcha hayotning energiya manbai ekanini taʼkidlang."
+  },
+  {
+   "layout": "cards",
+   "title": "Jarayon uchun nimalar kerak?",
+   "lead": "To'rt omil bir vaqtda mavjud bo'lsagina fotosintez boradi.",
+   "items": [
+    {
+     "icon": "sun",
+     "title": "Yorug'lik",
+     "text": "Quyosh nuri energiya manbai bo'lib, xlorofill uni yutadi.",
+     "photo": "sunlight through leaves"
+    },
+    {
+     "icon": "droplets",
+     "title": "Suv",
+     "text": "Ildiz orqali so'riladi, parchalanib elektron va kislorod beradi.",
+     "photo": "watering plant roots"
+    },
+    {
+     "icon": "wind",
+     "title": "Karbonat angidrid",
+     "text": "Barg og'izchalari orqali havodan kiradi, uglerod manbai.",
+     "photo": "green leaf close up"
+    },
+    {
+     "icon": "leaf",
+     "title": "Xlorofill",
+     "text": "Xloroplastdagi yashil pigment, asosan qizil va ko'k nurni yutadi.",
+     "photo": "chlorophyll leaf cells"
+    }
+   ]
+  },
+  {
+   "layout": "formula",
+   "title": "Fotosintezning umumiy tenglamasi",
+   "formula": "6CO2 + 6H2O → C6H12O6 + 6O2",
+   "caption": "Yorug'lik energiyasi va xlorofill ishtirokida 6 molekula CO₂ va 6 molekula suvdan bitta glyukoza va 6 molekula kislorod hosil bo'ladi.",
+   "terms": [
+    {
+     "symbol": "CO2",
+     "meaning": "Karbonat angidrid — havodan olinadi"
+    },
+    {
+     "symbol": "H2O",
+     "meaning": "Suv — ildiz orqali keladi"
+    },
+    {
+     "symbol": "C6H12O6",
+     "meaning": "Glyukoza — energiya zaxirasi"
+    },
+    {
+     "symbol": "O2",
+     "meaning": "Kislorod — atmosferaga chiqadi"
+    }
+   ]
+  },
+  {
+   "layout": "process",
+   "section": "1-bosqich",
+   "title": "Yorug'lik bosqichi",
+   "lead": "Tilakoid membranalarida yorug'lik energiyasi kimyoviy energiyaga aylanadi.",
+   "steps": [
+    {
+     "title": "Nurni yutish",
+     "text": "Xlorofill foton energiyasini yutib, elektronlarni qo'zg'aladi.",
+     "photo": "sunlight forest canopy"
+    },
+    {
+     "title": "Suv fotolizi",
+     "text": "Suv molekulasi parchalanadi: elektron, proton va O₂ ajraladi.",
+     "photo": "water drops on leaf"
+    },
+    {
+     "title": "Elektron tashish",
+     "text": "Elektronlar tashuvchilar zanjiri bo'ylab harakatlanadi.",
+     "photo": "plant cell microscope"
+    },
+    {
+     "title": "ATF va NADF·H",
+     "text": "Energiya ATF va NADF·H molekulalarida to'planadi.",
+     "photo": "green plant energy"
+    }
+   ]
+  },
+  {
+   "layout": "cycle",
+   "section": "2-bosqich",
+   "title": "Kalvin sikli",
+   "center": "Kalvin sikli",
+   "stages": [
+    {
+     "title": "Uglerod fiksatsiyasi",
+     "text": "RuBisCO fermenti CO₂ ni ribulozabisfosfatga biriktiradi."
+    },
+    {
+     "title": "Qaytarilish",
+     "text": "ATF va NADF·H energiyasi hisobiga glitseraldegid-3-fosfat hosil bo'ladi."
+    },
+    {
+     "title": "Regeneratsiya",
+     "text": "Molekulalarning bir qismi qayta ribulozabisfosfatga aylanadi va sikl davom etadi."
+    }
+   ]
+  },
+  {
+   "layout": "comparison",
+   "title": "Ikki bosqich taqqoslanganda",
+   "left": {
+    "title": "Yorug'lik bosqichi",
+    "points": [
+     "Tilakoid membranalarida boradi",
+     "Yorug'lik bevosita kerak",
+     "Suv parchalanadi, O₂ ajraladi",
+     "ATF va NADF·H hosil bo'ladi"
+    ]
+   },
+   "right": {
+    "title": "Kalvin sikli",
+    "points": [
+     "Stromada boradi",
+     "Yorug'lik bevosita kerak emas",
+     "CO₂ o'zlashtiriladi",
+     "Glyukoza sintezlanadi"
+    ]
+   },
+   "verdict": "Birinchi bosqich energiya to'playdi, ikkinchisi shu energiya bilan organik modda quradi."
+  },
+  {
+   "layout": "table",
+   "title": "Bosqichlar: joyi, xomashyosi va mahsuloti",
+   "headers": [
+    "Bosqich",
+    "Joyi",
+    "Kerakli moddalar",
+    "Mahsulotlar"
+   ],
+   "rows": [
+    [
+     "Yorug'lik bosqichi",
+     "Tilakoid membranasi",
+     "H₂O, yorug'lik, ADF, NADF⁺",
+     "O₂, ATF, NADF·H"
+    ],
+    [
+     "Kalvin sikli",
+     "Stroma",
+     "CO₂, ATF, NADF·H",
+     "Glyukoza, ADF, NADF⁺"
+    ]
+   ],
+   "note": "ATF — adenozintrifosfat; NADF·H — nikotinamidadenindinukleotidfosfatning qaytarilgan shakli."
+  },
+  {
+   "layout": "icon_list",
+   "title": "Fotosintez tezligiga taʼsir qiluvchi omillar",
+   "items": [
+    {
+     "icon": "sun",
+     "title": "Yorug'lik intensivligi",
+     "text": "Ma'lum chegaragacha yorug'lik ortsa, tezlik ham ortadi.",
+     "photo": "sun rays field"
+    },
+    {
+     "icon": "wind",
+     "title": "CO2 konsentratsiyasi",
+     "text": "Havodagi CO₂ ko'paysa, Kalvin sikli tezlashadi.",
+     "photo": "greenhouse plants"
+    },
+    {
+     "icon": "thermometer",
+     "title": "Harorat",
+     "text": "Fermentlar uchun qulay harorat — taxminan 25–35 °C.",
+     "photo": "thermometer garden"
+    },
+    {
+     "icon": "droplet",
+     "title": "Suv",
+     "text": "Suv tanqisligida og'izchalar yopilib, CO₂ kirishi kamayadi.",
+     "photo": "rain on leaves"
+    }
+   ],
+   "visual": {
+    "kind": "photo",
+    "query": "greenhouse plants sunlight",
+    "icon": "thermometer"
+   }
+  },
+  {
+   "layout": "stats",
+   "title": "Raqamlarda fotosintez",
+   "stats": [
+    {
+     "value": "≈50%",
+     "label": "Kislorod okeandan",
+     "text": "Yer kislorodining kamida yarmini okean fitoplanktoni hosil qiladi."
+    },
+    {
+     "value": "≈105",
+     "label": "mlrd t uglerod",
+     "text": "Har yili fotosintez orqali organik moddaga aylanadi."
+    },
+    {
+     "value": "1–2%",
+     "label": "Samaradorlik",
+     "text": "Ekinlar quyosh energiyasining shuncha qismini biomassaga aylantiradi."
+    }
+   ]
+  },
+  {
+   "layout": "chart",
+   "title": "Yillik birlamchi mahsulot: quruqlik va okean",
+   "chart": {
+    "type": "donut",
+    "labels": [
+     "Quruqlik",
+     "Okean"
+    ],
+    "series": [
+     {
+      "name": "mlrd t C",
+      "values": [
+       56.4,
+       48.5
+      ]
+     }
+    ],
+    "unit": "mlrd t"
+   },
+   "insights": [
+    "Quruqlik o'simliklari yiliga taxminan 56,4 mlrd t uglerod bog'laydi.",
+    "Okean fitoplanktoni — 48,5 mlrd t, ya'ni deyarli yarmi.",
+    "Ikkalasi birga ≈105 mlrd t uglerodni organik moddaga aylantiradi."
+   ],
+   "source": "Manba: Field va boshq., Science, 1998"
+  },
+  {
+   "layout": "timeline",
+   "title": "Fotosintezning kashf etilishi",
+   "events": [
+    {
+     "date": "1771",
+     "title": "J. Pristli",
+     "text": "O'simlik \"buzilgan\" havoni tozalashini ko'rsatdi."
+    },
+    {
+     "date": "1779",
+     "title": "Y. Ingenxaus",
+     "text": "Bu jarayon uchun yorug'lik zarurligini isbotladi."
+    },
+    {
+     "date": "1782",
+     "title": "J. Senebye",
+     "text": "O'simliklar CO₂ ni yutishini aniqladi."
+    },
+    {
+     "date": "1804",
+     "title": "N. de Sossyur",
+     "text": "Suv ham jarayonda ishtirok etishini ko'rsatdi."
+    },
+    {
+     "date": "1961",
+     "title": "M. Kalvin",
+     "text": "Uglerod fiksatsiyasi sikli uchun Nobel mukofoti oldi."
+    }
+   ]
+  },
+  {
+   "layout": "pyramid",
+   "title": "Oziq zanjirining asosi — fotosintez",
+   "levels": [
+    {
+     "title": "Uchlamchi konsumentlar",
+     "text": "Yirtqichlar: energiyaning eng kichik ulushi"
+    },
+    {
+     "title": "Ikkilamchi konsumentlar",
+     "text": "Boshqa hayvonlar bilan oziqlanadiganlar"
+    },
+    {
+     "title": "Birlamchi konsumentlar",
+     "text": "O'simlikxo'r hayvonlar"
+    },
+    {
+     "title": "Produtsentlar",
+     "text": "Fotosintez qiluvchi o'simlik va suvo'tlar — butun piramidaning tayanchi"
+    }
+   ]
+  },
+  {
+   "layout": "highlight",
+   "eyebrow": "Muhim fakt",
+   "statement": "Har bir nafasimizdagi kislorod — fotosintez mahsuli",
+   "text": "Atmosferadagi deyarli barcha erkin kislorod milliardlab yillar davomida fotosintez orqali to'plangan.",
+   "visual": {
+    "kind": "photo",
+    "query": "forest aerial view sunlight",
+    "icon": "trees"
+   }
+  },
+  {
+   "layout": "section",
+   "number": "03",
+   "title": "Fotosintez va inson",
+   "subtitle": "Qishloq xo'jaligi, iqlim va energetika uchun ahamiyati",
+   "visual": {
+    "kind": "photo",
+    "query": "wheat field farm",
+    "icon": "wheat"
+   }
+  },
+  {
+   "layout": "summary",
+   "title": "Xulosa",
+   "points": [
+    "Fotosintez quyosh energiyasini kimyoviy energiyaga aylantiradi",
+    "Yorug'lik bosqichi ATF va NADF·H beradi, kislorod ajraladi",
+    "Kalvin siklida CO₂ dan glyukoza sintezlanadi",
+    "Barcha oziq zanjirlari va atmosfera kislorodi fotosintezga bog'liq"
+   ],
+   "takeaway": "Fotosintezsiz Yerda na kislorodli havo, na oziq-ovqat bo'lardi."
+  },
+  {
+   "layout": "references",
+   "title": "Foydalanilgan adabiyotlar",
+   "sources": [
+    "Campbell N. A., Reece J. B. Biology. 11th ed. — Pearson, 2017.",
+    "Field C. B. et al. Primary production of the biosphere // Science. — 1998. — Vol. 281.",
+    "Taiz L., Zeiger E. Plant Physiology and Development. 6th ed. — Sinauer, 2015.",
+    "Biologiya: 9-sinf uchun darslik. — Toshkent, 2020."
+   ]
+  },
+  {
+   "layout": "closing",
+   "visual": {
+    "kind": "photo",
+    "query": "sunrise over green field",
+    "icon": "sun"
+   }
+  }
+ ]
 }

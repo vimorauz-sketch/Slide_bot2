@@ -207,13 +207,6 @@ async def _open_wizard(message: Message, user_id: int, state: FSMContext) -> Non
                              reply_markup=get_webapp_keyboard(url))
 
 
-@router.message(F.text.in_(["📄 Referat yaratish", "📄 Создать реферат", "📄 Create Paper"]))
-async def referat_soon(message: Message, state: FSMContext):
-    await message.answer(
-        "📄 <b>Referat xizmati tez orada ishga tushadi.</b>\n\n"
-        "Hozircha «🎨 Presentation yaratish» orqali taqdimot tayyorlashingiz mumkin.", parse_mode="HTML")
-
-
 # ---------------------------------------------------------------- inline gallery (works without the Mini App)
 PAGE_SIZE = 8
 
@@ -354,9 +347,15 @@ async def process_template_selection(callback: CallbackQuery, state: FSMContext)
 @router.message(F.web_app_data)
 async def process_webapp_choice(message: Message, state: FSMContext):
     try:
-        key = json.loads(message.web_app_data.data).get("theme", "")
+        payload = json.loads(message.web_app_data.data)
+        key = payload.get("theme", "")
     except (ValueError, AttributeError):
-        key = message.web_app_data.data
+        payload, key = {}, message.web_app_data.data
+    if isinstance(payload, dict) and payload.get("referat"):  # the referat templates Mini App
+        from bot.handlers.referat import apply_template_choice as referat_choice
+        if not await referat_choice(message.bot, message.chat.id, state, str(payload["referat"])):
+            await message.answer("⚠️ Shablon topilmadi, qaytadan tanlang.")
+        return
     if not await apply_template_choice(message.bot, message.chat.id, state, key):
         await message.answer("⚠️ Shablon topilmadi, qaytadan tanlang.")
 
@@ -902,8 +901,16 @@ async def _build_and_send(message: Message, user_id: int, state: FSMContext, bac
         f"📊 <b>Slaydlar soni:</b> {slide_count} ta\n"
         f"💰 <b>Narxi:</b> {total_price} so'm"
     )
+    payment_keyboard, note = _payment_keyboard(user_id, order_id, total_price)
+    await message.answer(warning_text + note, reply_markup=payment_keyboard, parse_mode="HTML")
+    if await _state_is(state, PresentationForm.generating):  # never wipe a new order started meanwhile
+        await state.clear()
+
+
+def _payment_keyboard(user_id: int, order_id: str, total_price: int):
+    """(payment buttons, extra text) for an order's preview message, by payment mode."""
     mode = payment_mode()
-    payment_keyboard = (
+    markup = (
         get_tezcheck_pay_keyboard(order_id, total_price) if mode == "tezcheck"
         else get_production_payment_inline_keyboard(order_id, total_price) if mode == "legacy"
         else get_payment_inline_keyboard(order_id, total_price) if mode == "demo"
@@ -911,24 +918,23 @@ async def _build_and_send(message: Message, user_id: int, state: FSMContext, bac
         else get_payment_inline_keyboard(order_id, total_price) if runtime.is_admin(user_id)
         else None  # everybody else: never a button that could give the files away
     )
-    if mode == "off" and payment_keyboard is not None:
-        warning_text += ("\n\n🧪 <b>Admin sinovi:</b> to‘lov tizimi ulanmagan — «To‘lovni tasdiqlash» faqat siz uchun "
-                         "pulsiz ishlaydi (daromadga qo‘shilmaydi).")
-    if payment_keyboard is None:
-        warning_text += "\n\n🛠 <i>To‘lov tizimi tez orada ulanadi — shu buyurtmani o‘shanda to‘laysiz.</i>"
-    await message.answer(warning_text, reply_markup=payment_keyboard, parse_mode="HTML")
-    if await _state_is(state, PresentationForm.generating):  # never wipe a new order started meanwhile
-        await state.clear()
+    note = ""
+    if mode == "off" and markup is not None:
+        note = ("\n\n🧪 <b>Admin sinovi:</b> to‘lov tizimi ulanmagan — «To‘lovni tasdiqlash» faqat siz uchun "
+                "pulsiz ishlaydi (daromadga qo‘shilmaydi).")
+    if markup is None:
+        note = "\n\n🛠 <i>To‘lov tizimi tez orada ulanadi — shu buyurtmani o‘shanda to‘laysiz.</i>"
+    return markup, note
 
 
 async def _deliver_free(message: Message, user_id: int, order_id: str, data: dict, slide_count: int,
-                        kind: str) -> None:
+                        kind: str, referat: bool = False) -> None:
     """The first presentation (or a referral bonus) is free: the files are sent straight away."""
     from services.payment import orders
     from bot.delivery import deliver_order
     from bot.keyboards.inline import after_free_keyboard
     await orders.mark_paid(order_id, by=kind, amount=0, provider="free")  # also rewards the inviter ("first")
-    note = texts.free_ready_text(data.get("topic", ""), slide_count, kind)
+    note = texts.free_ready_text(data.get("topic", ""), slide_count, kind, referat=referat)
     try:
         delivered = await deliver_order(message.bot, order_id, note=note)
     except Exception:  # noqa: BLE001
