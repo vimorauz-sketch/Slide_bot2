@@ -175,7 +175,8 @@ async def cancel_wizard(message: Message, state: FSMContext):
     """The «❌ Bekor qilish» reply button and /cancel: leave any wizard and show the main menu."""
     from bot.states.forms import PresentationForm
     cur = await state.get_state()
-    if getattr(cur, "state", cur) == PresentationForm.generating.state:
+    from bot.states.forms import ReferatForm
+    if getattr(cur, "state", cur) in (PresentationForm.generating.state, ReferatForm.generating.state):
         await message.answer("⏳ Taqdimot allaqachon tayyorlanmoqda — tayyor bo‘lgach yuboriladi.")
         return
     await state.clear()

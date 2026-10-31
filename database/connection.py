@@ -73,6 +73,7 @@ _PENDING_COLUMN_MIGRATIONS = {
         ("delivered_at", "TIMESTAMP"),
         ("content_json", "TEXT"),
         ("language", "VARCHAR(10)"),
+        ("kind", "VARCHAR(20)"),
     ],
 }
 

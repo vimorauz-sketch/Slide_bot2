@@ -230,3 +230,44 @@ async def test_webapp_preview_route_serves_default_and_rejects_bad_keys():
         if os.path.exists(os.path.join(gallery.THUMBS_DIR, "05_nature_organic", "0.webp")):
             r = await client.get("/webapp/preview/05_nature_organic/0.webp")
             assert r.status == 200 and r.headers["Content-Type"] == "image/webp"
+
+
+async def test_webapp_select_with_fonts_and_text_colour(monkeypatch, patched_handlers_db):
+    from aiogram import Dispatcher
+    from config import settings
+    from tests.fixtures.telegram_fakes import FakeBot
+
+    async def no_preview(data):
+        return None
+    from bot.handlers import style
+    monkeypatch.setattr(style, "preview_path", no_preview)
+    monkeypatch.setattr(settings, "BOT_TOKEN", _TOKEN)
+    bot, dp = FakeBot(), Dispatcher()
+    bot.id = 123456
+    async with TestClient(TestServer(create_webhook_app(bot, dp))) as client:
+        r = await client.post("/webapp/api/select", json={
+            "init_data": _init(778), "theme": "02_clean_academic", "font_title": "g:lobster",
+            "font_body": "g:nope", "text_color": "#FFFFFF"})  # unknown font and unreadable colour are dropped
+        assert r.status == 200 and (await r.json())["ok"]
+        r2 = await client.post("/webapp/api/select", json={
+            "init_data": _init(779), "theme": "02_clean_academic", "text_color": "#1E3A8A"})
+        assert r2.status == 200
+    data = await dp.fsm.get_context(bot=bot, chat_id=778, user_id=778).get_data()
+    assert data["font_title"] == "g:lobster" and not data.get("font_body") and not data.get("text_color")
+    assert (await dp.fsm.get_context(bot=bot, chat_id=779, user_id=779).get_data())["text_color"] == "#1E3A8A"
+
+
+async def test_webapp_font_list_colours_font_files_and_styled_cover():
+    async with TestClient(TestServer(create_webhook_app(None, None))) as client:
+        d = await (await client.get("/webapp/api/fonts")).json()
+        assert len(d["fonts"]) >= 150 and len(d["colors"]) == 20 and "hand" in d["categories"]
+        f = next(x for x in d["fonts"] if x["key"] == "g:lora")
+        r = await client.get("/webapp/" + f["file"])
+        assert r.status == 200 and len(await r.read()) > 10000
+        c = await (await client.get("/webapp/api/colors/02_clean_academic")).json()
+        assert "#111827" in c["colors"] and "#FFFFFF" not in c["colors"]
+        assert (await client.get("/webapp/api/colors/nope")).status == 404
+        r = await client.get("/webapp/styled/05_nature_organic.jpg?ft=g:caveat&c=%231E3A8A")
+        assert r.status == 200 and r.headers["Content-Type"] == "image/jpeg"
+        assert (await client.get("/webapp/styled/05_nature_organic.jpg?ft=g:nope")).status == 404
+        assert (await client.get("/webapp/fonts/../../config.py")).status in (403, 404)

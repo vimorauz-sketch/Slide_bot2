@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<style>
+{{ font_css|safe }}
+:root {
+  --ink: {{ p.ink }}; --accent: {{ p.accent }}; --accent2: {{ p.accent2 }}; --soft: {{ p.soft }};
+  --font-title: {{ font_title|safe }}; --font-body: {{ font_body|safe }}; --body-size: {{ body_size }};
+}
+@page { size: A4; margin: 20mm 15mm 20mm 30mm;
+  @bottom-center { content: counter(page); font-family: var(--font-body); font-size: 11pt; color: var(--ink); }
+  {% if running %}@top-right { content: "{{ running|safe }}"; font-family: var(--font-title); font-size: 8.5pt; color: var(--accent);
+    letter-spacing: .06em; text-transform: uppercase; border-bottom: .4pt solid var(--accent2); vertical-align: bottom; padding-bottom: 2mm; }{% endif %}
+}
+@page cover { margin: 0; @bottom-center { content: none; } @top-right { content: none; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { font-family: var(--font-body); font-size: var(--body-size); line-height: 1.5; color: var(--ink);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+/* ------------------------------------------------------------ title page */
+.cover { page: cover; position: relative; width: 210mm; height: 297mm; overflow: hidden; break-after: page; }
+.cover .decor { position: absolute; inset: 0; width: 210mm; height: 297mm; }
+.cover .photo { position: absolute; left: 0; top: 0; width: 210mm; height: 128mm; object-fit: cover; }
+.cover .photo-shade { position: absolute; left: 0; top: 0; width: 210mm; height: 128mm;
+  background: linear-gradient(180deg, rgba(0,0,0,.45) 0%, rgba(0,0,0,0) 38%, rgba(0,0,0,0) 70%, rgba(0,0,0,.25) 100%); }
+.cv { position: absolute; inset: 0; color: var(--ink); }
+.cv .top { position: absolute; left: 22mm; right: 22mm; top: 22mm; text-align: center; }
+.cv .ministry { font-family: var(--font-title); font-weight: 700; font-size: 11pt; line-height: 1.35; text-transform: uppercase; letter-spacing: .02em; }
+.cv .inst { font-size: 12.5pt; font-weight: 700; margin-top: 4mm; line-height: 1.3; }
+.cv .fac { font-size: 11.5pt; margin-top: 1.5mm; }
+.cv .mid { position: absolute; left: 22mm; right: 22mm; top: 112mm; text-align: center; }
+.cv .kind { font-family: var(--font-title); font-weight: 700; font-size: 36pt; letter-spacing: .14em; color: var(--accent); line-height: 1.1; }
+.cv .subject { font-size: 13pt; margin-top: 7mm; }
+.cv .subject b { color: var(--accent); }
+.cv .topic-label { font-size: 12pt; margin-top: 6mm; color: var(--accent); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.cv .topic { font-family: var(--font-title); font-size: 19pt; font-weight: 700; line-height: 1.25; margin-top: 2mm; }
+.cv .info { position: absolute; right: 24mm; top: 206mm; width: 86mm; font-size: 12.5pt; line-height: 1.6; }
+.cv .info .row { display: flex; gap: 3mm; }
+.cv .info .k { font-weight: 700; min-width: 26mm; color: var(--accent); }
+.cv .city { position: absolute; left: 0; right: 0; bottom: 20mm; text-align: center; font-size: 12.5pt; font-weight: 700; }
+
+/* layouts */
+.L-band .top, .L-band .mid { left: 60mm; right: 18mm; text-align: left; }
+.L-band .info { left: 60mm; right: auto; }
+.L-band .city { left: 60mm; text-align: left; }
+.L-band .kind { letter-spacing: .06em; }
+.L-header .top { top: 16mm; color: #fff; }
+.L-header .ministry, .L-header .inst, .L-header .fac { color: #fff; }
+.L-header .mid { top: 118mm; }
+.L-header .city { bottom: 17mm; }
+.L-minimal .top, .L-minimal .mid { left: 28mm; right: 28mm; text-align: left; }
+.L-minimal .top { top: 30mm; }
+.L-minimal .mid { top: 140mm; }
+.L-minimal .kind { font-size: 15pt; letter-spacing: .3em; }
+.L-minimal .topic { font-size: 26pt; line-height: 1.15; margin-top: 4mm; }
+.L-minimal .info { left: 28mm; right: auto; top: 214mm; }
+.L-minimal .city { left: 28mm; text-align: left; bottom: 30mm; }
+.L-photo .top { top: 7mm; color: #fff; }
+.L-photo .ministry, .L-photo .inst, .L-photo .fac { color: #fff; }
+.L-photo .mid { top: 140mm; }
+.L-photo .info { top: 214mm; }
+.L-photo .city { bottom: 15mm; }
+.L-corners .top { left: 40mm; right: 40mm; top: 30mm; }
+.L-ornament .top { left: 36mm; right: 36mm; top: 30mm; }
+.L-diagonal .top { left: 18mm; right: 70mm; text-align: left; }
+.L-diagonal .mid { text-align: left; left: 22mm; }
+.L-diagonal .info { right: 22mm; }
+.L-emblem .top { top: 24mm; }
+.L-emblem .mid { top: 134mm; }
+.L-emblem .info { top: 212mm; }
+.L-split .top, .L-split .mid { left: 18mm; right: 76mm; text-align: left; }
+.L-split .info { left: 18mm; right: auto; width: 110mm; }
+.L-split .city { left: 18mm; right: auto; text-align: left; }
+.L-split .kind { font-size: 0; height: 0; }
+.L-split .vkind { position: absolute; left: 178mm; top: 148mm; transform: translate(-50%, -50%) rotate(-90deg);
+  font-family: var(--font-title); font-weight: 700; font-size: 44pt; letter-spacing: .22em; color: #fff; white-space: nowrap; }
+.L-split .mid { top: 104mm; }
+.L-arch .top { left: 36mm; right: 36mm; top: 46mm; }
+.L-arch .mid { left: 36mm; right: 36mm; top: 124mm; }
+.L-arch .info { right: 38mm; top: 208mm; width: 80mm; }
+.L-arch .city { bottom: 25mm; }
+.L-wave .city { bottom: 34mm; }
+.L-dots .top, .L-dots .mid { left: 26mm; right: 26mm; }
+.L-diagonal .top { top: 26mm; }
+
+/* ------------------------------------------------------------ inner pages */
+.page-break { break-before: page; }
+h1, h2, .plan-title { font-family: var(--font-title); color: var(--accent); break-after: avoid; }
+h1 { font-size: 16pt; line-height: 1.3; margin: 0 0 6mm; }
+h2 { font-size: 14pt; line-height: 1.35; margin: 6mm 0 3mm; }
+p { margin: 0; text-indent: 12.5mm; text-align: justify; orphans: 2; widows: 2; }
+.num { font-variant-numeric: lining-nums; }
+
+/* heading styles */
+.H-bar h1 { border-left: 1.6mm solid var(--accent); padding: 1mm 0 1mm 4mm; }
+.H-bar h2 { border-left: .8mm solid var(--accent2); padding-left: 3mm; }
+.H-underline h1 { border-bottom: .6mm solid var(--accent2); padding-bottom: 2mm; }
+.H-underline h2 { text-decoration: underline; text-decoration-color: var(--accent2); text-underline-offset: 1.2mm; }
+.H-caps h1 { text-align: center; text-transform: uppercase; color: var(--ink); letter-spacing: .03em; }
+.H-caps h2 { color: var(--ink); }
+h1 .n { display: none; }
+.H-badge h1 .n { display: grid; }
+.H-badge h1 { display: flex; align-items: center; gap: 4mm; }
+.H-badge h1 .n { flex: none; width: 11mm; height: 11mm; border-radius: 50%; background: var(--accent); color: #fff;
+  display: grid; place-items: center; font-size: 13pt; }
+.H-badge h2 .n { color: var(--accent2); }
+.H-box h1 { background: var(--soft); padding: 3mm 5mm; border-radius: 1.5mm; }
+.H-box h2 { color: var(--accent); border-bottom: .3mm dashed var(--accent2); padding-bottom: 1mm; }
+.H-rule h1 { display: flex; align-items: center; gap: 4mm; text-align: center; justify-content: center; }
+.H-rule h1::before, .H-rule h1::after { content: ""; flex: 1; height: .35mm; background: var(--accent2); min-width: 8mm; }
+.H-rule h1 span.t { flex: 0 1 auto; }
+
+/* plan */
+.plan-title { text-align: center; font-size: 16pt; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8mm; }
+.plan { list-style: none; padding: 0; margin: 0; }
+.plan li { margin: 0 0 2.5mm; }
+.plan li.sub { padding-left: 10mm; }
+.plan li .pn { color: var(--accent); font-weight: 700; margin-right: 2mm; }
+
+/* figures and tables */
+figure { margin: 5mm 0; text-align: center; break-inside: avoid; }
+figure img { max-width: 78%; max-height: 82mm; border-radius: 1.5mm; object-fit: cover; }
+figcaption { font-size: 11.5pt; font-style: italic; margin-top: 2mm; color: var(--ink); text-indent: 0; }
+figcaption b, .tcap b { color: var(--accent); font-style: normal; }
+.tcap { text-align: right; font-size: 11.5pt; margin: 5mm 0 1.5mm; }
+table { width: 100%; border-collapse: collapse; font-size: 12pt; line-height: 1.35; break-inside: avoid; }
+th { background: var(--soft); color: var(--accent); text-align: left; }
+th, td { border: .3mm solid color-mix(in srgb, var(--accent2) 55%, #fff); padding: 1.8mm 2.5mm; vertical-align: top; }
+ol.refs { margin: 0; padding-left: 8mm; }
+ol.refs li { margin-bottom: 2mm; text-align: justify; }
+</style>
+</head>
+<body class="H-{{ t.heading }}">
+
+<section class="cover L-{{ t.cover }}">
+  {% if t.cover == 'photo' and cover_photo %}<img class="photo" src="{{ cover_photo }}"><div class="photo-shade"></div>{% endif %}
+  {{ decor | safe }}
+  <div class="cv">
+    <div class="top">
+      {% if m.ministry %}<div class="ministry">{{ m.ministry }}</div>{% endif %}
+      {% if m.institution %}<div class="inst">{{ m.institution }}</div>{% endif %}
+      {% if m.faculty %}<div class="fac">{{ m.faculty }}</div>{% endif %}
+    </div>
+    <div class="mid">
+      <div class="kind">{{ m.kind }}</div>
+      {% if m.subject %}<div class="subject">{{ L.subject }}: <b>{{ m.subject }}</b></div>{% endif %}
+      <div class="topic-label">{{ L.topic }}:</div>
+      <div class="topic">«{{ m.topic }}»</div>
+    </div>
+    {% if t.cover == 'split' %}<div class="vkind">{{ m.kind }}</div>{% endif %}
+    <div class="info">
+      {% if m.author %}<div class="row"><span class="k">{{ L.author }}:</span><span>{{ m.author }}</span></div>{% endif %}
+      {% if m.group %}<div class="row"><span class="k">{{ m.group_label or L.group }}:</span><span>{{ m.group }}</span></div>{% endif %}
+      {% if m.teacher %}<div class="row"><span class="k">{{ L.teacher }}:</span><span>{{ m.teacher }}</span></div>{% endif %}
+    </div>
+    <div class="city">{{ m.city }}{% if m.city and m.year %} – {% endif %}{{ m.year }}</div>
+  </div>
+</section>
+
+<section>
+  <div class="plan-title">{{ L.plan }}</div>
+  <ul class="plan">
+    {% for s in sections %}
+      <li><span class="pn">{{ s.number }}</span>{{ s.title }}</li>
+      {% for sub in s.subsections %}<li class="sub"><span class="pn">{{ sub.number }}</span>{{ sub.title }}</li>{% endfor %}
+    {% endfor %}
+    <li><span class="pn"></span>{{ L.references }}</li>
+  </ul>
+</section>
+
+{% for s in sections %}
+<section class="page-break">
+  <h1>{% if s.number %}<span class="n">{{ s.number|replace('.', '') }}</span>{% endif %}<span class="t">{% if s.number and t.heading != 'badge' %}{{ s.number }} {% endif %}{{ s.title_display }}</span></h1>
+  {% for para in s.paragraphs %}<p>{{ para }}</p>{% endfor %}
+  {% for sub in s.subsections %}
+    <h2><span class="n">{{ sub.number }}</span> {{ sub.title }}</h2>
+    {% for para in sub.paragraphs %}<p>{{ para }}</p>{% endfor %}
+    {% if sub.image and sub.image.src %}
+      <figure><img src="{{ sub.image.src }}"><figcaption><b>{{ sub.image.n }}-{{ L.figure }}.</b> {{ sub.image.caption }}</figcaption></figure>
+    {% endif %}
+    {% if sub.table %}
+      <div class="tcap"><b>{{ sub.table.n }}-{{ L.table }}.</b> {{ sub.table.caption }}</div>
+      <table><thead><tr>{% for h in sub.table.head %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+      <tbody>{% for r in sub.table.rows %}<tr>{% for c in r %}<td>{{ c }}</td>{% endfor %}</tr>{% endfor %}</tbody></table>
+    {% endif %}
+  {% endfor %}
+  {% if s.image and s.image.src %}
+    <figure><img src="{{ s.image.src }}"><figcaption><b>{{ s.image.n }}-{{ L.figure }}.</b> {{ s.image.caption }}</figcaption></figure>
+  {% endif %}
+</section>
+{% endfor %}
+
+<section class="page-break">
+  <h1><span class="t">{{ L.references }}</span></h1>
+  <ol class="refs">{% for r in references %}<li>{{ r }}</li>{% endfor %}</ol>
+</section>
+</body>
+</html>

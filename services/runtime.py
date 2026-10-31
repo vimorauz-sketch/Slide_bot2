@@ -36,6 +36,7 @@ def defaults() -> Dict[str, str]:
         "maintenance": "0",
         "maintenance_text": MAINTENANCE_TEXT,
         "extra_admins": "",
+        "referat_price_per_page": "500",  # so‘m per page of a referat (the size the user picks)
         "free_trial": "1",              # every user's first presentation is free
         "free_max_slides": "15",        # the free (trial / bonus) presentation covers up to this many slides
         "referral_bonus": "1",          # free presentations the inviter gets per friend

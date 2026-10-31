@@ -509,7 +509,8 @@ async def order_file(request: web.Request) -> web.StreamResponse:
     if not path:
         raise redirect(f"/admin/orders?o={o.id}", err="Fayl topilmadi va qayta yasab bo‘lmadi (deck saqlanmagan).")
     await audit(request, "download", f"{kind} · {o.id}")
-    return web.FileResponse(path, headers={"Content-Disposition": f'attachment; filename="{file_name(o.topic, kind)}"',
+    ext = "docx" if kind == "pptx" and getattr(o, "kind", None) == "referat" else kind
+    return web.FileResponse(path, headers={"Content-Disposition": f'attachment; filename="{file_name(o.topic, ext)}"',
                                            "Cache-Control": "no-store"})
 
 
@@ -895,7 +896,7 @@ EFFORTS = [("low", "low — tez"), ("medium", "medium"), ("high", "high — seki
 INT_FIELDS = {"price_per_slide": (1, 1_000_000), "min_slides": (3, 60), "max_slides": (3, 60),
               "max_previews_per_day": (0, 1000), "max_parallel_builds": (1, 20), "throttle_burst": (3, 100),
               "throttle_ban_minutes": (1, 1440), "max_unpaid_open": (0, 50), "daily_preview_cap": (0, 100000),
-              "free_max_slides": (0, 60), "referral_bonus": (0, 20)}
+              "free_max_slides": (0, 60), "referral_bonus": (0, 20), "referat_price_per_page": (50, 1_000_000)}
 ORDER_MODES = [("auto", "Avtomatik", "to‘lov ishlamasa yopiq"), ("open", "Ochiq", "har doim"), ("closed", "Yopiq", "hech kimga")]
 PREFETCH_MODES = [("paid", "Faqat avval to‘laganlar uchun (tavsiya)"), ("all", "Hamma uchun — eng tez, lekin qimmat"),
                   ("off", "O‘chiq — eng arzon")]

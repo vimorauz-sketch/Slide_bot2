@@ -7,8 +7,8 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.session.base import BaseSession
 from aiogram.types import Update, Message, Chat, User, PhotoSize, CallbackQuery
 
-from bot.handlers import start, create_pres, ocr_task, payment, admin
-from bot.states.forms import PresentationForm
+from bot.handlers import start, create_pres, ocr_task, payment, admin, style, referat
+from bot.states.forms import PresentationForm, ReferatForm
 
 TOKEN = "123456:" + "A" * 35
 
@@ -39,7 +39,8 @@ def _dispatcher() -> Dispatcher:
     global _DP
     if _DP is None:
         dp = Dispatcher()
-        for r in (start.router, admin.router, ocr_task.router, create_pres.router, payment.router):
+        for r in (start.router, admin.router, ocr_task.router, style.router, referat.router, create_pres.router,
+                  payment.router):
             dp.include_router(r)
         _DP = dp
     return _DP
@@ -161,11 +162,11 @@ async def test_ocr_state_asks_for_a_photo_when_text_is_sent(env):
 
 
 @pytest.mark.asyncio
-async def test_referat_button_does_not_open_the_presentation_wizard(env):
+async def test_referat_button_opens_the_referat_wizard(env):
     *_, ctx = env
     texts = await _feed(env, _msg("📄 Referat yaratish"))
-    assert await ctx.get_state() is None
-    assert any("Referat" in t for t in texts)
+    assert await ctx.get_state() == ReferatForm.template.state
+    assert any("REFERAT SHABLONI" in t for t in texts)
 
 
 @pytest.mark.asyncio

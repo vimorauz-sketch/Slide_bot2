@@ -218,6 +218,21 @@ when TezCheck reports `paid` with real money (`environment: live`) for at least 
 Unpaid bills are re-checked every 90 seconds, so a lost webhook never loses a sale. Without the
 TezCheck variables the bot runs in DEMO mode (no real payment).
 
+## Referats
+
+«📄 Referat yaratish» opens 50 templates (`services/referat/designs.py`: title-page layout × heading
+style × palette × fonts), as numbered pictures in the chat and in the Mini App at `/webapp/referat/`.
+The wizard asks: subject, topic, size (5–7 / 8–10 / 12–15 / 18–20 pages), name, level, institution,
+class or group, teacher, city, language, **whether to add pictures** (real photos from the photo
+providers, captioned «1-rasm. …») and extra wishes. The AI writes a plan and then every part in
+parallel (`services/referat/writer.py`); the document is drawn as A4 PDF with Chromium
+(`render.py`, inner pages: 14 pt, 1.5 spacing, margins 3/1.5/2/2 cm, page numbers) and as an
+editable Word file (`docx_export.py`: the title page decoration is a picture behind editable text).
+Orders are `presentation_orders` rows with `kind="referat"` (`pptx_path` holds the .docx); the
+content is saved in `content_json`, so the files can be rebuilt after a redeploy. The price is
+`referat_price_per_page` × pages (dashboard → Sozlamalar). Template pictures are bundled in
+`webapp/referat/thumbs`; missing ones are drawn on first request.
+
 ## Fonts and text colour
 
 After a template is chosen the bot shows a design menu with the cover in the chosen style:

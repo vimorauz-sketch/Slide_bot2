@@ -35,6 +35,12 @@ STAGES = [
     ("previews", 95, 99, "Namuna tayyorlanmoqda", "Namuna tayyor", "Namuna tayyorlanadi"),
 ]
 _INDEX = {s[0]: i for i, s in enumerate(STAGES)}
+REFERAT_STAGES = [
+    ("write", 2, 66, "AI referat matnini yozmoqda", "Matn yozildi", "Matn yoziladi"),
+    ("photos", 66, 78, "Rasmlar topilmoqda", "Rasmlar topildi", "Rasmlar topiladi"),
+    ("render", 78, 96, "Word va PDF sahifalari tayyorlanmoqda", "Sahifalar tayyor", "Sahifalar tayyorlanadi"),
+    ("previews", 96, 99, "Namuna tayyorlanmoqda", "Namuna tayyor", "Namuna tayyorlanadi"),
+]
 # how long a stage usually takes (seconds): the bar creeps towards the stage end at this pace
 _EXPECTED = {"write": 35.0, "photos": 10.0, "render": 10.0, "previews": 2.0}
 
@@ -45,8 +51,9 @@ def bar(pct: float) -> str:
 
 
 class ProgressMessage:
-    def __init__(self, message, title: str = "🎨 <b>Taqdimotingiz tayyorlanmoqda</b>"):
+    def __init__(self, message, title: str = "🎨 <b>Taqdimotingiz tayyorlanmoqda</b>", stages=None):
         self.message = message
+        self.stages = stages or STAGES
         self.title = title
         self.stage = 0
         self.stage_started = time.monotonic()
@@ -63,7 +70,7 @@ class ProgressMessage:
     # ------------------------------------------------------------------ state
     def target(self) -> float:
         """Where the bar should be now: real progress plus a smooth creep inside the stage."""
-        name, start, end, *_ = STAGES[self.stage]
+        name, start, end, *_ = self.stages[self.stage]
         if name == "write" and self.total:
             real = start + (end - start) * self.done / self.total
         else:
@@ -74,7 +81,7 @@ class ProgressMessage:
 
     def text(self) -> str:
         lines = [self.title, "", f"<code>{bar(self.shown)}</code>  <b>{int(self.shown)}%</b>", ""]
-        for i, (name, _s, _e, running, done, later) in enumerate(STAGES):
+        for i, (name, _s, _e, running, done, later) in enumerate(self.stages):
             if self.finished or i < self.stage:
                 extra = f" ({self.total}/{self.total})" if name == "write" and self.total > 1 else ""
                 lines.append(f"✅ {done}{extra}")
@@ -127,7 +134,7 @@ class ProgressMessage:
 
     async def finish(self) -> None:
         self.finished = True
-        self.stage = len(STAGES) - 1
+        self.stage = len(self.stages) - 1
         if self._ticker:
             self._ticker.cancel()
         await self.refresh(force=True)

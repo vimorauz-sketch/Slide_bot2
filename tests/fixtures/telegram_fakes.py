@@ -60,6 +60,9 @@ class FakeBot:
     async def send_photo(self, chat_id, photo, caption=None, **kwargs):
         self.sent_messages.append({"chat_id": chat_id, "text": caption, "photo": photo, **kwargs})
 
+    async def send_media_group(self, chat_id, media, **kwargs):
+        self.sent_messages.append({"chat_id": chat_id, "text": None, "media": media, **kwargs})
+
     async def me(self):
         return FakeBotInfo()
 
@@ -160,7 +163,8 @@ class FakeFSMContext:
     async def set_data(self, data):
         self._data = dict(data)
 
-    async def update_data(self, **kwargs):
+    async def update_data(self, data=None, **kwargs):  # same signature as aiogram's FSMContext
+        self._data.update(data or {})
         self._data.update(kwargs)
         return dict(self._data)
 
