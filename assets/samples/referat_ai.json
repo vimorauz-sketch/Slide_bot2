@@ -1,0 +1,122 @@
+{
+ "language": "uz",
+ "meta": {
+  "ministry": "O‘ZBEKISTON RESPUBLIKASI OLIY TA’LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+  "kind": "REFERAT",
+  "city": "Toshkent",
+  "year": "2026",
+  "institution": "Muhammad al-Xorazmiy nomidagi Toshkent axborot texnologiyalari universiteti",
+  "faculty": "Kompyuter injiniringi fakulteti",
+  "subject": "Sun’iy intellekt asoslari",
+  "topic": "Sun’iy intellekt va mashinali o‘qitish: asosiy tushunchalar va qo‘llanilishi",
+  "author": "Sardor Toshpo‘latov",
+  "group": "KI-312",
+  "teacher": "D. Ergashev"
+ },
+ "sections": [
+  {
+   "kind": "intro",
+   "title": "Kirish",
+   "paragraphs": [
+    "Sun’iy intellekt (SI) — inson tafakkuriga xos vazifalarni bajara oladigan kompyuter tizimlarini yaratish bilan shug‘ullanuvchi fan sohasidir. So‘nggi yillarda u tibbiyot, ta’lim, transport va iqtisodiyotda keng qo‘llanilmoqda.",
+    "Referatda sun’iy intellektning asosiy tushunchalari, mashinali o‘qitish turlari va ularning amaliy qo‘llanilishi ko‘rib chiqiladi."
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Sun’iy intellektning asosiy tushunchalari",
+   "subsections": [
+    {
+     "title": "Sun’iy intellekt tarixi",
+     "paragraphs": [
+      "«Sun’iy intellekt» atamasi 1956-yilda Dartmut konferensiyasida Jon Makkarti tomonidan taklif etilgan. Dastlabki tizimlar qoidalarga asoslangan bo‘lib, mantiqiy masalalarni yechishga mo‘ljallangan edi.",
+      "2010-yillarda katta hajmdagi ma’lumotlar va grafik protsessorlarning rivojlanishi chuqur o‘qitish usullarining keskin yuksalishiga sabab bo‘ldi."
+     ],
+     "image": {
+      "query": "artificial intelligence neural network",
+      "caption": "Neyron tarmoq tasviri"
+     }
+    },
+    {
+     "title": "Mashinali o‘qitish turlari",
+     "paragraphs": [
+      "Nazorat ostida o‘qitishda model belgilangan misollar asosida o‘rganadi. Nazoratsiz o‘qitishda esa ma’lumotlardagi yashirin tuzilmalar topiladi.",
+      "Mustahkamlab o‘qitishda agent muhit bilan o‘zaro ta’sirlashib, mukofot va jazo orqali eng yaxshi strategiyani o‘rganadi."
+     ]
+    },
+    {
+     "title": "Neyron tarmoqlar",
+     "paragraphs": [
+      "Sun’iy neyron tarmoqlar bosh miya neyronlari ishidan ilhomlangan matematik modellardir. Ular qatlamlardan iborat bo‘lib, har bir neyron kirish signallarini og‘irliklar bilan ko‘paytirib, natijani keyingi qatlamga uzatadi."
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Sun’iy intellektning qo‘llanilishi",
+   "subsections": [
+    {
+     "title": "Amaliy sohalar",
+     "paragraphs": [
+      "Quyidagi jadvalda sun’iy intellektning ayrim qo‘llanilish sohalari keltirilgan."
+     ],
+     "table": {
+      "caption": "Sun’iy intellektning qo‘llanilishi",
+      "head": [
+       "Soha",
+       "Vazifa",
+       "Usul"
+      ],
+      "rows": [
+       [
+        "Tibbiyot",
+        "Rentgen tasvirlarini tahlil qilish",
+        "Konvolyutsion tarmoq"
+       ],
+       [
+        "Transport",
+        "Avtonom boshqaruv",
+        "Mustahkamlab o‘qitish"
+       ],
+       [
+        "Ta’lim",
+        "Shaxsiy o‘quv rejalari",
+        "Tavsiya tizimlari"
+       ],
+       [
+        "Moliya",
+        "Firibgarlikni aniqlash",
+        "Anomaliya tahlili"
+       ]
+      ]
+     }
+    },
+    {
+     "title": "Axloqiy masalalar",
+     "paragraphs": [
+      "Sun’iy intellektdan foydalanishda shaxsiy ma’lumotlar xavfsizligi, algoritmlarning xolisligi va qarorlar uchun javobgarlik muhim masalalar bo‘lib qolmoqda."
+     ],
+     "image": {
+      "query": "robot hand technology",
+      "caption": "Inson va texnologiya hamkorligi"
+     }
+    }
+   ]
+  },
+  {
+   "kind": "conclusion",
+   "title": "Xulosa",
+   "paragraphs": [
+    "Sun’iy intellekt zamonaviy jamiyat taraqqiyotining asosiy harakatlantiruvchi kuchlaridan biriga aylandi. Mashinali o‘qitish usullari murakkab masalalarni avtomatik hal qilish imkonini beradi.",
+    "Shu bilan birga, texnologiyani mas’uliyat bilan qo‘llash va uning axloqiy jihatlarini hisobga olish zarur."
+   ]
+  }
+ ],
+ "references": [
+  "Russell S., Norvig P. Artificial Intelligence: A Modern Approach. — 4th ed. — Pearson, 2021.",
+  "Goodfellow I., Bengio Y., Courville A. Deep Learning. — MIT Press, 2016.",
+  "O‘zbekiston Respublikasi Prezidentining «Sun’iy intellekt texnologiyalarini jadal joriy etish chora-tadbirlari to‘g‘risida»gi qarori. — 2021.",
+  "Mitchell T. Machine Learning. — McGraw-Hill, 1997."
+ ]
+}

@@ -12,6 +12,7 @@ own webhook mechanism. In production, put this behind an HTTPS reverse proxy
 It also serves the template gallery Mini App (webapp/) at /webapp/ and its selection endpoint
 /webapp/api/select. Set WEBAPP_URL=https://<your-domain>/webapp/ to enable it in the bot.
 """
+import mimetypes
 import json
 import logging
 import os
@@ -96,6 +97,14 @@ def _check_rate(request: web.Request) -> None:
         raise web.HTTPTooManyRequests(text="Too many requests")
 
 
+mimetypes.add_type("image/webp", ".webp")  # also for the static Mini App thumbnails
+mimetypes.add_type("font/ttf", ".ttf")     # the Mini App's font list loads the library fonts
+
+# Explicit type for the .webp previews: Python 3.10's mimetypes table has no .webp, so aiohttp
+# would send them as application/octet-stream (some Telegram clients then show no picture).
+WEBP_HEADERS = {"Cache-Control": "public, max-age=604800", "Content-Type": "image/webp"}
+
+
 async def webapp_index_handler(request: web.Request) -> web.StreamResponse:
     if not request.path.endswith("/"):
         raise web.HTTPFound(request.path + "/")
@@ -126,7 +135,12 @@ async def webapp_select_handler(request: web.Request) -> web.Response:
 
     user_id = int(data["user"]["id"])
     state = dp.fsm.get_context(bot=bot, chat_id=user_id, user_id=user_id)
-    ok = await apply_template_choice(bot, user_id, state, str(body.get("theme", "")))
+    if body.get("referat"):  # the referat templates Mini App
+        from bot.handlers.referat import apply_template_choice as referat_choice
+        ok = await referat_choice(bot, user_id, state, str(body["referat"]))
+        return web.json_response({"ok": ok}, status=200 if ok else 404)
+    style = {k: body.get(k) for k in ("font_title", "font_body", "text_color") if body.get(k)}
+    ok = await apply_template_choice(bot, user_id, state, str(body.get("theme", "")), style=style)
     return web.json_response({"ok": ok}, status=200 if ok else 404)
 
 
@@ -143,7 +157,7 @@ async def webapp_preview_handler(request: web.Request) -> web.StreamResponse:
     path = await preview_path(request.match_info["key"], n)
     if not path:
         raise web.HTTPNotFound()
-    return web.FileResponse(path, headers={"Cache-Control": "public, max-age=604800"})
+    return web.FileResponse(path, headers=WEBP_HEADERS)
 
 
 async def diag_handler(request: web.Request) -> web.Response:
@@ -181,6 +195,79 @@ async def webapp_cover_handler(request: web.Request) -> web.StreamResponse:
     _check_rate(request)
 
     path = await cover_path(request.match_info["key"])
+    if not path:
+        raise web.HTTPNotFound()
+    return web.FileResponse(path, headers=WEBP_HEADERS)
+
+
+async def fonts_api_handler(request: web.Request) -> web.Response:
+    """The font library and the text colours for the Mini App's design step."""
+    from bot.handlers.style import COLORS
+    from services.deck import fonts
+    lib = []
+    for e in fonts.library_fonts():
+        f = e["files"][0]
+        lib.append({"key": e["key"], "name": e["name"], "category": e["category"], "cyrillic": bool(e.get("cyrillic")),
+                    "file": f"fonts/{e['id']}/{f['file']}", "weight": f["weight"]})
+    data = {"categories": fonts.library_categories(), "fonts": lib,
+            "colors": [{"emoji": em, "name": n, "hex": h} for em, n, h in COLORS]}
+    return web.json_response(data, headers={"Cache-Control": "public, max-age=3600"})
+
+
+async def colors_api_handler(request: web.Request) -> web.Response:
+    """Text colours that stay readable on one template (key = template or template~colour)."""
+    from bot.handlers.style import allowed_colors
+    from services.deck import themes
+    key = request.match_info["key"]
+    if not themes.is_known_theme(key):
+        raise web.HTTPNotFound()
+    return web.json_response({"colors": [h for _, _, _, h in allowed_colors({"template_id": themes.resolve_theme_id(key)})]},
+                             headers={"Cache-Control": "public, max-age=3600"})
+
+
+async def styled_cover_handler(request: web.Request) -> web.StreamResponse:
+    """Cover of a template in the fonts / text colour chosen in the Mini App (drawn once, then cached)."""
+    from bot.handlers.style import clean_style, preview_path
+    from services.deck import themes
+    key = request.match_info["key"]
+    if not themes.is_known_theme(key):
+        raise web.HTTPNotFound()
+    tid = themes.resolve_theme_id(key)
+    q = request.query
+    style = clean_style({"font_title": q.get("ft"), "font_body": q.get("fb"), "text_color": q.get("c")}, tid)
+    if not style:
+        raise web.HTTPNotFound()
+    _check_rate(request)
+    path = await preview_path({"template_id": tid, **style})
+    if not path:
+        raise web.HTTPNotFound()
+    return web.FileResponse(path, headers={"Cache-Control": "public, max-age=604800", "Content-Type": "image/jpeg"})
+
+
+async def referat_index_handler(request: web.Request) -> web.StreamResponse:
+    """The referat templates Mini App; the template list is put into the page."""
+    if not request.path.endswith("/"):
+        raise web.HTTPFound(request.path + "/")
+    from services.deck import fonts
+    from services.referat import designs
+    catalog = [{"id": t["id"], "n": t["code"], "name": t["name"], "cover": designs.GROUP_OF[t["cover"]], "layout": designs.COVERS[t["cover"]],
+                "heading": designs.HEADINGS[t["heading"]], "palette": t["palette"]["name"],
+                "colors": [t["palette"]["accent"], t["palette"]["accent2"]],
+                "fonts": fonts.family_name(t["fonts"]["title"])} for t in designs.TEMPLATES]
+    with open(os.path.join(WEBAPP_DIR, "referat", "index.html"), encoding="utf-8") as f:
+        html = f.read().replace("__CATALOG__", json.dumps(catalog, ensure_ascii=False).replace("</", "<\\/"))
+    return web.Response(text=html, content_type="text/html", headers={"Cache-Control": "no-cache"})
+
+
+async def referat_page_handler(request: web.Request) -> web.StreamResponse:
+    """Title page (1) or inner page (4) of a referat template."""
+    from services.referat import designs, gallery as rgallery
+    tid, n = request.match_info["tid"], int(request.match_info["n"])
+    if tid not in designs.BY_ID or n not in rgallery.PAGES:
+        raise web.HTTPNotFound()
+    if not rgallery.path(tid, n):
+        _check_rate(request)
+    path = await rgallery.page_path(tid, n)
     if not path:
         raise web.HTTPNotFound()
     return web.FileResponse(path, headers={"Cache-Control": "public, max-age=604800"})
@@ -237,6 +324,15 @@ def create_webhook_app(bot=None, dp=None) -> web.Application:
         app.router.add_post("/webapp/api/select", webapp_select_handler)
         app.router.add_get(r"/webapp/preview/{key}/{n:\d+}.webp", webapp_preview_handler)
         app.router.add_get(r"/webapp/cover/{key}.webp", webapp_cover_handler)
+        app.router.add_get("/webapp/api/fonts", fonts_api_handler)
+        app.router.add_get(r"/webapp/api/colors/{key}", colors_api_handler)
+        app.router.add_get(r"/webapp/styled/{key}.jpg", styled_cover_handler)
+        from services.deck.fonts import _LIB_DIR
+        if os.path.isdir(_LIB_DIR):  # font files for the Mini App's font list (before the /webapp/ static route)
+            app.router.add_static("/webapp/fonts/", str(_LIB_DIR), show_index=False)
+        app.router.add_get("/webapp/referat", referat_index_handler)
+        app.router.add_get("/webapp/referat/", referat_index_handler)
+        app.router.add_get(r"/webapp/referat/page/{tid:r\d{2}}_{n:\d}.jpg", referat_page_handler)
         app.router.add_static("/webapp/", WEBAPP_DIR, show_index=False)
     app.router.add_get("/health", health_handler)
     app.router.add_get("/", health_handler)

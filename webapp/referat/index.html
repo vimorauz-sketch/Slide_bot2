@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Referat shablonlari</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root {
+  --bg: var(--tg-theme-bg-color, #f4f5f8);
+  --bg2: var(--tg-theme-secondary-bg-color, #e9ebf1);
+  --text: var(--tg-theme-text-color, #161a23);
+  --hint: var(--tg-theme-hint-color, #6f7586);
+  --accent: var(--tg-theme-button-color, #2f6bff);
+  --on-accent: var(--tg-theme-button-text-color, #ffffff);
+  --line: color-mix(in srgb, var(--text) 10%, transparent);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.4 -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif; }
+body { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
+header { padding: 18px 16px 4px; }
+h1 { margin: 0; font-size: 21px; letter-spacing: -.01em; }
+.sub { color: var(--hint); font-size: 13px; margin-top: 3px; }
+.chips { position: sticky; top: 0; z-index: 3; display: flex; gap: 8px; overflow-x: auto; padding: 10px 16px; scrollbar-width: none;
+  background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; height: 32px; padding: 0 13px; border-radius: 999px; background: var(--bg2); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; padding: 8px 16px; }
+.card { text-align: left; display: flex; flex-direction: column; gap: 6px; }
+.thumb { position: relative; border-radius: 6px; overflow: hidden; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.16); aspect-ratio: 210/297; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.num { position: absolute; left: 6px; top: 6px; min-width: 26px; height: 22px; padding: 0 6px; border-radius: 7px;
+  background: rgba(16,20,30,.78); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+.name { font-weight: 600; font-size: 14px; line-height: 1.25; }
+.meta { color: var(--hint); font-size: 12px; display: flex; align-items: center; gap: 5px; }
+.sw { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.sheet { position: fixed; inset: 0; z-index: 10; background: var(--bg); display: flex; flex-direction: column; }
+.sheet[hidden] { display: none; }
+.sheet-top { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.sheet-top b { flex: 1; min-width: 0; font-size: 16px; }
+.close { width: 34px; height: 34px; border-radius: 50%; background: var(--bg2); font-size: 16px; font-weight: 700; }
+.pages { flex: 1; overflow-y: auto; padding: 14px 16px 120px; display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 560px) { .pages { grid-template-columns: 1fr 1fr; } }
+.pages figure { margin: 0; }
+.pages img { width: 100%; display: block; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,.18); background: #fff; aspect-ratio: 210/297; object-fit: cover; }
+.pages figcaption { color: var(--hint); font-size: 12.5px; margin-top: 6px; text-align: center; }
+.details { color: var(--hint); font-size: 13px; padding: 0 16px; }
+.pick { position: fixed; left: 16px; right: 16px; bottom: calc(14px + env(safe-area-inset-bottom)); height: 50px; border-radius: 14px;
+  background: var(--accent); color: var(--on-accent); font-weight: 700; font-size: 16px; z-index: 11; }
+.pick[hidden] { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📄 Referat shablonlari</h1>
+  <div class="sub">100 xil dizayn. Titul varag‘ini bosing — ichki sahifasini ham ko‘rasiz, «Tanlash» bosilsa bot o‘zi qabul qiladi. Ichki sahifalar akademik talabga mos: A4, 14 pt, 1,5 interval.</div>
+</header>
+<div class="chips" id="chips" role="group" aria-label="Turlari"></div>
+<div class="grid" id="grid"></div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-top"><b id="sheetTitle"></b><button class="close" id="close" aria-label="Yopish">✕</button></div>
+  <div class="pages" id="pages"></div>
+</div>
+<button class="pick" id="pick" hidden>Shu shablonni tanlash</button>
+
+<script>
+var CATALOG = __CATALOG__;
+var tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+var filter = "Hammasi", current = null;
+var grid = document.getElementById("grid"), chips = document.getElementById("chips");
+
+function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]; }); }
+
+function render() {
+  grid.innerHTML = "";
+  CATALOG.filter(function (t) { return filter === "Hammasi" || t.cover === filter; }).forEach(function (t) {
+    var b = el("button", "card");
+    b.innerHTML = '<div class="thumb"><img loading="lazy" src="page/' + t.id + '_1.jpg" alt=""><span class="num">' + t.n + '</span></div>' +
+      '<div class="name">' + esc(t.name) + '</div><div class="meta">' + esc(t.layout || "") + '</div>' +
+      '<div class="meta"><i class="sw" style="background:' + t.colors[0] + '"></i><i class="sw" style="background:' + t.colors[1] + '"></i>' + esc(t.palette) + '</div>';
+    b.onclick = function () { open(t); };
+    grid.appendChild(b);
+  });
+}
+
+function open(t) {
+  current = t;
+  document.getElementById("sheetTitle").textContent = "№ " + t.n + " · " + t.name;
+  document.getElementById("pages").innerHTML =
+    '<figure><img src="page/' + t.id + '_1.jpg" alt="Titul varag‘i"><figcaption>Titul varag‘i</figcaption></figure>' +
+    '<figure><img src="page/' + t.id + '_4.jpg" alt="Ichki sahifa"><figcaption>Ichki sahifa · sarlavha: ' + esc(t.heading.toLowerCase()) + ' · ' + esc(t.fonts) + '</figcaption></figure>';
+  document.getElementById("sheet").hidden = false;
+  if (tg && tg.MainButton) {
+    document.getElementById("pick").hidden = true;
+    tg.MainButton.setText("№ " + t.n + " shablonini tanlash"); tg.MainButton.show();
+    if (tg.BackButton) tg.BackButton.show();
+  } else {
+    document.getElementById("pick").hidden = false;
+  }
+}
+
+function closeSheet() {
+  document.getElementById("sheet").hidden = true;
+  document.getElementById("pick").hidden = true;
+  if (tg && tg.MainButton) tg.MainButton.hide();
+  if (tg && tg.BackButton) tg.BackButton.hide();
+  current = null;
+}
+
+var BOT = (new URLSearchParams(location.search).get("bot") || "").replace(/[^\w]/g, "");
+var inTg = !!(tg && (tg.initData || (tg.platform && tg.platform !== "unknown")));
+
+function deepLink(t) { return BOT ? "https://t.me/" + BOT + "?start=rtpl_" + t.id : ""; }
+
+function handOver(t) {  // last resort: open the bot chat with the template in the /start link
+  var link = deepLink(t);
+  if (link) { if (inTg) { tg.openTelegramLink(link); tg.close(); } else location.href = link; return; }
+  if (inTg) { try { tg.sendData(JSON.stringify({ referat: t.id })); return; } catch (e) {} }
+  document.getElementById("sheetTitle").textContent = "№ " + t.n + " tanlandi — botga qayting";
+}
+
+function choose() {
+  if (!current) return;
+  var t = current;
+  try { tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
+  if (!inTg) { handOver(t); return; }
+  var viaInline = !!(tg.initDataUnsafe && tg.initDataUnsafe.query_id);
+  // opened with the keyboard button: the choice goes straight back to the chat (no number to type)
+  if (!viaInline) { try { tg.sendData(JSON.stringify({ referat: t.id })); return; } catch (e) {} }
+  if (!tg.initData) { handOver(t); return; }
+  if (tg.MainButton) tg.MainButton.showProgress();
+  fetch("../api/select", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ init_data: tg.initData, referat: t.id }) })
+    .then(function (r) { return r.json(); })
+    .then(function (j) { if (j && j.ok) tg.close(); else handOver(t); })
+    .catch(function () { handOver(t); })
+    .finally(function () { if (tg.MainButton) tg.MainButton.hideProgress(); });
+}
+
+var covers = ["Hammasi"];
+CATALOG.forEach(function (t) { if (covers.indexOf(t.cover) < 0) covers.push(t.cover); });
+covers.forEach(function (c) {
+  var b = el("button", "chip"); b.textContent = c; b.setAttribute("aria-pressed", c === filter);
+  b.onclick = function () { filter = c; Array.prototype.forEach.call(chips.children, function (x) { x.setAttribute("aria-pressed", x.textContent === c); }); render(); };
+  chips.appendChild(b);
+});
+document.getElementById("close").onclick = closeSheet;
+document.getElementById("pick").onclick = choose;
+if (tg && tg.MainButton) tg.MainButton.onClick(choose);
+if (tg && tg.BackButton) tg.BackButton.onClick(closeSheet);
+render();
+</script>
+</body>
+</html>
