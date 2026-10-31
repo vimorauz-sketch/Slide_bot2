@@ -1,0 +1,378 @@
+{
+ "photosynthesis": {"from_sample": true},
+ "ai": {
+  "title_slide": {"title": "Sun’iy intellekt va kelajak kasblari", "subtitle": "Mashinalar qanday o‘rganadi va bu biz uchun nimani anglatadi", "subject": "Informatika",
+   "visual": {"kind": "photo", "query": "artificial intelligence robot hand", "icon": "cpu"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Sun’iy intellekt nima?",
+    "lead": "Sun’iy intellekt — kompyuterlarning ma’lumotlardan o‘rganib, inson aqliga xos vazifalarni bajarish qobiliyati.",
+    "bullets": ["Matn, rasm va nutqni tushunadi", "Katta ma’lumotlardan qonuniyat topadi", "Tajriba ortgan sari aniqroq ishlaydi"],
+    "visual": {"kind": "photo", "query": "neural network data visualization", "icon": "brain"}},
+   {"layout": "cards", "title": "Sun’iy intellekt qayerda ishlatiladi?", "lead": "Bugun u kundalik hayotimizning ko‘p sohasida yashirin ishlaydi.", "items": [
+    {"icon": "stethoscope", "title": "Tibbiyot", "text": "Rentgen va MRT tasvirlarida kasallik belgilarini topadi.", "photo": "doctor looking at x-ray"},
+    {"icon": "car", "title": "Transport", "text": "Avtomobillarga yo‘lni ko‘rish va xavfni sezishda yordam beradi.", "photo": "self driving car road"},
+    {"icon": "languages", "title": "Tarjima", "text": "Matn va nutqni bir zumda boshqa tilga o‘giradi.", "photo": "smartphone translation app"},
+    {"icon": "shopping-cart", "title": "Savdo", "text": "Xaridorga mos mahsulotlarni tavsiya qiladi.", "photo": "online shopping laptop"}]},
+   {"layout": "process", "section": "Qanday ishlaydi", "title": "Model qanday o‘rganadi?", "lead": "Mashinali o‘qitish to‘rt asosiy bosqichdan iborat.", "steps": [
+    {"title": "Ma’lumot yig‘ish", "text": "Minglab misollar: rasmlar, matnlar, raqamlar.", "photo": "data center servers"},
+    {"title": "O‘qitish", "text": "Model misollardagi qonuniyatlarni topadi.", "photo": "programmer writing code"},
+    {"title": "Tekshirish", "text": "Yangi misollarda aniqligi o‘lchanadi.", "photo": "computer screen charts"},
+    {"title": "Qo‘llash", "text": "Tayyor model ilova ichida ishlay boshlaydi.", "photo": "mobile app interface"}]},
+   {"layout": "stats", "title": "Raqamlarda sun’iy intellekt", "stats": [
+    {"value": "1956", "label": "Atama paydo bo‘lgan yil", "text": "«Sun’iy intellekt» atamasi Dartmut konferensiyasida taklif etilgan."},
+    {"value": "1997", "label": "Deep Blue g‘alabasi", "text": "Kompyuter jahon chempioni Garri Kasparovni shaxmatda yutgan."},
+    {"value": "2016", "label": "AlphaGo", "text": "Dastur Go o‘yinida eng kuchli o‘yinchilardan birini mag‘lub etgan."}]},
+   {"layout": "highlight", "eyebrow": "Asosiy fikr", "statement": "Sun’iy intellekt kasblarni yo‘q qilmaydi — ularni o‘zgartiradi",
+    "text": "Kelajakda texnologiyadan to‘g‘ri foydalanishni biladigan mutaxassislarga talab ortadi.",
+    "visual": {"kind": "photo", "query": "students working with laptops", "icon": "users"}}]},
+ "cyber": {
+  "title_slide": {"title": "Kiberxavfsizlik asoslari", "subtitle": "Shaxsiy ma’lumotlarni internetda qanday himoya qilish mumkin", "subject": "Informatika",
+   "visual": {"kind": "photo", "query": "cyber security lock laptop", "icon": "shield-check"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Kiberxavfsizlik nima?",
+    "lead": "Kiberxavfsizlik — kompyuter, telefon va tarmoqlardagi ma’lumotlarni ruxsatsiz kirish va hujumlardan himoya qilish.",
+    "bullets": ["Parol va akkauntlarni himoya qiladi", "Firibgarlik xabarlarini aniqlashga o‘rgatadi", "Kompaniyalar va davlat tizimlarini asraydi"],
+    "visual": {"kind": "photo", "query": "hacker hoodie dark computer", "icon": "lock"}},
+   {"layout": "cards", "title": "Eng ko‘p uchraydigan xavflar", "lead": "Hujumlarning aksariyati foydalanuvchining e’tiborsizligidan boshlanadi.", "items": [
+    {"icon": "mail", "title": "Fishing", "text": "Bank yoki do‘st nomidan yuborilgan soxta havolalar.", "photo": "email phishing warning"},
+    {"icon": "bug", "title": "Zararli dastur", "text": "Fayllarni o‘g‘irlaydigan yoki shifrlab qo‘yadigan viruslar.", "photo": "computer virus alert screen"},
+    {"icon": "key", "title": "Zaif parol", "text": "Oddiy parollarni dasturlar soniyalarda topadi.", "photo": "password login screen"},
+    {"icon": "wifi", "title": "Ochiq Wi-Fi", "text": "Jamoat tarmoqlarida ma’lumotlarni tutib olish mumkin.", "photo": "cafe wifi laptop"}]},
+   {"layout": "process", "section": "Himoya", "title": "To‘rt qadamda himoyalaning", "lead": "Oddiy odatlar xavfni bir necha barobar kamaytiradi.", "steps": [
+    {"title": "Kuchli parol", "text": "Uzun, takrorlanmaydigan parol va parol menejeri.", "photo": "typing password keyboard"},
+    {"title": "Ikki bosqichli kirish", "text": "SMS yoki ilova orqali qo‘shimcha tasdiq.", "photo": "smartphone authentication code"},
+    {"title": "Yangilanishlar", "text": "Tizim va ilovalarni o‘z vaqtida yangilang.", "photo": "software update screen"},
+    {"title": "Ehtiyotkorlik", "text": "Notanish havolalarni ochmang, kodni hech kimga bermang.", "photo": "person thinking phone"}]},
+   {"layout": "stats", "title": "Muhim raqamlar", "stats": [
+    {"value": "2FA", "label": "Eng oddiy himoya", "text": "Ikki bosqichli kirish akkaunt o‘g‘irlanishining katta qismini to‘xtatadi."},
+    {"value": "12+", "label": "Belgi", "text": "Mutaxassislar parolni kamida 12 ta belgidan iborat qilishni tavsiya etadi."},
+    {"value": "0", "label": "Kod hech kimga", "text": "Bank xodimi hech qachon SMS kodingizni so‘ramaydi."}]},
+   {"layout": "highlight", "eyebrow": "Esda tuting", "statement": "Eng kuchli himoya — ehtiyotkor foydalanuvchi",
+    "text": "Texnologiya qanchalik rivojlanmasin, ko‘p hujumlar inson xatosidan boshlanadi.",
+    "visual": {"kind": "photo", "query": "digital lock network blue", "icon": "shield-check"}}]},
+ "space": {
+  "title_slide": {"title": "Quyosh tizimi sayyoralari", "subtitle": "Yerdan Neptungacha: sakkiz olamga sayohat", "subject": "Astronomiya",
+   "visual": {"kind": "photo", "query": "solar system planets space", "icon": "orbit"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Quyosh tizimi nima?",
+    "lead": "Quyosh tizimi — Quyosh va uning tortishish kuchi atrofida aylanadigan sayyoralar, yo‘ldoshlar, asteroid va kometalar.",
+    "bullets": ["Markazida Quyosh — oddiy sariq yulduz", "Sakkizta sayyora o‘z orbitasida aylanadi", "Taxminan 4,6 milliard yil oldin shakllangan"],
+    "visual": {"kind": "photo", "query": "sun surface solar flare", "icon": "sun"}},
+   {"layout": "cards", "title": "Ichki sayyoralar", "lead": "Quyoshga yaqin to‘rt sayyora qattiq, toshli yuzaga ega.", "items": [
+    {"icon": "circle-dot", "title": "Merkuriy", "text": "Eng kichik va Quyoshga eng yaqin sayyora.", "photo": "mercury planet"},
+    {"icon": "flame", "title": "Venera", "text": "Qalin atmosferasi tufayli eng issiq sayyora.", "photo": "venus planet clouds"},
+    {"icon": "earth", "title": "Yer", "text": "Hayot mavjudligi ma’lum bo‘lgan yagona sayyora.", "photo": "earth from space"},
+    {"icon": "mountain", "title": "Mars", "text": "«Qizil sayyora», unda ulkan vulqonlar bor.", "photo": "mars surface red"}]},
+   {"layout": "process", "section": "Tadqiqot", "title": "Kosmosni qanday o‘rganamiz?", "lead": "Insoniyat koinotni bosqichma-bosqich kashf etmoqda.", "steps": [
+    {"title": "Teleskop", "text": "Yerdagi va orbitadagi teleskoplar uzoq olamlarni ko‘radi.", "photo": "observatory telescope night"},
+    {"title": "Raketa", "text": "Kuchli raketalar apparatlarni orbitaga chiqaradi.", "photo": "rocket launch"},
+    {"title": "Zond", "text": "Avtomatik stansiyalar sayyoralar yoniga uchib boradi.", "photo": "space probe satellite"},
+    {"title": "Marsoxod", "text": "Robotlar sayyora yuzasida tuproq namunalarini tekshiradi.", "photo": "mars rover"}]},
+   {"layout": "stats", "title": "Raqamlarda Quyosh tizimi", "stats": [
+    {"value": "8", "label": "Sayyora", "text": "2006-yildan Pluton mitti sayyora deb hisoblanadi."},
+    {"value": "≈150 mln km", "label": "Yerdan Quyoshgacha", "text": "Bu masofani yorug‘lik taxminan 8 daqiqada bosib o‘tadi."},
+    {"value": "1961", "label": "Birinchi parvoz", "text": "Yuriy Gagarin koinotga uchgan birinchi inson bo‘ldi."}]},
+   {"layout": "highlight", "eyebrow": "Qiziqarli fakt", "statement": "Yupiter ichiga mingdan ortiq Yer sig‘ib ketadi",
+    "text": "Quyosh tizimidagi eng katta sayyora — gaz giganti Yupiter.",
+    "visual": {"kind": "photo", "query": "jupiter planet", "icon": "orbit"}}]},
+ "startup": {
+  "title_slide": {"title": "Startapni moliyalashtirish bosqichlari", "subtitle": "G‘oyadan investitsiyagacha bo‘lgan yo‘l", "subject": "Iqtisodiyot",
+   "visual": {"kind": "photo", "query": "startup team meeting office", "icon": "rocket"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Startap nima?",
+    "lead": "Startap — yangi mahsulot yoki xizmatni tez o‘sadigan biznes modeli orqali bozorga olib chiqadigan yosh kompaniya.",
+    "bullets": ["Aniq muammoni hal qiladi", "Tez o‘sish va kengayishga mo‘ljallangan", "Ko‘pincha tashqi investitsiyaga tayanadi"],
+    "visual": {"kind": "photo", "query": "young entrepreneurs laptop", "icon": "lightbulb"}},
+   {"layout": "cards", "title": "Moliyalashtirish manbalari", "lead": "Har bir bosqichda pul turli manbalardan keladi.", "items": [
+    {"icon": "wallet", "title": "O‘z mablag‘i", "text": "Asoschilarning shaxsiy jamg‘armasi.", "photo": "piggy bank coins"},
+    {"icon": "users", "title": "Biznes-farishtalar", "text": "Erta bosqichga sarmoya kiritadigan tajribali shaxslar.", "photo": "business handshake"},
+    {"icon": "building-2", "title": "Venchur fondlar", "text": "Katta o‘sish salohiyatiga ega kompaniyalarga sarmoya.", "photo": "investors meeting boardroom"},
+    {"icon": "megaphone", "title": "Kraudfanding", "text": "Ko‘plab odamlardan kichik summalar yig‘ish.", "photo": "crowd people smartphones"}]},
+   {"layout": "process", "section": "Bosqichlar", "title": "Investitsiya raundlari", "lead": "Kompaniya o‘sgani sari raundlar kattalashadi.", "steps": [
+    {"title": "Pre-seed", "text": "G‘oya va prototip uchun ilk mablag‘.", "photo": "sketching idea notebook"},
+    {"title": "Seed", "text": "Mahsulotni bozorga chiqarish.", "photo": "product launch team"},
+    {"title": "Seriya A", "text": "Biznes modelni kengaytirish.", "photo": "growing office team"},
+    {"title": "Seriya B va keyingi", "text": "Yangi bozorlar va katta miqyos.", "photo": "city skyline business"}]},
+   {"layout": "stats", "title": "Startap dunyosi raqamlarda", "stats": [
+    {"value": "3", "label": "Asosiy savol", "text": "Investor jamoa, bozor hajmi va mahsulotga qaraydi."},
+    {"value": "10–20%", "label": "Ulush", "text": "Erta raundlarda odatda kompaniyaning shuncha qismi beriladi."},
+    {"value": "18–24 oy", "label": "Mablag‘ yetadigan muddat", "text": "Har bir raund shuncha vaqtga rejalashtiriladi."}]},
+   {"layout": "highlight", "eyebrow": "Asosiy saboq", "statement": "Investorlar g‘oyaga emas, jamoaga sarmoya kiritadi",
+    "text": "Kuchli jamoa yaxshi g‘oyani muvaffaqiyatli biznesga aylantira oladi.",
+    "visual": {"kind": "photo", "query": "team celebrating success office", "icon": "trophy"}}]},
+ "marketing": {
+  "title_slide": {"title": "Raqamli marketing strategiyasi", "subtitle": "Ijtimoiy tarmoqlar orqali mijoz topish", "subject": "Marketing",
+   "visual": {"kind": "photo", "query": "digital marketing smartphone social media", "icon": "megaphone"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Raqamli marketing nima?",
+    "lead": "Raqamli marketing — mahsulot va xizmatlarni internet, ijtimoiy tarmoqlar va mobil ilovalar orqali targ‘ib qilish.",
+    "bullets": ["Aniq auditoriyani nishonga oladi", "Natijani raqamlarda o‘lchash mumkin", "An’anaviy reklamadan arzonroq"],
+    "visual": {"kind": "photo", "query": "marketing team laptop analytics", "icon": "chart-line"}},
+   {"layout": "cards", "title": "Asosiy kanallar", "lead": "Har bir kanal o‘z vazifasini bajaradi.", "items": [
+    {"icon": "smartphone", "title": "Ijtimoiy tarmoqlar", "text": "Instagram va Telegram orqali mijoz bilan muloqot.", "photo": "social media phone"},
+    {"icon": "search", "title": "Qidiruv", "text": "Google’da birinchi sahifaga chiqish (SEO).", "photo": "search engine laptop"},
+    {"icon": "mail", "title": "E-mail", "text": "Doimiy mijozlarga shaxsiy takliflar.", "photo": "email newsletter"},
+    {"icon": "tv", "title": "Video", "text": "Qisqa videolar orqali tez e’tibor qozonish.", "photo": "video creator camera"}]},
+   {"layout": "process", "section": "Reja", "title": "Kampaniya qanday quriladi?", "lead": "Muvaffaqiyatli kampaniya to‘rt bosqichdan o‘tadi.", "steps": [
+    {"title": "Auditoriya", "text": "Mijoz kim, unga nima kerak?", "photo": "customer persona board"},
+    {"title": "Kontent", "text": "Foydali va qiziqarli post, video, maqola.", "photo": "content creator desk"},
+    {"title": "Tarqatish", "text": "To‘g‘ri kanal va vaqtni tanlash.", "photo": "phone notifications"},
+    {"title": "Tahlil", "text": "Natijalarni o‘lchab, strategiyani yaxshilash.", "photo": "analytics dashboard"}]},
+   {"layout": "stats", "title": "Muhim ko‘rsatkichlar", "stats": [
+    {"value": "CTR", "label": "Bosish ulushi", "text": "Reklamani ko‘rganlarning necha foizi bosganini ko‘rsatadi."},
+    {"value": "CPA", "label": "Mijoz narxi", "text": "Bitta xaridor jalb qilish uchun sarflangan mablag‘."},
+    {"value": "ROI", "label": "Daromadlilik", "text": "Sarflangan har bir so‘m qancha foyda keltirgani."}]},
+   {"layout": "highlight", "eyebrow": "Asosiy fikr", "statement": "Yaxshi marketing sotmaydi — foyda beradi",
+    "text": "Mijozga haqiqiy qiymat bergan brendga odamlar o‘zlari qaytib keladi.",
+    "visual": {"kind": "photo", "query": "happy customer shopping", "icon": "heart"}}]},
+ "climate": {
+  "title_slide": {"title": "Iqlim o‘zgarishi va qayta tiklanuvchi energiya", "subtitle": "Quyosh va shamol sayyoramizni qanday asraydi", "subject": "Ekologiya",
+   "visual": {"kind": "photo", "query": "wind turbines field sunset", "icon": "wind"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Iqlim nega o‘zgarmoqda?",
+    "lead": "Ko‘mir, neft va gaz yoqilganda atmosferaga karbonat angidrid chiqadi va u issiqlikni ushlab qoladi.",
+    "bullets": ["O‘rtacha harorat ko‘tarilmoqda", "Muzliklar erib, dengiz sathi ko‘tarilmoqda", "Qurg‘oqchilik va jazira tez-tez takrorlanmoqda"],
+    "visual": {"kind": "photo", "query": "melting glacier ice", "icon": "thermometer"}},
+   {"layout": "cards", "title": "Qayta tiklanuvchi manbalar", "lead": "Bu manbalar tugamaydi va havoni ifloslamaydi.", "items": [
+    {"icon": "sun", "title": "Quyosh", "text": "Panellar quyosh nurini elektrga aylantiradi.", "photo": "solar panels field"},
+    {"icon": "wind", "title": "Shamol", "text": "Turbinalar shamol kuchidan tok hosil qiladi.", "photo": "wind turbines"},
+    {"icon": "waves", "title": "Suv", "text": "GESlar daryo oqimi energiyasidan foydalanadi.", "photo": "hydroelectric dam"},
+    {"icon": "flame", "title": "Biogaz", "text": "Organik chiqindilardan yoqilg‘i olinadi.", "photo": "biogas plant farm"}]},
+   {"layout": "process", "section": "Yechim", "title": "Har birimiz nima qila olamiz?", "lead": "Kichik odatlar katta o‘zgarish yasaydi.", "steps": [
+    {"title": "Tejash", "text": "Keraksiz chiroq va asboblarni o‘chiring.", "photo": "turning off light switch"},
+    {"title": "Transport", "text": "Piyoda, velosiped yoki jamoat transporti.", "photo": "bicycle city street"},
+    {"title": "Daraxt", "text": "Har bir daraxt havoni tozalaydi.", "photo": "planting tree hands"},
+    {"title": "Qayta ishlash", "text": "Chiqindini saralab, qayta foydalaning.", "photo": "recycling bins"}]},
+   {"layout": "stats", "title": "Raqamlarda", "stats": [
+    {"value": "1,5 °C", "label": "Parij kelishuvi chegarasi", "text": "Isishni shu darajada to‘xtatish maqsad qilingan."},
+    {"value": "2015", "label": "Parij kelishuvi", "text": "Deyarli barcha davlatlar iqlim bo‘yicha birgalikda harakatga kelishgan."},
+    {"value": "300+", "label": "Quyoshli kun", "text": "O‘zbekistonda yil davomida quyoshli kunlar ko‘p — quyosh energetikasi uchun qulay."}]},
+   {"layout": "highlight", "eyebrow": "Asosiy fikr", "statement": "Toza energiya — kelajak avlodlarga sovg‘a",
+    "text": "Bugun qilingan tanlov ertangi kun iqlimini belgilaydi.",
+    "visual": {"kind": "photo", "query": "green field blue sky", "icon": "sprout"}}]},
+ "heart": {
+  "title_slide": {"title": "Inson yurak-qon tomir tizimi", "subtitle": "Yurak qanday ishlaydi va uni qanday asrash kerak", "subject": "Tibbiyot",
+   "visual": {"kind": "photo", "query": "doctor stethoscope heart", "icon": "heart-pulse"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Yurak — tananing nasosi",
+    "lead": "Yurak qonni tomirlar orqali butun tanaga haydab, har bir hujayraga kislorod va oziq moddalar yetkazadi.",
+    "bullets": ["To‘rt kameradan iborat: ikki bo‘lmacha va ikki qorincha", "Kichik va katta qon aylanish doiralari bor", "Umr bo‘yi to‘xtovsiz ishlaydi"],
+    "visual": {"kind": "photo", "query": "human heart anatomy model", "icon": "heart"}},
+   {"layout": "cards", "title": "Tizim tarkibi", "lead": "Yurak va tomirlar yagona tizimni tashkil etadi.", "items": [
+    {"icon": "heart", "title": "Yurak", "text": "Qonni haydaydigan mushakli a’zo.", "photo": "heart model medical"},
+    {"icon": "activity", "title": "Arteriyalar", "text": "Kislorodga boy qonni a’zolarga olib boradi.", "photo": "blood vessels illustration"},
+    {"icon": "refresh-cw", "title": "Venalar", "text": "Qonni yurakka qaytaradi.", "photo": "veins hand"},
+    {"icon": "droplet", "title": "Qon", "text": "Kislorod, oziq va himoya hujayralarini tashiydi.", "photo": "blood test tubes laboratory"}]},
+   {"layout": "process", "section": "Profilaktika", "title": "Yurakni asrashning to‘rt qoidasi", "lead": "Sog‘lom turmush tarzi eng yaxshi dori.", "steps": [
+    {"title": "Harakat", "text": "Har kuni kamida 30 daqiqa yurish.", "photo": "people jogging park"},
+    {"title": "To‘g‘ri ovqat", "text": "Sabzavot, meva, kam tuz va yog‘.", "photo": "healthy food vegetables"},
+    {"title": "Zararli odatlardan voz kechish", "text": "Chekish yurak xastaliklari xavfini oshiradi.", "photo": "no smoking sign"},
+    {"title": "Tekshiruv", "text": "Qon bosimini muntazam o‘lchab turing.", "photo": "blood pressure check"}]},
+   {"layout": "stats", "title": "Yurak raqamlarda", "stats": [
+    {"value": "60–100", "label": "Urish daqiqada", "text": "Kattalarda tinch holatdagi normal yurak urishi."},
+    {"value": "120/80", "label": "Qon bosimi", "text": "Kattalar uchun maqbul ko‘rsatkich (mm sim. ust.)."},
+    {"value": "≈5 litr", "label": "Qon miqdori", "text": "Katta yoshdagi odam tanasidagi qonning taxminiy hajmi."}]},
+   {"layout": "highlight", "eyebrow": "Muhim", "statement": "Sog‘lom yurak — uzoq va faol hayot garovi",
+    "text": "Yurak xastaliklarining ko‘pini turmush tarzini o‘zgartirib oldini olish mumkin.",
+    "visual": {"kind": "photo", "query": "elderly couple walking happy", "icon": "heart-pulse"}}]},
+ "timur": {
+  "title_slide": {"title": "Amir Temur davri me’morchiligi", "subtitle": "Samarqand va Shahrisabzdagi buyuk obidalar", "subject": "Tarix",
+   "visual": {"kind": "photo", "query": "registan samarkand", "icon": "landmark"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Temuriylar me’morchiligi",
+    "lead": "XIV–XV asrlarda Amir Temur va temuriylar Movarounnahrda ulug‘vor saroy, masjid va madrasalar barpo etdi.",
+    "bullets": ["Ulkan gumbazlar va baland peshtoqlar", "Moviy koshinlar va naqshinkor bezaklar", "Turli o‘lkalardan kelgan ustalar mehnati"],
+    "visual": {"kind": "photo", "query": "samarkand blue dome mosaic", "icon": "castle"}},
+   {"layout": "cards", "title": "Mashhur obidalar", "lead": "Bu inshootlar bugun ham dunyo sayyohlarini hayratga soladi.", "items": [
+    {"icon": "landmark", "title": "Go‘ri Amir", "text": "Amir Temur va temuriylar maqbarasi, Samarqand.", "photo": "gur e amir mausoleum"},
+    {"icon": "castle", "title": "Oqsaroy", "text": "Shahrisabzdagi Amir Temur saroyi qoldiqlari.", "photo": "ak saray shahrisabz"},
+    {"icon": "building-2", "title": "Bibixonim masjidi", "text": "O‘z davrining eng yirik masjidlaridan biri.", "photo": "bibi khanym mosque"},
+    {"icon": "star", "title": "Shohi Zinda", "text": "Ko‘k koshinli maqbaralar majmuasi.", "photo": "shah i zinda samarkand"}]},
+   {"layout": "process", "section": "Usullar", "title": "Obidalar qanday qurilgan?", "lead": "Qurilish bir necha bosqichda olib borilgan.", "steps": [
+    {"title": "Poydevor", "text": "Pishiq g‘isht va ganch qorishmasidan mustahkam asos.", "photo": "ancient brick wall"},
+    {"title": "Devor va peshtoq", "text": "Baland peshtoqlar va keng gumbazlar tiklangan.", "photo": "islamic architecture arch"},
+    {"title": "Koshinkorlik", "text": "Sirkor koshin va mozaika bilan qoplash.", "photo": "blue ceramic tiles pattern"},
+    {"title": "Naqsh", "text": "Geometrik va o‘simliksimon naqshlar, xattotlik yozuvlari.", "photo": "islamic geometric pattern"}]},
+   {"layout": "stats", "title": "Tarixiy sanalar", "stats": [
+    {"value": "1336", "label": "Amir Temur tavalludi", "text": "Kesh (hozirgi Shahrisabz) yaqinidagi Xo‘ja Ilg‘or qishlog‘ida tug‘ilgan."},
+    {"value": "1370", "label": "Hokimiyat", "text": "Movarounnahrning hukmdori bo‘lgan yil."},
+    {"value": "2001", "label": "YuNESKO", "text": "Samarqand «Madaniyatlar chorrahasi» sifatida Butunjahon merosi ro‘yxatiga kiritilgan."}]},
+   {"layout": "highlight", "eyebrow": "Amir Temur so‘zi", "statement": "«Kuch — adolatdadir»",
+    "text": "Temuriylar merosi bugun ham milliy g‘ururimiz ramzi.",
+    "visual": {"kind": "photo", "query": "samarkand registan night", "icon": "crown"}}]},
+ "navoi": {
+  "title_slide": {"title": "Alisher Navoiy ijodi", "subtitle": "«Xamsa» va o‘zbek adabiy tilining shakllanishi", "subject": "Ona tili va adabiyot",
+   "visual": {"kind": "photo", "query": "old manuscript book calligraphy", "icon": "scroll"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Navoiy — so‘z mulkining sultoni",
+    "lead": "Alisher Navoiy (1441–1501) — buyuk shoir, mutafakkir va davlat arbobi, turkiy adabiy tilning asoschilaridan biri.",
+    "bullets": ["Hirotda tug‘ilgan va ijod qilgan", "Turkiy va forsiy tillarda yozgan", "Ilm va san’at homiysi bo‘lgan"],
+    "visual": {"kind": "photo", "query": "ancient library books", "icon": "book-open"}},
+   {"layout": "cards", "title": "«Xamsa» dostonlari", "lead": "Besh dostondan iborat «Xamsa» turkiy tildagi ilk xamsa hisoblanadi.", "items": [
+    {"icon": "lightbulb", "title": "Hayrat ul-abror", "text": "Axloq va donolik haqidagi doston.", "photo": "candle old book"},
+    {"icon": "heart", "title": "Farhod va Shirin", "text": "Mehnat, sadoqat va muhabbat qissasi.", "photo": "mountain stone landscape"},
+    {"icon": "flower-2", "title": "Layli va Majnun", "text": "Sof va fojiali ishq haqida.", "photo": "desert moon night"},
+    {"icon": "crown", "title": "Saddi Iskandariy", "text": "Adolatli hukmdor obrazi.", "photo": "ancient fortress wall"}]},
+   {"layout": "process", "section": "Ijod yo‘li", "title": "Navoiy hayotidagi bosqichlar", "lead": "Shoir ijodi va faoliyati bir necha davrni o‘z ichiga oladi.", "steps": [
+    {"title": "Yoshlik", "text": "Erta yoshdan she’r yoza boshlagan.", "photo": "young student reading"},
+    {"title": "Ta’lim", "text": "Mashhad va Samarqandda tahsil olgan.", "photo": "madrasa courtyard"},
+    {"title": "Davlat xizmati", "text": "Husayn Boyqaro saroyida vazir bo‘lgan.", "photo": "historic palace interior"},
+    {"title": "«Xamsa»", "text": "1483–1485-yillarda yaratilgan.", "photo": "old handwritten manuscript"}]},
+   {"layout": "stats", "title": "Navoiy merosi", "stats": [
+    {"value": "5", "label": "Doston", "text": "«Xamsa» besh dostondan tashkil topgan."},
+    {"value": "1441", "label": "Tavallud", "text": "Navoiy 1441-yil 9-fevralda Hirotda tug‘ilgan."},
+    {"value": "1499", "label": "«Muhokamat ul-lug‘atayn»", "text": "Turkiy tilning imkoniyatlarini isbotlagan asar."}]},
+   {"layout": "highlight", "eyebrow": "Navoiy hikmati", "statement": "«Til — insonni hayvondan ayirib turadigan ne’mat»",
+    "text": "Navoiy ona tilini asrash va boyitishni eng ulug‘ vazifa deb bilgan.",
+    "visual": {"kind": "photo", "query": "calligraphy pen ink", "icon": "pen-tool"}}]},
+ "pedagogy": {
+  "title_slide": {"title": "Zamonaviy ta’lim metodlari", "subtitle": "Interfaol darslar o‘quvchini qanday faollashtiradi", "subject": "Pedagogika",
+   "visual": {"kind": "photo", "query": "classroom students teacher interactive", "icon": "graduation-cap"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Interfaol ta’lim nima?",
+    "lead": "Interfaol ta’lim — o‘quvchi bilimni tayyor holda emas, savol, munozara va amaliy ish orqali o‘zlashtiradigan usul.",
+    "bullets": ["O‘quvchi darsning faol ishtirokchisi", "O‘qituvchi yo‘naltiruvchi va maslahatchi", "Tanqidiy fikrlash rivojlanadi"],
+    "visual": {"kind": "photo", "query": "students group discussion", "icon": "users"}},
+   {"layout": "cards", "title": "Mashhur metodlar", "lead": "Har bir metod darsga o‘ziga xos jonlilik beradi.", "items": [
+    {"icon": "lightbulb", "title": "Aqliy hujum", "text": "Qisqa vaqtda iloji boricha ko‘p g‘oya.", "photo": "sticky notes brainstorming"},
+    {"icon": "puzzle", "title": "Klaster", "text": "Tushunchalarni bog‘lab chizish.", "photo": "mind map whiteboard"},
+    {"icon": "users", "title": "Kichik guruhlar", "text": "Birgalikda masala yechish.", "photo": "students teamwork table"},
+    {"icon": "message-circle", "title": "Munozara", "text": "Fikrni dalil bilan himoya qilish.", "photo": "students debate classroom"}]},
+   {"layout": "process", "section": "Dars rejasi", "title": "Interfaol dars tuzilishi", "lead": "Yaxshi dars aniq bosqichlarga ega.", "steps": [
+    {"title": "Motivatsiya", "text": "Qiziqarli savol yoki muammo bilan boshlash.", "photo": "teacher asking question"},
+    {"title": "Izlanish", "text": "O‘quvchilar ma’lumot topadi va tahlil qiladi.", "photo": "students using tablets"},
+    {"title": "Taqdimot", "text": "Guruhlar natijani taqdim etadi.", "photo": "student presenting class"},
+    {"title": "Refleksiya", "text": "Nimani o‘rgandik — xulosa chiqarish.", "photo": "students writing notebook"}]},
+   {"layout": "stats", "title": "Samaradorlik", "stats": [
+    {"value": "4K", "label": "Ko‘nikmalar", "text": "Tanqidiy fikrlash, ijodkorlik, muloqot va hamkorlik."},
+    {"value": "45 daq", "label": "Dars", "text": "Faol usullar diqqatni butun dars davomida saqlaydi."},
+    {"value": "1:1", "label": "Fikr almashish", "text": "Har bir o‘quvchi gapirish imkoniga ega bo‘ladi."}]},
+   {"layout": "highlight", "eyebrow": "Pedagogik hikmat", "statement": "Aytsang — unutaman, ko‘rsatsang — eslayman, qatnashtirsang — tushunaman",
+    "text": "Faol ishtirok bilimni chuqur va mustahkam qiladi.",
+    "visual": {"kind": "photo", "query": "happy students raising hands", "icon": "school"}}]},
+ "chemistry": {
+  "title_slide": {"title": "Kimyoviy reaksiyalar turlari", "subtitle": "Moddalar qanday qilib boshqa moddalarga aylanadi", "subject": "Kimyo",
+   "visual": {"kind": "photo", "query": "chemistry laboratory flasks colorful", "icon": "flask-conical"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Kimyoviy reaksiya nima?",
+    "lead": "Kimyoviy reaksiya — bir moddadan tarkibi va xossalari boshqacha bo‘lgan yangi modda hosil bo‘lish jarayoni.",
+    "bullets": ["Rang o‘zgaradi yoki gaz ajraladi", "Issiqlik chiqadi yoki yutiladi", "Cho‘kma hosil bo‘lishi mumkin"],
+    "visual": {"kind": "photo", "query": "chemical reaction test tube", "icon": "test-tube"}},
+   {"layout": "cards", "title": "To‘rt asosiy tur", "lead": "Reaksiyalar moddalar soni va tarkibiga qarab turlanadi.", "items": [
+    {"icon": "merge", "title": "Birikish", "text": "Ikki moddadan bitta yangi modda hosil bo‘ladi.", "photo": "molecule model"},
+    {"icon": "split", "title": "Parchalanish", "text": "Bitta modda bir nechta moddaga ajraladi.", "photo": "bubbles chemical reaction"},
+    {"icon": "repeat", "title": "O‘rin olish", "text": "Oddiy modda murakkab moddadagi elementni siqib chiqaradi.", "photo": "metal in solution"},
+    {"icon": "refresh-cw", "title": "Almashinish", "text": "Ikki modda tarkibiy qismlarini almashadi.", "photo": "precipitate test tube"}]},
+   {"layout": "process", "section": "Tajriba", "title": "Laboratoriya ishi bosqichlari", "lead": "Har bir tajriba xavfsizlik qoidalariga amal qilib bajariladi.", "steps": [
+    {"title": "Tayyorgarlik", "text": "Ko‘zoynak, qo‘lqop va xalat kiyiladi.", "photo": "lab safety goggles"},
+    {"title": "Moddalar", "text": "Kerakli reaktivlar o‘lchab olinadi.", "photo": "measuring chemicals beaker"},
+    {"title": "Kuzatish", "text": "Rang, gaz va haroratdagi o‘zgarishlar yoziladi.", "photo": "scientist observing reaction"},
+    {"title": "Xulosa", "text": "Reaksiya tenglamasi tuziladi.", "photo": "chemistry equations notebook"}]},
+   {"layout": "stats", "title": "Kimyo raqamlarda", "stats": [
+    {"value": "118", "label": "Element", "text": "Davriy jadvalda hozirgacha ma’lum bo‘lgan elementlar soni."},
+    {"value": "1869", "label": "Davriy qonun", "text": "Dmitriy Mendeleyev elementlar jadvalini taqdim etgan yil."},
+    {"value": "H₂O", "label": "Suv formulasi", "text": "Ikki vodorod va bitta kislorod atomidan iborat."}]},
+   {"layout": "highlight", "eyebrow": "Muhim qonun", "statement": "Reaksiyada modda yo‘qolmaydi — faqat bir turdan boshqasiga o‘tadi",
+    "text": "Massaning saqlanish qonuni barcha kimyoviy reaksiyalar uchun o‘rinli.",
+    "visual": {"kind": "photo", "query": "periodic table elements", "icon": "atom"}}]},
+ "design": {
+  "title_slide": {"title": "Grafik dizayn asoslari", "subtitle": "Rang, shrift va kompozitsiya qoidalari", "subject": "Dizayn",
+   "visual": {"kind": "photo", "query": "graphic designer workspace colorful", "icon": "palette"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Grafik dizayn nima?",
+    "lead": "Grafik dizayn — g‘oya va ma’lumotni rang, shakl, shrift va tasvir orqali ko‘rinarli qilish san’ati.",
+    "bullets": ["Logotip, plakat va reklama", "Veb-sayt va ilova interfeysi", "Kitob va jurnal bezagi"],
+    "visual": {"kind": "photo", "query": "designer drawing tablet", "icon": "pen-tool"}},
+   {"layout": "cards", "title": "Dizaynning to‘rt tamoyili", "lead": "Bu qoidalar har qanday dizaynni tartibli qiladi.", "items": [
+    {"icon": "layers", "title": "Kontrast", "text": "Muhim narsani ajratib ko‘rsatish.", "photo": "black white contrast design"},
+    {"icon": "ruler", "title": "Tekislash", "text": "Elementlar bir chiziqda joylashadi.", "photo": "grid layout design"},
+    {"icon": "repeat", "title": "Takrorlash", "text": "Bir xil uslub yaxlitlik beradi.", "photo": "pattern design colorful"},
+    {"icon": "target", "title": "Yaqinlik", "text": "Bog‘liq narsalar yonma-yon turadi.", "photo": "minimal poster design"}]},
+   {"layout": "process", "section": "Jarayon", "title": "Dizayn qanday yaratiladi?", "lead": "Har bir loyiha to‘rt bosqichdan o‘tadi.", "steps": [
+    {"title": "Brif", "text": "Mijoz maqsadi va auditoriyani aniqlash.", "photo": "client meeting notes"},
+    {"title": "Eskiz", "text": "Qog‘ozda g‘oyalarni chizib chiqish.", "photo": "sketchbook pencil drawing"},
+    {"title": "Maket", "text": "Kompyuterda rang va shriftlar bilan ishlash.", "photo": "designer computer screen"},
+    {"title": "Taqdimot", "text": "Tayyor ishni mijozga ko‘rsatish.", "photo": "design presentation board"}]},
+   {"layout": "stats", "title": "Ranglar psixologiyasi", "stats": [
+    {"value": "Ko‘k", "label": "Ishonch", "text": "Banklar va texnologiya kompaniyalari ko‘p tanlaydi."},
+    {"value": "Qizil", "label": "Energiya", "text": "E’tiborni tez tortadi, chegirmalarda ishlatiladi."},
+    {"value": "Yashil", "label": "Tabiat", "text": "Sog‘liq va ekologiya bilan bog‘lanadi."}]},
+   {"layout": "highlight", "eyebrow": "Dizaynerlar qoidasi", "statement": "Oddiylik — eng yuksak murakkablik",
+    "text": "Yaxshi dizaynda ortiqcha hech narsa bo‘lmaydi.",
+    "visual": {"kind": "photo", "query": "minimal design studio", "icon": "sparkles"}}]},
+ "cinema": {
+  "title_slide": {"title": "Kino san’ati tarixi", "subtitle": "Jim filmlardan raqamli kinogacha", "subject": "San’atshunoslik",
+   "visual": {"kind": "photo", "query": "cinema film camera vintage", "icon": "film"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Kino qanday paydo bo‘lgan?",
+    "lead": "1895-yilda aka-uka Lyumyerlar Parijda birinchi pullik kino seansini namoyish etgan — bu kino san’atining tug‘ilgan kuni hisoblanadi.",
+    "bullets": ["Dastlab filmlar ovozsiz va qora-oq bo‘lgan", "Musiqa zalda jonli ijro etilgan", "Qisqa hayotiy sahnalar ko‘rsatilgan"],
+    "visual": {"kind": "photo", "query": "old film projector", "icon": "camera"}},
+   {"layout": "cards", "title": "Kino turlari", "lead": "Har bir janr tomoshabinga o‘zgacha his beradi.", "items": [
+    {"icon": "film", "title": "Badiiy film", "text": "Ssenariy asosida aktyorlar ijro etadi.", "photo": "film set actors"},
+    {"icon": "camera", "title": "Hujjatli", "text": "Haqiqiy voqea va odamlar haqida.", "photo": "documentary filmmaker"},
+    {"icon": "sparkles", "title": "Animatsiya", "text": "Chizilgan yoki kompyuterda yaratilgan.", "photo": "animation drawing"},
+    {"icon": "tv", "title": "Serial", "text": "Ko‘p qismli hikoya.", "photo": "watching tv home"}]},
+   {"layout": "process", "section": "Jarayon", "title": "Film qanday suratga olinadi?", "lead": "Film yaratish uzoq va jamoaviy mehnat.", "steps": [
+    {"title": "Ssenariy", "text": "Hikoya va dialoglar yoziladi.", "photo": "screenplay writing"},
+    {"title": "Suratga olish", "text": "Rejissyor, operator va aktyorlar ishlaydi.", "photo": "movie camera set"},
+    {"title": "Montaj", "text": "Kadrlar tartibga solinadi, ovoz qo‘shiladi.", "photo": "video editing computer"},
+    {"title": "Premyera", "text": "Film tomoshabinga taqdim etiladi.", "photo": "cinema audience theater"}]},
+   {"layout": "stats", "title": "Kino tarixidagi sanalar", "stats": [
+    {"value": "1895", "label": "Birinchi seans", "text": "Lyumyerlar Parijda filmlarini namoyish etgan."},
+    {"value": "1927", "label": "Ovozli kino", "text": "«Jaz xonandasi» — ilk to‘liq metrajli ovozli filmlardan biri."},
+    {"value": "1929", "label": "«Oskar»", "text": "Kino akademiyasining birinchi mukofotlari topshirilgan yil."}]},
+   {"layout": "highlight", "eyebrow": "Kino haqida", "statement": "Kino — harakatdagi hayot ko‘zgusi",
+    "text": "Yaxshi film tomoshabinni o‘ylashga va his qilishga undaydi.",
+    "visual": {"kind": "photo", "query": "movie theater red seats", "icon": "film"}}]},
+ "time": {
+  "title_slide": {"title": "Vaqtni samarali boshqarish", "subtitle": "Kam ish emas — to‘g‘ri ish", "subject": "Menejment",
+   "visual": {"kind": "photo", "query": "desk planner clock coffee", "icon": "clock"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Vaqt — eng qimmatli resurs",
+    "lead": "Vaqtni boshqarish — kun davomidagi ishlarni ustuvorlikka qarab rejalashtirish va diqqatni muhim vazifaga qaratish.",
+    "bullets": ["Stress kamayadi", "Muhim ishlar o‘z vaqtida bajariladi", "Dam olishga ham vaqt qoladi"],
+    "visual": {"kind": "photo", "query": "person planning calendar", "icon": "calendar"}},
+   {"layout": "cards", "title": "Foydali usullar", "lead": "Oddiy texnikalar samaradorlikni oshiradi.", "items": [
+    {"icon": "timer", "title": "Pomodoro", "text": "25 daqiqa ish, 5 daqiqa dam.", "photo": "tomato timer desk"},
+    {"icon": "list-checks", "title": "Ro‘yxat", "text": "Kun boshida vazifalarni yozib olish.", "photo": "to do list notebook"},
+    {"icon": "target", "title": "Eyzenxauer matritsasi", "text": "Muhim va shoshilinchni ajratish.", "photo": "priority matrix whiteboard"},
+    {"icon": "smartphone", "title": "Raqamli detoks", "text": "Bildirishnomalarni o‘chirib qo‘yish.", "photo": "phone face down desk"}]},
+   {"layout": "process", "section": "Reja", "title": "Kunni qanday rejalashtirish kerak?", "lead": "To‘rt qadamli oddiy tartib.", "steps": [
+    {"title": "Maqsad", "text": "Bugun nimaga erishmoqchisiz?", "photo": "writing goals notebook"},
+    {"title": "Ustuvorlik", "text": "Eng muhim uch vazifani tanlang.", "photo": "sticky notes priorities"},
+    {"title": "Bajarish", "text": "Bir vaqtda bitta ishga e’tibor bering.", "photo": "focused person working laptop"},
+    {"title": "Tahlil", "text": "Kun oxirida natijani ko‘rib chiqing.", "photo": "evening review journal"}]},
+   {"layout": "stats", "title": "Raqamlarda", "stats": [
+    {"value": "80/20", "label": "Pareto qoidasi", "text": "Natijaning katta qismi kam sonli muhim ishlardan keladi."},
+    {"value": "25 daq", "label": "Pomodoro", "text": "Diqqatni jamlash uchun qulay vaqt bo‘lagi."},
+    {"value": "3", "label": "Asosiy vazifa", "text": "Kuniga uchta eng muhim ishni tanlash tavsiya etiladi."}]},
+   {"layout": "highlight", "eyebrow": "Hikmat", "statement": "Vaqtni boshqarmasang, u seni boshqaradi",
+    "text": "Rejali inson kam charchaydi va ko‘proq ulguradi.",
+    "visual": {"kind": "photo", "query": "sunrise desk window", "icon": "sun"}}]},
+ "math": {
+  "title_slide": {"title": "Pifagor teoremasi va uning qo‘llanilishi", "subtitle": "Uch tomonli shakldan qurilish va navigatsiyagacha", "subject": "Matematika",
+   "visual": {"kind": "photo", "query": "geometry triangle chalkboard", "icon": "triangle"}},
+  "slides": [
+   {"layout": "text_image", "section": "Kirish", "title": "Teorema nimani aytadi?",
+    "lead": "To‘g‘ri burchakli uchburchakda gipotenuza kvadrati katetlar kvadratlari yig‘indisiga teng: a² + b² = c².",
+    "bullets": ["Faqat to‘g‘ri burchakli uchburchak uchun", "Gipotenuza — eng uzun tomon", "Miloddan avvalgi davrdan ma’lum"],
+    "visual": {"kind": "photo", "query": "right triangle geometry ruler", "icon": "ruler"}},
+   {"layout": "cards", "title": "Qayerda qo‘llaniladi?", "lead": "Teorema kundalik hayotda ham juda ko‘p ishlatiladi.", "items": [
+    {"icon": "house", "title": "Qurilish", "text": "Burchaklarning to‘g‘riligini tekshirish.", "photo": "construction workers measuring"},
+    {"icon": "map", "title": "Navigatsiya", "text": "Ikki nuqta orasidagi eng qisqa masofa.", "photo": "map compass navigation"},
+    {"icon": "monitor", "title": "Ekranlar", "text": "Diagonal o‘lchami shu usulda hisoblanadi.", "photo": "tv screen diagonal"},
+    {"icon": "plane", "title": "Aviatsiya", "text": "Parvoz yo‘nalishi va masofasini hisoblash.", "photo": "airplane flight sky"}]},
+   {"layout": "process", "section": "Masala", "title": "Masalani yechish tartibi", "lead": "Har qanday masala to‘rt qadamda yechiladi.", "steps": [
+    {"title": "Chizma", "text": "Uchburchakni chizib, tomonlarni belgilang.", "photo": "drawing triangle paper"},
+    {"title": "Formula", "text": "a² + b² = c² ni yozing.", "photo": "math formula notebook"},
+    {"title": "Hisoblash", "text": "Ma’lum qiymatlarni qo‘yib hisoblang.", "photo": "calculator math homework"},
+    {"title": "Tekshirish", "text": "Javob mantiqan to‘g‘riligini tekshiring.", "photo": "student checking answer"}]},
+   {"layout": "stats", "title": "Mashhur uchliklar", "stats": [
+    {"value": "3-4-5", "label": "Eng mashhur", "text": "9 + 16 = 25 — qadimgi quruvchilar ham ishlatgan."},
+    {"value": "5-12-13", "label": "Ikkinchi uchlik", "text": "25 + 144 = 169."},
+    {"value": "8-15-17", "label": "Uchinchi uchlik", "text": "64 + 225 = 289."}]},
+   {"layout": "highlight", "eyebrow": "Qiziqarli fakt", "statement": "Teoremaning yuzdan ortiq turli isboti ma’lum",
+    "text": "Uni hatto AQSh prezidenti Jeyms Garfild ham o‘zicha isbotlagan.",
+    "visual": {"kind": "photo", "query": "mathematics chalkboard formulas", "icon": "sigma"}}]}
+}

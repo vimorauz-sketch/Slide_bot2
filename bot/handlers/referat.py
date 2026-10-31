@@ -68,10 +68,13 @@ async def _price_per_page() -> int:
     return runtime.get_int("referat_price_per_page", 500, lo=50, hi=1_000_000)
 
 
-def webapp_url() -> str:
+def webapp_url(bot_username: str = "") -> str:
     from bot.handlers.create_pres import webapp_url as base
     url = base()
-    return (url.rstrip("/") + "/referat/") if url else ""
+    if not url:
+        return ""
+    url = url.split("?")[0].rstrip("/") + "/referat/"
+    return url + (f"?bot={bot_username}" if bot_username else "")
 
 
 # ---------------------------------------------------------------------- start: template
@@ -126,7 +129,12 @@ async def open_referat(message: Message, user_id: int, state: FSMContext) -> Non
     if await _blocked(message, user_id):
         return
     await state.set_state(ReferatForm.template)
-    url = webapp_url()
+    try:
+        me = await message.bot.me()
+        username = getattr(me, "username", "") or ""
+    except Exception:  # noqa: BLE001
+        username = ""
+    url = webapp_url(username)
     sheet = await gallery.sheet(0)
     caption = _gallery_caption(0)
     if sheet:

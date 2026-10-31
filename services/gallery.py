@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+from functools import lru_cache
 import json
 import os
 import re
@@ -26,7 +27,7 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEBAPP_DIR = os.path.join(ROOT, "webapp")
 THUMBS_DIR = os.path.join(WEBAPP_DIR, "thumbs")
-GALLERY_VERSION = "7"  # bump when templates change so cached previews are rebuilt
+GALLERY_VERSION = "8"  # bump when templates change so cached previews are rebuilt
 
 
 def cache_token() -> str:
@@ -88,10 +89,88 @@ def _scene_index(key: str) -> int:
     return code
 
 
+TOPICS_FILE = os.path.join(ROOT, "assets", "samples", "slide_topics.json")
+# The sample deck of each template is about a subject that suits its look: a medical template shows
+# a lesson about the heart, a heritage template one about Temurid architecture, and so on.
+_TOPIC_RULES = [
+    (("botan", "leaf", "forest", "organic", "garden", "flora", "biolog"), ["photosynthesis"]),
+    (("medic", "tibbiyot", "health", "pulse", "clinic", "pharma", "anatom"), ["heart"]),
+    (("cosmos", "space", "galax", "orbit", "astro", "nebula", "planet", "kosmos"), ["space"]),
+    (("uzbek", "heritage", "ikat", "suzani", "silk", "samarkand", "registan", "bukhara", "timur", "tarix", "ancient",
+      "mosaic", "majolica", "oriental", "sharq"), ["timur"]),
+    (("ink", "zen", "calligraph", "manuscript", "poet", "adabiyot", "literat", "scroll", "editorial", "falsafa"), ["navoi"]),
+    (("cyber", "hacker", "matrix", "security", "glitch"), ["cyber"]),
+    (("film", "cinema", "noir", "movie", "retro", "vintage", "musiqa"), ["cinema"]),
+    (("chalk", "blueprint", "geometr", "matemat", "grid", "notebook", "graph"), ["math"]),
+    (("chem", "lab coat", "molecul", "kimyo", "science", "beaker", "flask"), ["chemistry"]),
+    (("startap", "startup", "invest", "finance", "moliya", "corporate", "hisobot"), ["startup"]),
+    (("marketing", "smm", "brand", "media", "reklama", "pop", "magazine", "halftone"), ["marketing"]),
+    (("design", "dizayn", "bauhaus", "pastel", "playful", "paper", "confetti", "sketch"), ["design"]),
+    (("eco", "wind", "solar", "ocean", "wave", "earth", "climate", "sky", "mountain"), ["climate"]),
+    (("neon", "circuit", "digital", "ai", "robot", "futur", "data", "3d", "tech", "sun’iy"), ["ai", "cyber", "ai"]),
+    (("school", "maktab", "academ", "ta’lim", "class", "kids", "bolalar"), ["pedagogy", "chemistry"]),
+    (("minimal", "swiss", "mono", "clean", "zen"), ["time"]),
+]
+_TOPIC_BY_CATEGORY = {
+    "tech": ["ai", "cyber", "space"], "business": ["startup", "marketing", "time"],
+    "nature": ["photosynthesis", "climate", "heart"], "culture": ["timur", "navoi", "cinema"],
+    "education": ["pedagogy", "chemistry", "math"], "creative": ["design", "cinema", "marketing"],
+    "minimal": ["time", "design"],
+}
+
+
+@lru_cache(maxsize=1)
+def _topics() -> dict:
+    try:
+        with open(TOPICS_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    except OSError:
+        return {}
+
+
+def topic_for(key: str) -> str:
+    """Name of the sample topic that suits a template's look and subjects."""
+    from services.deck import themes
+    try:
+        t = themes.get_theme(themes.split_key(key)[0])
+    except Exception:  # noqa: BLE001
+        return "photosynthesis"
+    words = " ".join(str(t.get(k) or "") for k in ("id", "name", "tagline", "category", "art", "family")).lower()
+    words += " " + " ".join(str(x) for x in (t.get("tags") or []) + (t.get("categories_raw") or [])).lower()
+    code = int(t.get("code") or 0)
+    for keys, names in _TOPIC_RULES:
+        if any(re.search(r"(?<![a-z’])" + re.escape(k), words) for k in keys):
+            return names[code % len(names)]
+    cats = [c for c in themes.theme_categories(t) if c in _TOPIC_BY_CATEGORY]
+    if cats:
+        names = _TOPIC_BY_CATEGORY[cats[code % len(cats)]]
+        return names[code % len(names)]
+    return "photosynthesis"
+
+
+_PHOTO_LOOKS = ("close up", "aerial view", "at night", "minimal", "colorful", "in the city", "abstract", "with people",
+                "vintage", "bright daylight", "dark moody", "macro", "wide angle", "blue tones", "warm light", "modern",
+                "outdoor", "studio", "top view", "silhouette", "soft focus", "pattern", "black and white", "sunset",
+                "detail", "workspace", "nature", "futuristic", "cinematic", "texture", "symmetry")
+
+
 def sample_content(cover_only: bool = False, key: str = "") -> dict:
     with open(SAMPLE, encoding="utf-8") as f:
         c = copy.deepcopy(json.load(f))
     c["slides"] = [] if cover_only else [c["slides"][i] for i in PREVIEW_SLIDES]
+    topic = _topics().get(topic_for(key)) if key else None
+    if topic and not topic.get("from_sample"):
+        ts = dict(c["title_slide"])
+        ts.update(copy.deepcopy(topic["title_slide"]))
+        c["title_slide"] = ts
+        if not cover_only:
+            c["slides"] = copy.deepcopy(topic["slides"])
+        if key and is_live(key):  # photo templates on one topic still show different photos
+            look = _PHOTO_LOOKS[_scene_index(key) % len(_PHOTO_LOOKS)]
+            for v in [c["title_slide"].get("visual")] + [sl.get("visual") for sl in c["slides"]]:
+                if isinstance(v, dict) and v.get("query"):
+                    v["query"] = f'{v["query"]} {look}'
+        return c  # the topic's own photo queries also serve photo templates
     if key and is_live(key):
         n = _scene_index(key)
         scene = PHOTO_SCENES[n % len(PHOTO_SCENES)]

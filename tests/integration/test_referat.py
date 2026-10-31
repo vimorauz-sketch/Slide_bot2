@@ -22,12 +22,39 @@ def _sample():
         return json.load(f)
 
 
-def test_fifty_templates_with_known_parts():
-    assert len(designs.TEMPLATES) == 50
+def test_hundred_distinct_templates_with_known_parts():
+    assert len(designs.TEMPLATES) == 100
+    looks = set()
     for t in designs.TEMPLATES:
-        assert t["cover"] in designs.COVERS and t["heading"] in designs.HEADINGS
+        assert t["cover"] in designs.COVERS and t["heading"] in designs.HEADINGS and t["page"] in designs.PAGES
+        assert t["topic"] in designs.TOPICS and t["cover"] in designs.GROUP_OF
         assert t["palette"]["accent"].startswith("#")
+        looks.add((t["cover"], t["variant"], t["palette_id"], t["heading"]))
+    assert len(looks) == 100  # no two templates look the same
+    assert len({t["cover"] for t in designs.TEMPLATES}) == len(designs.LAYOUTS)
     assert designs.by_number(7)["id"] == "r07" and designs.get("nope")["id"] == designs.DEFAULT
+
+
+def test_cover_decoration_and_mirrored_geometry():
+    from services.referat import decor
+    for t in designs.TEMPLATES:
+        svg = decor.cover_svg(t["cover"], t["palette"], t["variant"], bool(t["layout"].get("mirrored")))
+        assert svg.startswith("<svg") and svg.endswith("</svg>")
+    lay = designs.LAYOUTS["band"]
+    m = designs.geometry("band", 1)
+    assert m["mirrored"] and m["left"] == lay["right"] and m["right"] == lay["left"]
+
+
+def test_every_sample_topic_has_its_own_referat():
+    from services.referat import gallery
+    topics = set()
+    for name in designs.TOPICS:
+        doc = gallery.sample_doc({"topic": name})
+        topics.add(doc["meta"]["topic"])
+        assert len([s for s in doc["sections"] if s["kind"] == "chapter"]) == 2
+        vm = render.view_model(doc, designs.get("r01"), {"s1.0": "data:x", "s2.1": "data:y"})
+        assert vm["sections"][1]["subsections"][0]["image"]  # the inner sample page shows a picture
+    assert len(topics) == len(designs.TOPICS)
 
 
 def test_title_page_data_follows_the_level():
@@ -161,10 +188,10 @@ async def test_mini_app_page_and_selection(monkeypatch):
     async with TestClient(TestServer(create_webhook_app(None, None))) as client:
         r = await client.get("/webapp/referat/")
         html = await r.text()
-        assert r.status == 200 and '"id": "r50"' in html and "__CATALOG__" not in html
+        assert r.status == 200 and '"id": "r100"' in html and "__CATALOG__" not in html
         r = await client.get("/webapp/referat/page/r05_1.jpg")
         assert r.status == 200 and r.headers["Content-Type"].startswith("image/")
-        assert (await client.get("/webapp/referat/page/r99_1.jpg")).status == 404
+        assert (await client.get("/webapp/referat/page/r999_1.jpg")).status == 404
 
 
 @pytest.mark.asyncio

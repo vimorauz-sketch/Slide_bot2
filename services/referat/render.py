@@ -26,6 +26,8 @@ LABELS = {
            "plan": "Contents", "references": "References", "figure": "Figure", "table": "Table"},
 }
 CLASSIC_COVERS = ("frame", "double", "ornament", "emblem", "arch")
+# cursive title fonts: fine for the word REFERAT, too hard to read for a long topic
+SCRIPT_FONTS = ("g:greatvibes", "g:dancingscript", "g:cookie", "g:parisienne")
 
 
 def _clean(v: Any, lang: str) -> Any:
@@ -90,7 +92,7 @@ def resolve_template(template_id: str, style: Optional[Dict[str, Any]] = None, l
 def running_title(t: Dict[str, Any], topic: str) -> str:
     if t["cover"] in CLASSIC_COVERS:
         return ""
-    running = topic[:70] + ("…" if len(topic) > 70 else "")
+    running = topic if len(topic) <= 52 else topic[:50].rsplit(" ", 1)[0] + "…"
     return "".join(ch for ch in running if ch not in '\\"<>{};')
 
 
@@ -106,9 +108,10 @@ def build_html(doc: Dict[str, Any], template_id: str, images: Optional[Dict[str,
     vm = view_model(doc, t, images)
     html = _ENV.get_template("referat.html.j2").render(
         t=t, p=t["palette"], m=vm["m"], L=vm["L"], lang=vm["lang"], sections=vm["sections"],
-        references=vm["references"], decor=decor.cover_svg(t["cover"], t["palette"]), cover_photo=cover_photo,
+        references=vm["references"], decor=decor.cover_svg(t["cover"], t["palette"], t.get("variant", 0), bool(t["layout"].get("mirrored"))), cover_photo=cover_photo,
         font_css=fonts.font_face_css([t["fonts"]["title"], t["fonts"]["body"]]),
         font_title=fonts.css_family(t["fonts"]["title"]), font_body=fonts.css_family(t["fonts"]["body"]),
+        font_topic=fonts.css_family(t["fonts"]["body" if t["fonts"]["title"] in SCRIPT_FONTS else "title"]),
         body_size=body_size(t), running=running_title(t, vm["m"].get("topic", "")))
     if background_only:  # the title page's decoration alone (the Word file puts its text on top)
         html = html.replace("</style>", ".cv{visibility:hidden} body>section:not(.cover){display:none}</style>", 1)

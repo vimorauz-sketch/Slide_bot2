@@ -1,0 +1,122 @@
+{
+ "language": "uz",
+ "meta": {
+  "ministry": "O‘ZBEKISTON RESPUBLIKASI OLIY TA’LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+  "kind": "REFERAT",
+  "city": "Toshkent",
+  "year": "2026",
+  "institution": "Toshkent tibbiyot akademiyasi",
+  "faculty": "Davolash fakulteti",
+  "subject": "Normal fiziologiya",
+  "topic": "Yurak-qon tomir tizimi: tuzilishi, faoliyati va kasalliklarning oldini olish",
+  "author": "Jasur Aliyev",
+  "group": "DF-205",
+  "teacher": "N. Yusupova"
+ },
+ "sections": [
+  {
+   "kind": "intro",
+   "title": "Kirish",
+   "paragraphs": [
+    "Yurak-qon tomir tizimi organizmning barcha to‘qima va hujayralarini kislorod hamda oziq moddalar bilan ta’minlaydi. Uning faoliyati buzilishi butun organizm ishiga ta’sir ko‘rsatadi.",
+    "Jahon sog‘liqni saqlash tashkiloti ma’lumotlariga ko‘ra, yurak-qon tomir kasalliklari dunyoda o‘lim sabablari orasida birinchi o‘rinda turadi. Shu bois ushbu mavzuni o‘rganish dolzarb hisoblanadi."
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Yurakning tuzilishi va ishlash mexanizmi",
+   "subsections": [
+    {
+     "title": "Yurak kameralari va klapanlar",
+     "paragraphs": [
+      "Inson yuragi to‘rt kameradan — ikkita bo‘lmacha va ikkita qorinchadan iborat. O‘ng qism venoz qonni o‘pkaga, chap qism esa kislorodga boy arterial qonni katta qon aylanish doirasiga haydaydi.",
+      "Kameralar orasidagi klapanlar qonning faqat bir yo‘nalishda harakatlanishini ta’minlaydi. Klapan faoliyatining buzilishi yurak yetishmovchiligiga olib kelishi mumkin."
+     ],
+     "image": {
+      "query": "human heart anatomy model",
+      "caption": "Yurakning anatomik modeli"
+     }
+    },
+    {
+     "title": "Yurak sikli",
+     "paragraphs": [
+      "Yurak sikli sistola (qisqarish) va diastola (bo‘shashish) bosqichlaridan iborat. Tinch holatda yurak daqiqasiga 60–80 marta qisqaradi va har qisqarishda taxminan 70 ml qon haydaydi.",
+      "Yurak qisqarishlarini sinus tuguni boshqaradi. U yurakning tabiiy «ritm generatori» bo‘lib, impulslar o‘tkazuvchi tizim orqali butun miokardga tarqaladi."
+     ]
+    },
+    {
+     "title": "Qon tomirlari",
+     "paragraphs": [
+      "Arteriyalar qonni yurakdan a’zolarga olib boradi, venalar esa qaytaradi. Kapillyarlarda qon va to‘qimalar o‘rtasida moddalar almashinuvi sodir bo‘ladi."
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Yurak kasalliklari va profilaktika",
+   "subsections": [
+    {
+     "title": "Asosiy xavf omillari",
+     "paragraphs": [
+      "Yuqori qon bosimi, chekish, kam harakatlilik, noto‘g‘ri ovqatlanish va ortiqcha vazn yurak-qon tomir kasalliklarining asosiy xavf omillaridir."
+     ],
+     "table": {
+      "caption": "Arterial bosim ko‘rsatkichlari",
+      "head": [
+       "Toifa",
+       "Sistolik, mm sim. ust.",
+       "Diastolik, mm sim. ust."
+      ],
+      "rows": [
+       [
+        "Me’yor",
+        "< 120",
+        "< 80"
+       ],
+       [
+        "Yuqori me’yor",
+        "120–139",
+        "80–89"
+       ],
+       [
+        "Gipertenziya I daraja",
+        "140–159",
+        "90–99"
+       ],
+       [
+        "Gipertenziya II daraja",
+        "≥ 160",
+        "≥ 100"
+       ]
+      ]
+     }
+    },
+    {
+     "title": "Profilaktika choralari",
+     "paragraphs": [
+      "Muntazam jismoniy faollik, tuz va yog‘ miqdori kam bo‘lgan ratsion, chekishdan voz kechish hamda qon bosimini nazorat qilish kasallik xavfini sezilarli darajada kamaytiradi."
+     ],
+     "image": {
+      "query": "running morning park",
+      "caption": "Jismoniy faollik — yurak salomatligi garovi"
+     }
+    }
+   ]
+  },
+  {
+   "kind": "conclusion",
+   "title": "Xulosa",
+   "paragraphs": [
+    "Yurak-qon tomir tizimi murakkab va o‘zaro bog‘liq mexanizmlar asosida ishlaydi. Uning faoliyatini tushunish kasalliklarni erta aniqlash va davolash uchun muhimdir.",
+    "Sog‘lom turmush tarzi yurak kasalliklarining oldini olishning eng samarali va arzon usuli hisoblanadi."
+   ]
+  }
+ ],
+ "references": [
+  "Babsky E. B. va boshq. Odam fiziologiyasi. — Toshkent: Ibn Sino, 1993. — 480 b.",
+  "Guyton A. C., Hall J. E. Textbook of Medical Physiology. — 14th ed. — Elsevier, 2020.",
+  "World Health Organization. Cardiovascular diseases (CVDs): Fact sheet. — Geneva: WHO, 2021.",
+  "Qodirov U. Z. Ichki kasalliklar propedevtikasi. — Toshkent: Abu Ali ibn Sino, 2005."
+ ]
+}
