@@ -107,9 +107,9 @@ def _picker_caption(with_webapp: bool) -> str:
     return "\n".join(lines)
 
 
-async def apply_template_choice(bot, chat_id: int, state: FSMContext, key) -> bool:
+async def apply_template_choice(bot, chat_id: int, state: FSMContext, key, style: Optional[dict] = None) -> bool:
     """Saves the chosen template/colour and moves the wizard on. Shared by buttons, typed numbers,
-    the Mini App and /start deep links."""
+    the Mini App and /start deep links. style: fonts / text colour picked in the Mini App."""
     key = str(key or "").strip().replace("--", themes.COLOR_SEP)
     if not themes.is_known_theme(key):
         return False
@@ -129,6 +129,9 @@ async def apply_template_choice(bot, chat_id: int, state: FSMContext, key) -> bo
         if current is None:
             await state.set_data({})
         await state.update_data(template_id=tid)
+        if style:
+            from bot.handlers.style import clean_style
+            await state.update_data({"font_title": None, "font_body": None, "text_color": None, **clean_style(style, tid)})
         # next: fonts and text colour (the menu shows the cover in the chosen style)
         await state.set_state(PresentationForm.style)
         from bot.handlers.style import show_menu
@@ -136,6 +139,9 @@ async def apply_template_choice(bot, chat_id: int, state: FSMContext, key) -> bo
         return True
     else:
         await state.update_data(template_id=tid)
+        if style:
+            from bot.handlers.style import clean_style
+            await state.update_data({"font_title": None, "font_body": None, "text_color": None, **clean_style(style, tid)})
         started = False
         text = f"🎨 <b>Dizayn o‘zgartirildi:</b> {label}"
     try:
@@ -349,14 +355,16 @@ async def process_webapp_choice(message: Message, state: FSMContext):
     try:
         payload = json.loads(message.web_app_data.data)
         key = payload.get("theme", "")
+        style = {k: payload.get(k) for k in ("font_title", "font_body", "text_color") if payload.get(k)}
     except (ValueError, AttributeError):
+        style = {}
         payload, key = {}, message.web_app_data.data
     if isinstance(payload, dict) and payload.get("referat"):  # the referat templates Mini App
         from bot.handlers.referat import apply_template_choice as referat_choice
         if not await referat_choice(message.bot, message.chat.id, state, str(payload["referat"])):
             await message.answer("⚠️ Shablon topilmadi, qaytadan tanlang.")
         return
-    if not await apply_template_choice(message.bot, message.chat.id, state, key):
+    if not await apply_template_choice(message.bot, message.chat.id, state, key, style=style):
         await message.answer("⚠️ Shablon topilmadi, qaytadan tanlang.")
 
 

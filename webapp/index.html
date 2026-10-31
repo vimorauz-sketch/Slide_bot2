@@ -102,6 +102,37 @@ h1 { margin: 0; font-size: 21px; letter-spacing: -.02em; }
 body.web .choose { display: block; }
 .toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: rgba(20,20,26,.94); color: #fff; padding: 10px 16px; border-radius: 12px;
   font-size: 14px; z-index: 40; display: none; max-width: 90vw; text-align: center; }
+
+[hidden] { display: none !important; }
+/* design step: fonts and text colour */
+.style { padding: 0 16px; display: grid; gap: 8px; }
+.stprev { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 13px; background: var(--bg2); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+.stprev.loading { opacity: .45; }
+.srow { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 13px; padding: 13px 14px; }
+.srow .sl { font-weight: 650; font-size: 14px; flex: none; }
+.srow .sv { flex: 1; min-width: 0; text-align: right; color: var(--hint); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.srow .sv.set { color: var(--accent); font-weight: 650; }
+.srow .ar { color: var(--hint); font-size: 18px; flex: none; }
+.srow .sw2 { width: 16px; height: 16px; border-radius: 50%; display: inline-block; vertical-align: -3px; margin-right: 6px; box-shadow: 0 0 0 1.5px var(--line); }
+.sreset { justify-self: start; color: var(--accent); font-size: 13.5px; font-weight: 600; padding: 4px 2px; }
+.sheet2 { position: fixed; inset: 0; z-index: 30; background: var(--bg); display: flex; flex-direction: column; transform: translateY(100%); transition: transform .25s cubic-bezier(.2,.8,.2,1); }
+.sheet2.open { transform: none; }
+.sheet2 .d-top { position: static; }
+.sheet2 .body2 { flex: 1; overflow-y: auto; padding: 4px 16px calc(24px + env(safe-area-inset-bottom)); }
+.sheet2 .search { margin: 0 16px; }
+.sheet2 .chips { position: static; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; margin: 0; padding: 10px 16px 6px; }
+.frow { display: block; width: 100%; text-align: left; background: var(--card); border: 2px solid transparent; border-radius: 13px; padding: 10px 14px 12px; margin-top: 8px; }
+.frow.on { border-color: var(--accent); }
+.frow .fn { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--hint); font-weight: 600; }
+.frow .ru { font-size: 10px; font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 5px; padding: 1px 5px; }
+.frow .fs { font-size: 25px; line-height: 1.25; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+.frow.body .fs { font-size: 19px; }
+.cgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }
+@media (min-width: 640px) { .cgrid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.cbtn { display: flex; flex-direction: column; align-items: center; gap: 6px; background: var(--card); border: 2px solid transparent; border-radius: 13px; padding: 12px 6px; font-size: 12.5px; font-weight: 600; }
+.cbtn.on { border-color: var(--accent); }
+.cbtn i { width: 34px; height: 34px; border-radius: 50%; box-shadow: 0 0 0 1.5px var(--line); }
+.note2 { color: var(--hint); font-size: 12.5px; margin: 10px 2px 0; }
 </style>
 </head>
 <body>
@@ -125,8 +156,27 @@ body.web .choose { display: block; }
   <div class="info" id="info"></div>
   <div class="sect"><b>Ranglar</b><span id="ccount"></span></div>
   <div class="colors" id="colors"></div>
+  <div class="sect"><b>Shrift va yozuv rangi</b><span id="fcount">ixtiyoriy</span></div>
+  <div class="style">
+    <img class="stprev" id="stPrev" alt="Tanlangan shrift va rangdagi muqova" hidden>
+    <button class="srow" data-r="title"><span class="sl">🔤 Sarlavha shrifti</span><span class="sv" id="sv-title">Shablondagi</span><span class="ar">›</span></button>
+    <button class="srow" data-r="body"><span class="sl">🔤 Matn shrifti</span><span class="sv" id="sv-body">Shablondagi</span><span class="ar">›</span></button>
+    <button class="srow" data-r="color"><span class="sl">🎨 Yozuv rangi</span><span class="sv" id="sv-color">Shablondagi</span><span class="ar">›</span></button>
+    <button class="sreset" id="stReset" hidden>♻️ Shablondagi holiga qaytarish</button>
+  </div>
   <button class="choose" id="choose">Tanlash</button>
   <div style="height:28px"></div>
+</section>
+<section class="sheet2" id="fsheet" aria-hidden="true">
+  <div class="d-top"><button class="back" id="fback" aria-label="Orqaga">←</button><div class="t" id="ftitle">Shrift</div></div>
+  <label class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="fq" type="search" placeholder="Shrift nomini qidirish" autocomplete="off"></label>
+  <div class="chips" id="fchips"></div>
+  <div class="body2" id="flist"></div>
+</section>
+<section class="sheet2" id="csheet" aria-hidden="true">
+  <div class="d-top"><button class="back" id="cback" aria-label="Orqaga">←</button><div class="t">🎨 Yozuv rangi</div></div>
+  <div class="body2"><div class="cgrid" id="cgrid"></div><p class="note2" id="cnote"></p></div>
 </section>
 <div class="toast" id="toast"></div>
 
@@ -229,7 +279,7 @@ body.web .choose { display: block; }
     var cats = t.categories.map(function (k) { var c = S.cats.filter(function (x) { return x.key === k; })[0]; return c ? '<span class="pill">' + esc(c.emoji + " " + c.label) + "</span>" : ""; }).join("");
     $("info").innerHTML = "<h2>" + esc(t.name) + "</h2><p>" + esc(t.tagline) + "</p><p style=\"font-size:13px\">" + esc(t.category) + "</p>" + cats;
     $("car").scrollLeft = 0;
-    renderSlides(); renderColors(); updateChoose();
+    renderSlides(); renderColors(); updateChoose(); refreshStyle();
     $("detail").scrollTop = 0;
     $("detail").classList.add("open"); $("detail").setAttribute("aria-hidden", "false");
     if (inTg) tg.BackButton.show();
@@ -238,18 +288,148 @@ body.web .choose { display: block; }
   function selectColor(i) {
     if (i === S.color) return;
     S.color = i; haptic();
-    renderSlides(); renderColors(); updateChoose();
+    renderSlides(); renderColors(); updateChoose(); refreshStyle();
     $("car").scrollTo({ left: 0, behavior: "smooth" });
     $("detail").scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function closeDetail() {
+    if (closeSheets()) return;  // the Back button first closes the font / colour list
     $("detail").classList.remove("open"); $("detail").setAttribute("aria-hidden", "true");
     S.cur = null;
     if (inTg) { tg.BackButton.hide(); tg.MainButton.hide(); }
   }
 
+
+  // ------------------------------------------------------------ design step: fonts and text colour
+  var F = { lib: null, colors: [], allowed: {}, role: "title", cat: "", q: "", loaded: {} };
+  S.style = { font_title: "", font_body: "", text_color: "" };
+  var SAMPLE = { title: "Fotosintez jarayoni", body: "Taqdimot matni shunday ko‘rinadi, 2026" };
+  var CAT_ICON = { modern: "✨", classic: "📜", display: "💥", hand: "✍️", tech: "💻" };
+
+  function loadLib() {
+    if (F.lib) return Promise.resolve(F.lib);
+    return fetch("api/fonts").then(function (r) { return r.json(); }).then(function (d) {
+      F.lib = d; F.colors = d.colors;
+      $("fcount").textContent = d.fonts.length + " ta shrift · " + d.colors.length + " xil rang";
+      return d;
+    });
+  }
+  function fontByKey(k) { return F.lib ? F.lib.fonts.filter(function (f) { return f.key === k; })[0] : null; }
+  function fam(f) { return "SL_" + f.key.replace(/[^a-z0-9]/gi, "_"); }
+  function loadFont(f) {
+    if (F.loaded[f.key] || !window.FontFace) return;
+    F.loaded[f.key] = 1;
+    try {
+      var face = new FontFace(fam(f), "url(" + f.file + ")", { weight: String(f.weight) });
+      face.load().then(function (ff) { document.fonts.add(ff); }).catch(function () {});
+    } catch (e) {}
+  }
+  function curKey() { return S.cur ? S.cur.colors[S.color].key : ""; }
+  function styleSet() { return !!(S.style.font_title || S.style.font_body || S.style.text_color); }
+
+  function renderStyle() {
+    var ft = fontByKey(S.style.font_title), fb = fontByKey(S.style.font_body);
+    var sv = function (id, txt, set) { var e = $(id); e.textContent = txt; e.classList.toggle("set", !!set); };
+    sv("sv-title", ft ? ft.name : "Shablondagi", ft);
+    sv("sv-body", fb ? fb.name : "Shablondagi", fb);
+    if (S.style.text_color) {
+      var cn = F.colors.filter(function (x) { return x.hex === S.style.text_color; })[0];
+      $("sv-color").innerHTML = '<i class="sw2" style="background:' + esc(S.style.text_color) + '"></i>' + esc(cn ? cn.name : S.style.text_color);
+      $("sv-color").classList.add("set");
+    } else sv("sv-color", "Shablondagi", false);
+    $("stReset").hidden = !styleSet();
+    var im = $("stPrev");
+    if (!styleSet() || !S.cur) { im.hidden = true; im.removeAttribute("src"); return; }
+    var q = [];
+    if (S.style.font_title) q.push("ft=" + encodeURIComponent(S.style.font_title));
+    if (S.style.font_body) q.push("fb=" + encodeURIComponent(S.style.font_body));
+    if (S.style.text_color) q.push("c=" + encodeURIComponent(S.style.text_color));
+    var src = "styled/" + encodeURIComponent(curKey()) + ".jpg?" + q.join("&");
+    if (im.getAttribute("src") === src) return;
+    im.hidden = false; im.classList.add("loading");
+    im.onload = function () { im.classList.remove("loading"); };
+    im.onerror = function () { im.classList.remove("loading"); im.hidden = true; };
+    im.src = src;
+  }
+
+  function checkColor() {  // a text colour must stay readable on the chosen template colour
+    var key = curKey(); if (!key) return Promise.resolve();
+    var p = F.allowed[key] ? Promise.resolve(F.allowed[key]) :
+      fetch("api/colors/" + encodeURIComponent(key)).then(function (r) { return r.json(); }).then(function (d) { F.allowed[key] = d.colors; return d.colors; });
+    return p.then(function (ok) {
+      if (S.style.text_color && ok.indexOf(S.style.text_color) < 0) { S.style.text_color = ""; toast("Bu rangdagi fonda tanlangan yozuv rangi o‘qilmaydi — shablondagi rang qo‘yildi"); }
+    }).catch(function () {});
+  }
+  function refreshStyle() { loadLib().then(checkColor).then(renderStyle).catch(renderStyle); }
+
+  function openSheet(id) { $(id).classList.add("open"); $(id).setAttribute("aria-hidden", "false"); }
+  function closeSheets() {
+    var was = false;
+    ["fsheet", "csheet"].forEach(function (id) { if ($(id).classList.contains("open")) { was = true; $(id).classList.remove("open"); $(id).setAttribute("aria-hidden", "true"); } });
+    return was;
+  }
+
+  function fontList() {
+    var q = norm(F.q).trim();
+    return F.lib.fonts.filter(function (f) { return (!F.cat || f.category === F.cat) && (!q || norm(f.name).indexOf(q) >= 0); });
+  }
+  var obs = window.IntersectionObserver ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { var f = fontByKey(e.target.getAttribute("data-k")); if (f) loadFont(f); obs.unobserve(e.target); } });
+  }, { root: null, rootMargin: "300px" }) : null;
+
+  function renderFonts() {
+    var role = F.role, cur = S.style["font_" + role], list = fontList();
+    var cats = F.lib.categories, html = '<button class="chip' + (F.cat ? "" : " on") + '" data-c="">Hammasi<small>' + F.lib.fonts.length + "</small></button>";
+    Object.keys(cats).forEach(function (k) {
+      var n = F.lib.fonts.filter(function (f) { return f.category === k; }).length;
+      html += '<button class="chip' + (F.cat === k ? " on" : "") + '" data-c="' + esc(k) + '">' + esc((CAT_ICON[k] || "") + " " + cats[k]) + "<small>" + n + "</small></button>";
+    });
+    $("fchips").innerHTML = html;
+    var rows = '<button class="frow ' + role + (cur ? "" : " on") + '" data-k=""><div class="fn">♻️ Shablondagi shrift</div><div class="fs">' + esc(SAMPLE[role]) + "</div></button>";
+    rows += list.map(function (f) {
+      return '<button class="frow ' + role + (cur === f.key ? " on" : "") + '" data-k="' + esc(f.key) + '"><div class="fn">' + esc(f.name) +
+        (f.cyrillic ? '<span class="ru">RU</span>' : "") + '</div><div class="fs" style="font-family:\'' + fam(f) + '\', sans-serif' +
+        (role === "title" ? ";font-weight:700" : "") + '">' + esc(SAMPLE[role]) + "</div></button>";
+    }).join("");
+    if (!list.length) rows += '<div class="empty">Shrift topilmadi</div>';
+    $("flist").innerHTML = rows; $("flist").scrollTop = 0;
+    Array.prototype.forEach.call($("flist").querySelectorAll(".frow[data-k]"), function (b) {
+      var k = b.getAttribute("data-k"); if (!k) return;
+      if (obs) obs.observe(b); else { var f = fontByKey(k); if (f) loadFont(f); }
+    });
+  }
+
+  function openFonts(role) {
+    loadLib().then(function () {
+      F.role = role; F.cat = ""; F.q = ""; $("fq").value = "";
+      $("ftitle").textContent = role === "title" ? "🔤 Sarlavha shrifti" : "🔤 Matn shrifti";
+      renderFonts(); openSheet("fsheet");
+    }).catch(function () { toast("Shriftlarni yuklab bo‘lmadi"); });
+  }
+
+  function openColors() {
+    loadLib().then(function () { return checkColor().then(function () { return F.allowed[curKey()] || F.colors.map(function (c) { return c.hex; }); }); })
+      .then(function (ok) {
+        var cur = S.style.text_color;
+        var html = '<button class="cbtn' + (cur ? "" : " on") + '" data-h=""><i style="background:conic-gradient(#e11 0 25%,#1a1 0 50%,#22e 0 75%,#111 0)"></i>Shablondagi</button>';
+        html += F.colors.filter(function (c) { return ok.indexOf(c.hex) >= 0; }).map(function (c) {
+          return '<button class="cbtn' + (cur === c.hex ? " on" : "") + '" data-h="' + esc(c.hex) + '"><i style="background:' + esc(c.hex) + '"></i>' + esc(c.name) + "</button>";
+        }).join("");
+        $("cgrid").innerHTML = html;
+        var hidden = F.colors.length - ok.length;
+        $("cnote").textContent = "Sarlavhalar va matn shu rangda bo‘ladi." + (hidden > 0 ? " Bu fonda o‘qilmaydigan " + hidden + " ta rang ko‘rsatilmadi." : "");
+        openSheet("csheet");
+      }).catch(function () { toast("Ranglarni yuklab bo‘lmadi"); });
+  }
+
   function deepLink(key) { return BOT ? "https://t.me/" + BOT + "?start=tpl_" + key.replace("~", "--") : ""; }
+
+  function payload(key) {
+    var p = { theme: key };
+    ["font_title", "font_body", "text_color"].forEach(function (k) { if (S.style[k]) p[k] = S.style[k]; });
+    return p;
+  }
 
   function choose() {
     var t = S.cur; if (!t) return;
@@ -261,10 +441,10 @@ body.web .choose { display: block; }
     }
     var viaInline = !!(tg.initDataUnsafe && tg.initDataUnsafe.query_id);
     if (!viaInline) {                                // opened from the keyboard button: sendData answers in the chat
-      try { tg.sendData(JSON.stringify({ theme: key })); return; } catch (e) {}
+      try { tg.sendData(JSON.stringify(payload(key))); return; } catch (e) {}
     }
     tg.MainButton.showProgress();
-    fetch("api/select", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ init_data: tg.initData, theme: key }) })
+    fetch("api/select", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.assign({ init_data: tg.initData }, payload(key))) })
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return r.ok && j.ok; }); })
       .then(function (ok) {
         tg.MainButton.hideProgress();
@@ -290,6 +470,26 @@ body.web .choose { display: block; }
   $("colors").addEventListener("click", function (e) { var c = e.target.closest(".ctile"); if (c) selectColor(+c.getAttribute("data-i")); });
   $("car").addEventListener("scroll", onScroll, { passive: true });
   $("back").addEventListener("click", closeDetail);
+  Array.prototype.forEach.call(document.querySelectorAll(".srow"), function (b) {
+    b.addEventListener("click", function () { haptic(); var r = b.getAttribute("data-r"); if (r === "color") openColors(); else openFonts(r); });
+  });
+  $("stReset").addEventListener("click", function () { S.style = { font_title: "", font_body: "", text_color: "" }; haptic(); renderStyle(); });
+  $("fback").addEventListener("click", closeSheets);
+  $("cback").addEventListener("click", closeSheets);
+  $("fq").addEventListener("input", function (e) { F.q = e.target.value; renderFonts(); });
+  $("fchips").addEventListener("click", function (e) { var b = e.target.closest(".chip"); if (!b) return; F.cat = b.getAttribute("data-c"); haptic(); renderFonts(); });
+  $("flist").addEventListener("click", function (e) {
+    var b = e.target.closest(".frow"); if (!b) return;
+    var k = b.getAttribute("data-k"), f = fontByKey(k);
+    S.style["font_" + F.role] = k; haptic(); closeSheets(); renderStyle();
+    if (f) toast((F.role === "title" ? "Sarlavha: " : "Matn: ") + f.name + (f.cyrillic ? "" : " (ruscha matnda o‘xshash shrift qo‘yiladi)"));
+    $("stPrev").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  $("cgrid").addEventListener("click", function (e) {
+    var b = e.target.closest(".cbtn"); if (!b) return;
+    S.style.text_color = b.getAttribute("data-h"); haptic(); closeSheets(); renderStyle();
+    $("stPrev").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
   $("choose").addEventListener("click", choose);
   if (inTg) { tg.BackButton.onClick(closeDetail); tg.MainButton.onClick(choose); }
 

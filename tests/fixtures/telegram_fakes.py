@@ -163,7 +163,8 @@ class FakeFSMContext:
     async def set_data(self, data):
         self._data = dict(data)
 
-    async def update_data(self, **kwargs):
+    async def update_data(self, data=None, **kwargs):  # same signature as aiogram's FSMContext
+        self._data.update(data or {})
         self._data.update(kwargs)
         return dict(self._data)
 

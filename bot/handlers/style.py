@@ -66,6 +66,23 @@ def _has_style(data: dict) -> bool:
     return bool(data.get("font_title") or data.get("font_body") or data.get("text_color"))
 
 
+def clean_style(raw: Optional[dict], template_key=None) -> dict:
+    """Fonts and text colour sent by the Mini App, keeping only known fonts and offered colours."""
+    raw = raw if isinstance(raw, dict) else {}
+    out = {}
+    for role in ("title", "body"):
+        fid = str(raw.get(f"font_{role}") or "")
+        if fid and fonts.is_library_font(fid):
+            out[f"font_{role}"] = fid
+    color = str(raw.get("text_color") or "").upper()
+    if color:
+        allowed = {c[3].upper() for c in allowed_colors({"template_id": template_key})} if template_key else \
+            {h.upper() for _, _, h in COLORS}
+        if color in allowed:
+            out["text_color"] = next(h for _, _, h in COLORS if h.upper() == color)
+    return out
+
+
 def allowed_colors(data: dict) -> list:
     """Only colours that stay readable on this template's background and cards."""
     t = themes.get_theme(_base_key(data))

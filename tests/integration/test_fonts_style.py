@@ -112,3 +112,23 @@ async def test_customer_gets_installable_fonts_with_the_files(tmp_path, monkeypa
     plain = SimpleNamespace(id="o2", content_json=json.dumps({"content": {}, "theme": "05_nature_organic"}),
                             pptx_path=None, pdf_path=None)
     assert await delivery.font_pack(plain) == ""
+
+
+@pytest.mark.asyncio
+async def test_mini_app_send_data_carries_fonts_and_colour(monkeypatch):
+    import json as _json
+    from types import SimpleNamespace
+    from bot.handlers import create_pres
+    from tests.fixtures.telegram_fakes import FakeMessage
+
+    async def no_preview(data):
+        return None
+    monkeypatch.setattr(style, "preview_path", no_preview)
+    state = FakeFSMContext()
+    msg = FakeMessage(text="")
+    msg.web_app_data = SimpleNamespace(data=_json.dumps({"theme": "05_nature_organic", "font_title": "g:caveat",
+                                                         "font_body": "g:lora", "text_color": "#1E3A8A"}))
+    await create_pres.process_webapp_choice(msg, state)
+    data = await state.get_data()
+    assert await state.get_state() == PresentationForm.style
+    assert (data["font_title"], data["font_body"], data["text_color"]) == ("g:caveat", "g:lora", "#1E3A8A")
