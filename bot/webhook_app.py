@@ -250,7 +250,7 @@ async def referat_index_handler(request: web.Request) -> web.StreamResponse:
         raise web.HTTPFound(request.path + "/")
     from services.deck import fonts
     from services.referat import designs
-    catalog = [{"id": t["id"], "n": t["code"], "name": t["name"], "cover": designs.COVERS[t["cover"]],
+    catalog = [{"id": t["id"], "n": t["code"], "name": t["name"], "cover": designs.GROUP_OF[t["cover"]], "layout": designs.COVERS[t["cover"]],
                 "heading": designs.HEADINGS[t["heading"]], "palette": t["palette"]["name"],
                 "colors": [t["palette"]["accent"], t["palette"]["accent2"]],
                 "fonts": fonts.family_name(t["fonts"]["title"])} for t in designs.TEMPLATES]

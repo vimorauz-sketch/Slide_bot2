@@ -1,0 +1,122 @@
+{
+ "language": "uz",
+ "meta": {
+  "ministry": "O‘ZBEKISTON RESPUBLIKASI OLIY TA’LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+  "kind": "REFERAT",
+  "city": "Toshkent",
+  "year": "2026",
+  "institution": "Nizomiy nomidagi Toshkent davlat pedagogika universiteti",
+  "faculty": "Pedagogika fakulteti",
+  "subject": "Pedagogik texnologiyalar",
+  "topic": "Interfaol ta’lim metodlari va ularning dars samaradorligiga ta’siri",
+  "author": "Gulnoza Ismoilova",
+  "group": "PD-34",
+  "teacher": "Z. Abdullayeva"
+ },
+ "sections": [
+  {
+   "kind": "intro",
+   "title": "Kirish",
+   "paragraphs": [
+    "Zamonaviy ta’limda o‘quvchi bilimni passiv qabul qiluvchi emas, balki uni faol izlovchi va qo‘llovchi shaxs sifatida qaraladi. Interfaol metodlar aynan shu yondashuvga asoslanadi.",
+    "Referatda interfaol ta’limning mohiyati, eng ko‘p qo‘llaniladigan metodlar va ularning dars samaradorligiga ta’siri ko‘rib chiqiladi."
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Interfaol ta’limning nazariy asoslari",
+   "subsections": [
+    {
+     "title": "Interfaol ta’lim tushunchasi",
+     "paragraphs": [
+      "Interfaol ta’lim o‘qituvchi va o‘quvchilar, shuningdek, o‘quvchilarning o‘zaro faol hamkorligiga asoslangan o‘qitish shaklidir. Unda o‘qituvchi bilim manbai emas, balki jarayon tashkilotchisi vazifasini bajaradi.",
+      "Bunday darslarda o‘quvchilar muammoni birgalikda muhokama qiladi, xulosa chiqaradi va o‘z fikrini asoslashga o‘rganadi."
+     ],
+     "image": {
+      "query": "students group work classroom",
+      "caption": "Guruhda ishlash jarayoni"
+     }
+    },
+    {
+     "title": "Psixologik-pedagogik asoslar",
+     "paragraphs": [
+      "L. S. Vygotskiyning «yaqin rivojlanish zonasi» nazariyasiga ko‘ra, bola hamkorlikda mustaqil holatdagiga qaraganda murakkabroq vazifalarni bajara oladi.",
+      "Faol ishtirok etish xotirada saqlanib qoladigan bilim hajmini sezilarli oshiradi."
+     ]
+    },
+    {
+     "title": "O‘qituvchining roli",
+     "paragraphs": [
+      "Interfaol darsda o‘qituvchi maqsadni aniq belgilaydi, vaqtni boshqaradi va har bir o‘quvchining ishtirokini ta’minlaydi."
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Interfaol metodlar va ularning samaradorligi",
+   "subsections": [
+    {
+     "title": "Asosiy metodlar",
+     "paragraphs": [
+      "Quyidagi jadvalda keng tarqalgan interfaol metodlar va ularning maqsadi keltirilgan."
+     ],
+     "table": {
+      "caption": "Interfaol metodlar",
+      "head": [
+       "Metod",
+       "Mohiyati",
+       "Rivojlantiradigan ko‘nikma"
+      ],
+      "rows": [
+       [
+        "Aqliy hujum",
+        "G‘oyalarni erkin taklif qilish",
+        "Ijodiy fikrlash"
+       ],
+       [
+        "Klaster",
+        "Tushunchalarni tarmoq ko‘rinishida bog‘lash",
+        "Tizimli fikrlash"
+       ],
+       [
+        "Keys-stadi",
+        "Real vaziyatni tahlil qilish",
+        "Muammo yechish"
+       ],
+       [
+        "Zinama-zina",
+        "Bilimni bosqichma-bosqich mustahkamlash",
+        "Mantiqiy fikrlash"
+       ]
+      ]
+     }
+    },
+    {
+     "title": "Samaradorlik natijalari",
+     "paragraphs": [
+      "Tajriba-sinov ishlari interfaol metodlar qo‘llangan sinflarda o‘zlashtirish darajasi an’anaviy sinflarga nisbatan 15–20 foizga yuqori bo‘lishini ko‘rsatadi."
+     ],
+     "image": {
+      "query": "teacher whiteboard lesson",
+      "caption": "Zamonaviy dars jarayoni"
+     }
+    }
+   ]
+  },
+  {
+   "kind": "conclusion",
+   "title": "Xulosa",
+   "paragraphs": [
+    "Interfaol metodlar o‘quvchilarning faolligini oshiradi, mustaqil va tanqidiy fikrlashni rivojlantiradi.",
+    "Metodni dars maqsadi va o‘quvchilar yoshiga mos tanlash uning samaradorligini belgilovchi asosiy omildir."
+   ]
+  }
+ ],
+ "references": [
+  "Yo‘ldoshev J. G‘., Usmonov S. A. Pedagogik texnologiya asoslari. — Toshkent: O‘qituvchi, 2004.",
+  "Tolipov O‘., Usmonboyeva M. Pedagogik texnologiyalarning tatbiqiy asoslari. — Toshkent: Fan, 2006.",
+  "Vygotsky L. S. Mind in Society. — Harvard University Press, 1978.",
+  "Ishmuhamedov R. Innovatsion texnologiyalar yordamida ta’lim samaradorligini oshirish yo‘llari. — Toshkent, 2005."
+ ]
+}

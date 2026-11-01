@@ -1,0 +1,122 @@
+{
+ "language": "uz",
+ "meta": {
+  "ministry": "O‘ZBEKISTON RESPUBLIKASI OLIY TA’LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+  "kind": "REFERAT",
+  "city": "Toshkent",
+  "year": "2026",
+  "institution": "Toshkent davlat iqtisodiyot universiteti",
+  "faculty": "Menejment fakulteti",
+  "subject": "Tadbirkorlik asoslari",
+  "topic": "Startap loyihalarni rivojlantirish: g‘oyadan bozorgacha",
+  "author": "Madina Qodirova",
+  "group": "MN-41",
+  "teacher": "R. Hasanov"
+ },
+ "sections": [
+  {
+   "kind": "intro",
+   "title": "Kirish",
+   "paragraphs": [
+    "Startap — yangi mahsulot yoki xizmatni tez o‘suvchi biznes modeli asosida bozorga olib chiquvchi yosh kompaniyadir. Raqamli iqtisodiyot sharoitida startaplar innovatsiyalarning asosiy manbaiga aylanmoqda.",
+    "Ushbu ishda startap loyihasining hayot sikli, biznes modelini tuzish va investitsiya jalb qilish bosqichlari yoritiladi."
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Startapning hayot sikli",
+   "subsections": [
+    {
+     "title": "G‘oya va muammoni aniqlash",
+     "paragraphs": [
+      "Muvaffaqiyatli startap aniq muammoni hal qilishdan boshlanadi. Asoschilar potensial mijozlar bilan suhbatlar o‘tkazib, muammoning qanchalik dolzarbligini tekshiradilar.",
+      "G‘oyani baholashda bozor hajmi, raqobatchilar va mijozlarning to‘lashga tayyorligi tahlil qilinadi."
+     ],
+     "image": {
+      "query": "startup team meeting whiteboard",
+      "caption": "Jamoa g‘oyani muhokama qilmoqda"
+     }
+    },
+    {
+     "title": "Minimal hayotiy mahsulot (MVP)",
+     "paragraphs": [
+      "MVP — mahsulotning eng zarur funksiyalarga ega dastlabki versiyasi. U kam xarajat bilan g‘oyani real mijozlarda sinab ko‘rish imkonini beradi.",
+      "Foydalanuvchilardan olingan fikr-mulohazalar asosida mahsulot bosqichma-bosqich takomillashtiriladi. Bu yondashuv «tejamkor startap» deb ataladi."
+     ]
+    },
+    {
+     "title": "Biznes model",
+     "paragraphs": [
+      "Biznes model kompaniya qanday qiymat yaratishi, uni mijozga qanday yetkazishi va qanday daromad olishini tavsiflaydi. Buning uchun ko‘pincha Biznes model kanvasidan foydalaniladi."
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Investitsiya va o‘sish",
+   "subsections": [
+    {
+     "title": "Moliyalashtirish bosqichlari",
+     "paragraphs": [
+      "Startaplar rivojlanish bosqichiga qarab turli manbalardan mablag‘ jalb qiladi."
+     ],
+     "table": {
+      "caption": "Startapni moliyalashtirish bosqichlari",
+      "head": [
+       "Bosqich",
+       "Manba",
+       "Maqsad"
+      ],
+      "rows": [
+       [
+        "Pre-seed",
+        "Asoschilar, yaqinlar",
+        "G‘oyani sinash"
+       ],
+       [
+        "Seed",
+        "Biznes-farishtalar",
+        "MVP va ilk mijozlar"
+       ],
+       [
+        "A raund",
+        "Venchur fondlar",
+        "Bozorga chiqish"
+       ],
+       [
+        "B raund va keyingi",
+        "Yirik fondlar",
+        "Masshtablash"
+       ]
+      ]
+     }
+    },
+    {
+     "title": "O‘sish ko‘rsatkichlari",
+     "paragraphs": [
+      "Investorlar oylik faol foydalanuvchilar soni, mijozni jalb qilish narxi va mijozning umrbod qiymati kabi ko‘rsatkichlarga e’tibor beradi."
+     ],
+     "image": {
+      "query": "growth chart laptop",
+      "caption": "O‘sish ko‘rsatkichlari tahlili"
+     }
+    }
+   ]
+  },
+  {
+   "kind": "conclusion",
+   "title": "Xulosa",
+   "paragraphs": [
+    "Startap muvaffaqiyati aniq muammoni tanlash, tez sinov o‘tkazish va mijozlar fikriga tayanishga bog‘liq.",
+    "O‘zbekistonda IT Park, akseleratorlar va venchur fondlarining faoliyati yosh tadbirkorlar uchun yangi imkoniyatlar yaratmoqda."
+   ]
+  }
+ ],
+ "references": [
+  "Ries E. The Lean Startup. — Crown Business, 2011.",
+  "Osterwalder A., Pigneur Y. Business Model Generation. — Wiley, 2010.",
+  "Blank S. The Four Steps to the Epiphany. — K&S Ranch, 2013.",
+  "G‘ulomov S. S. Tadbirkorlik va kichik biznes. — Toshkent: Sharq, 2002."
+ ]
+}

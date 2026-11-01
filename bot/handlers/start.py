@@ -59,6 +59,12 @@ async def cmd_start(message: Message, state: FSMContext):
         await handle_paid_deeplink(message, args[1][5:])
         return
 
+    # t.me/<bot>?start=rtpl_<template> comes from the referat templates Mini App
+    if len(args) > 1 and args[1].startswith("rtpl_"):
+        from bot.handlers.referat import apply_template_choice as referat_choice
+        if await referat_choice(message.bot, message.chat.id, state, args[1][5:]):
+            return
+
     # t.me/<bot>?start=tpl_<template>[--<colour>] comes from the template gallery Mini App
     if len(args) > 1 and args[1].startswith("tpl_"):
         from bot.handlers.create_pres import apply_template_choice

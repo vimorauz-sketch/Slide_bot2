@@ -55,7 +55,7 @@ h1 { margin: 0; font-size: 21px; letter-spacing: -.01em; }
 <body>
 <header>
   <h1>📄 Referat shablonlari</h1>
-  <div class="sub">Titul varag‘ini bosing — ichki sahifasini ham ko‘rasiz. Ichki sahifalar akademik talabga mos: A4, 14 pt, 1,5 interval.</div>
+  <div class="sub">100 xil dizayn. Titul varag‘ini bosing — ichki sahifasini ham ko‘rasiz, «Tanlash» bosilsa bot o‘zi qabul qiladi. Ichki sahifalar akademik talabga mos: A4, 14 pt, 1,5 interval.</div>
 </header>
 <div class="chips" id="chips" role="group" aria-label="Turlari"></div>
 <div class="grid" id="grid"></div>
@@ -81,7 +81,7 @@ function render() {
   CATALOG.filter(function (t) { return filter === "Hammasi" || t.cover === filter; }).forEach(function (t) {
     var b = el("button", "card");
     b.innerHTML = '<div class="thumb"><img loading="lazy" src="page/' + t.id + '_1.jpg" alt=""><span class="num">' + t.n + '</span></div>' +
-      '<div class="name">' + esc(t.name) + '</div>' +
+      '<div class="name">' + esc(t.name) + '</div><div class="meta">' + esc(t.layout || "") + '</div>' +
       '<div class="meta"><i class="sw" style="background:' + t.colors[0] + '"></i><i class="sw" style="background:' + t.colors[1] + '"></i>' + esc(t.palette) + '</div>';
     b.onclick = function () { open(t); };
     grid.appendChild(b);
@@ -112,18 +112,33 @@ function closeSheet() {
   current = null;
 }
 
+var BOT = (new URLSearchParams(location.search).get("bot") || "").replace(/[^\w]/g, "");
+var inTg = !!(tg && (tg.initData || (tg.platform && tg.platform !== "unknown")));
+
+function deepLink(t) { return BOT ? "https://t.me/" + BOT + "?start=rtpl_" + t.id : ""; }
+
+function handOver(t) {  // last resort: open the bot chat with the template in the /start link
+  var link = deepLink(t);
+  if (link) { if (inTg) { tg.openTelegramLink(link); tg.close(); } else location.href = link; return; }
+  if (inTg) { try { tg.sendData(JSON.stringify({ referat: t.id })); return; } catch (e) {} }
+  document.getElementById("sheetTitle").textContent = "№ " + t.n + " tanlandi — botga qayting";
+}
+
 function choose() {
   if (!current) return;
   var t = current;
-  if (!tg || !tg.initData) { alert("Botga shablon raqamini yuboring: " + t.n); return; }
+  try { tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success"); } catch (e) {}
+  if (!inTg) { handOver(t); return; }
   var viaInline = !!(tg.initDataUnsafe && tg.initDataUnsafe.query_id);
+  // opened with the keyboard button: the choice goes straight back to the chat (no number to type)
   if (!viaInline) { try { tg.sendData(JSON.stringify({ referat: t.id })); return; } catch (e) {} }
+  if (!tg.initData) { handOver(t); return; }
   if (tg.MainButton) tg.MainButton.showProgress();
   fetch("../api/select", { method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ init_data: tg.initData, referat: t.id }) })
     .then(function (r) { return r.json(); })
-    .then(function (j) { if (j && j.ok) tg.close(); else tg.showAlert("Botga shablon raqamini yuboring: " + t.n); })
-    .catch(function () { tg.showAlert("Botga shablon raqamini yuboring: " + t.n); })
+    .then(function (j) { if (j && j.ok) tg.close(); else handOver(t); })
+    .catch(function () { handOver(t); })
     .finally(function () { if (tg.MainButton) tg.MainButton.hideProgress(); });
 }
 

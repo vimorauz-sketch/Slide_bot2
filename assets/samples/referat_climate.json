@@ -1,0 +1,122 @@
+{
+ "language": "uz",
+ "meta": {
+  "ministry": "O‘ZBEKISTON RESPUBLIKASI OLIY TA’LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+  "kind": "REFERAT",
+  "city": "Toshkent",
+  "year": "2026",
+  "institution": "O‘zbekiston Milliy universiteti",
+  "faculty": "Geografiya va tabiiy resurslar fakulteti",
+  "subject": "Ekologiya",
+  "topic": "Global iqlim o‘zgarishi va uning Markaziy Osiyoga ta’siri",
+  "author": "Bekzod Nazarov",
+  "group": "EK-31",
+  "teacher": "G. Saidova"
+ },
+ "sections": [
+  {
+   "kind": "intro",
+   "title": "Kirish",
+   "paragraphs": [
+    "Iqlim o‘zgarishi — XXI asrning eng jiddiy global muammolaridan biri. Atmosferadagi issiqxona gazlari miqdorining ortishi Yer yuzasi o‘rtacha haroratining ko‘tarilishiga olib kelmoqda.",
+    "Markaziy Osiyo, xususan O‘zbekiston, suv tanqisligi va Orol dengizi muammosi tufayli iqlim o‘zgarishiga ayniqsa sezgir hududlardan hisoblanadi."
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Iqlim o‘zgarishining sabablari",
+   "subsections": [
+    {
+     "title": "Issiqxona effekti",
+     "paragraphs": [
+      "Karbonat angidrid, metan va azot oksidi kabi gazlar Yerdan qaytgan issiqlikni ushlab qoladi. Tabiiy issiqxona effekti hayot uchun zarur, biroq uning kuchayishi global isishga sabab bo‘ladi.",
+      "Sanoat inqilobidan buyon atmosferadagi CO₂ konsentratsiyasi 280 ppm dan 420 ppm dan oshdi."
+     ],
+     "image": {
+      "query": "glacier melting mountains",
+      "caption": "Erib borayotgan tog‘ muzliklari"
+     }
+    },
+    {
+     "title": "Antropogen omillar",
+     "paragraphs": [
+      "Qazilma yoqilg‘ilarni yoqish, o‘rmonlarni kesish va intensiv chorvachilik issiqxona gazlari chiqindilarining asosiy manbalaridir.",
+      "Shaharlarning kengayishi va transport vositalari sonining ortishi ham atmosfera ifloslanishini kuchaytirmoqda."
+     ]
+    },
+    {
+     "title": "Tabiiy omillar",
+     "paragraphs": [
+      "Vulqon otilishlari, Quyosh faolligi va okean oqimlarining o‘zgarishi iqlimga ta’sir qiladi, biroq so‘nggi o‘n yilliklardagi isishning asosiy sababi inson faoliyatidir."
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Markaziy Osiyoga ta’siri va moslashish choralari",
+   "subsections": [
+    {
+     "title": "Mintaqaviy oqibatlar",
+     "paragraphs": [
+      "Mintaqada harorat global o‘rtacha ko‘rsatkichdan tezroq ko‘tarilmoqda."
+     ],
+     "table": {
+      "caption": "Iqlim o‘zgarishining Markaziy Osiyodagi oqibatlari",
+      "head": [
+       "Ko‘rsatkich",
+       "O‘zgarish",
+       "Oqibat"
+      ],
+      "rows": [
+       [
+        "O‘rtacha harorat",
+        "+1,5 °C (1950-yildan)",
+        "Issiq to‘lqinlar"
+       ],
+       [
+        "Muzliklar maydoni",
+        "–30 %",
+        "Suv tanqisligi"
+       ],
+       [
+        "Qurg‘oqchilik",
+        "Tez-tez takrorlanadi",
+        "Hosildorlik pasayishi"
+       ],
+       [
+        "Chang bo‘ronlari",
+        "Ortgan",
+        "Sog‘liqqa zarar"
+       ]
+      ]
+     }
+    },
+    {
+     "title": "Moslashish yo‘llari",
+     "paragraphs": [
+      "Tomchilatib sug‘orish, qayta tiklanuvchi energiya manbalari va Orolbo‘yida saksovul o‘rmonlarini barpo etish samarali choralardan hisoblanadi."
+     ],
+     "image": {
+      "query": "solar panels desert",
+      "caption": "Quyosh elektr stansiyasi"
+     }
+    }
+   ]
+  },
+  {
+   "kind": "conclusion",
+   "title": "Xulosa",
+   "paragraphs": [
+    "Iqlim o‘zgarishi asosan inson faoliyati bilan bog‘liq bo‘lib, uning oqibatlari Markaziy Osiyoda yaqqol sezilmoqda.",
+    "Suv resurslarini tejash, yashil energetikaga o‘tish va xalqaro hamkorlik muammoni yumshatishning asosiy yo‘llaridir."
+   ]
+  }
+ ],
+ "references": [
+  "IPCC. Climate Change 2021: The Physical Science Basis. — Cambridge University Press, 2021.",
+  "To‘xtayev A. S. Ekologiya. — Toshkent: O‘qituvchi, 2001. — 304 b.",
+  "O‘zbekiston Respublikasi Ekologiya vazirligi. Atrof-muhit holati to‘g‘risida milliy ma’ruza. — 2022.",
+  "Glantz M. H. Creeping Environmental Problems and Sustainable Development in the Aral Sea Basin. — Cambridge, 1999."
+ ]
+}

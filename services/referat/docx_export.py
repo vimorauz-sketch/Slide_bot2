@@ -23,21 +23,6 @@ from services.deck import fonts
 # Word names of library fonts that have a standard Windows twin with the same metrics
 WINDOWS_TWINS = {"g:tinos": "Times New Roman", "g:arimo": "Arial"}
 
-# title page geometry in mm (mirrors referat.html.j2): top, mid, info top, left, right, align, info x, white top text
-GEOMETRY = {
-    "default": dict(top=22, mid=112, info=206, left=22, right=22, align="center", info_left=100, white=False),
-    "band": dict(top=22, mid=112, info=206, left=60, right=18, align="left", info_left=60, white=False),
-    "header": dict(top=16, mid=118, info=206, left=22, right=22, align="center", info_left=100, white=True),
-    "minimal": dict(top=30, mid=140, info=214, left=28, right=28, align="left", info_left=28, white=False),
-    "photo": dict(top=7, mid=140, info=214, left=22, right=22, align="center", info_left=100, white=True),
-    "corners": dict(top=30, mid=112, info=206, left=40, right=40, align="center", info_left=100, white=False),
-    "ornament": dict(top=30, mid=112, info=206, left=36, right=36, align="center", info_left=100, white=False),
-    "diagonal": dict(top=26, mid=112, info=206, left=18, right=70, align="left", info_left=102, white=False),
-    "emblem": dict(top=24, mid=134, info=212, left=22, right=22, align="center", info_left=100, white=False),
-    "split": dict(top=22, mid=104, info=206, left=18, right=76, align="left", info_left=18, white=False),
-    "arch": dict(top=46, mid=124, info=208, left=36, right=36, align="center", info_left=92, white=False),
-    "dots": dict(top=22, mid=112, info=206, left=26, right=26, align="center", info_left=100, white=False),
-}
 ALIGN = {"center": WD_ALIGN_PARAGRAPH.CENTER, "left": WD_ALIGN_PARAGRAPH.LEFT}
 
 
@@ -187,7 +172,9 @@ def build_docx(path: str, vm: Dict[str, Any], template: Dict[str, Any], cover_ba
     body_cat = (fonts.library_font(t["fonts"]["body"]) or {}).get("category")
     body_size = 13 if body_cat in ("modern", "tech") else 14
     m, L = vm["m"], vm["L"]
-    g = dict(GEOMETRY.get(t["cover"], GEOMETRY["default"]))
+    g = dict(t["layout"])  # title page geometry in mm, shared with referat.html.j2
+    tone = g.get("tone", "dark")
+    light = tone == "light"
 
     doc = Document()
     styles = doc.styles
@@ -209,7 +196,8 @@ def build_docx(path: str, vm: Dict[str, Any], template: Dict[str, Any], cover_ba
 
     content_w = 210 - g["left"] - g["right"]
     # the last rows leave ~12 mm free: Word needs room for the section break paragraph after the table
-    rows_h = [g["mid"] - g["top"], g["info"] - g["mid"], 297 - 12 - 14 - 12 - g["info"], 14]
+    city_top = max(g["info"] + 22, 297 - g["city"] - 9)
+    rows_h = [g["mid"] - g["top"], g["info"] - g["mid"], city_top - g["info"], 14]
     table = doc.add_table(rows=4, cols=1)
     _no_borders(table)
     _cell_margins_zero(table)
@@ -220,28 +208,32 @@ def build_docx(path: str, vm: Dict[str, Any], template: Dict[str, Any], cover_ba
         row.height_rule = WD_ROW_HEIGHT_RULE.EXACTLY
         row.cells[0].width = Mm(content_w)
     align = ALIGN[g["align"]]
-    top_color = "#FFFFFF" if g["white"] else p["ink"]
+    top_color = "#FFFFFF" if tone in ("light", "top_light") else p["ink"]
+    ink = "#FFFFFF" if light else p["ink"]
+    accent = "#FFFFFF" if light else p["accent"]
+    kind_color = p["accent2"] if light else (p["ink"] if t["cover"] == "magazine" else p["accent"])
     c0, c1, c2, c3 = (r.cells[0] for r in table.rows)
     c0.paragraphs[0].text = ""
     if m.get("ministry"):
-        _para(c0, m["ministry"], font=tf, size=11, bold=True, color=top_color, align=align, line=1.2)
+        _para(c0, m["ministry"], font=bf, size=11, bold=True, color=top_color, align=align, line=1.2)
     if m.get("institution"):
         _para(c0, m["institution"], font=bf, size=12.5, bold=True, color=top_color, align=align, before=8, line=1.2)
     if m.get("faculty"):
         _para(c0, m["faculty"], font=bf, size=11.5, color=top_color, align=align, before=3)
     _delete_first_empty(c0)
 
-    kind_size = 15 if t["cover"] == "minimal" else 36
+    kind_size = {"minimal": 15, "magazine": 60, "card": 30}.get(t["cover"], 36)
     if t["cover"] != "split":
-        _para(c1, m.get("kind", ""), font=tf, size=kind_size, bold=True, color=p["accent"], align=align,
+        _para(c1, m.get("kind", ""), font=tf, size=kind_size, bold=True, color=kind_color, align=align,
               spacing=kind_size * (0.3 if t["cover"] == "minimal" else 0.14), line=1.0)
     if m.get("subject"):
         sp = _para(c1, "", font=bf, size=13, align=align, before=16)
-        _set_font(sp.add_run(f"{L['subject']}: "), bf, 13, color=p["ink"])
-        _set_font(sp.add_run(m["subject"]), bf, 13, bold=True, color=p["accent"])
-    _para(c1, f"{L['topic']}:".upper(), font=bf, size=12, bold=True, color=p["accent"], align=align, before=14, spacing=1)
-    _para(c1, f"«{m.get('topic', '')}»", font=tf, size=26 if t["cover"] == "minimal" else 19, bold=True,
-          color=p["ink"], align=align, before=4, line=1.2)
+        _set_font(sp.add_run(f"{L['subject']}: "), bf, 13, color=ink)
+        _set_font(sp.add_run(m["subject"]), bf, 13, bold=True, color=accent)
+    _para(c1, f"{L['topic']}:".upper(), font=bf, size=12, bold=True, color=accent, align=align, before=14, spacing=1)
+    script = t["fonts"]["title"] in ("g:greatvibes", "g:dancingscript", "g:cookie", "g:parisienne")
+    _para(c1, f"«{m.get('topic', '')}»", font=bf if script else tf, size={"minimal": 26, "magazine": 24}.get(t["cover"], 19), bold=True,
+          color=ink, align=align, before=4, line=1.2)
     _delete_first_empty(c1)
     if t["cover"] == "split":
         _para(c1, m.get("kind", ""), font=tf, size=30, bold=True, color=p["accent"], align=align, before=18, spacing=6)
@@ -251,11 +243,12 @@ def build_docx(path: str, vm: Dict[str, Any], template: Dict[str, Any], cover_ba
         if m.get(key):
             ip = _para(c2, "", font=bf, size=12.5, left=info_indent, line=1.5)
             ip.paragraph_format.tab_stops.add_tab_stop(Mm(info_indent + 28))
-            _set_font(ip.add_run(f"{label}:\t"), bf, 12.5, bold=True, color=p["accent"])
-            _set_font(ip.add_run(m[key]), bf, 12.5, color=p["ink"])
+            _set_font(ip.add_run(f"{label}:\t"), bf, 12.5, bold=True, color=accent)
+            _set_font(ip.add_run(m[key]), bf, 12.5, color=ink)
     _delete_first_empty(c2)
     city = " – ".join(x for x in (m.get("city"), m.get("year")) if x)
-    cp = _para(c3, city, font=bf, size=12.5, bold=True, color=p["ink"], align=align)
+    city_color = "#FFFFFF" if (light or g.get("city_tone") == "light") else p["ink"]
+    cp = _para(c3, city, font=bf, size=12.5, bold=True, color=city_color, align=align)
     _delete_first_empty(c3)
     if cover_background:  # anchored to the page, so it can live in any paragraph of the title page
         run = cp.add_run()
@@ -268,6 +261,7 @@ def build_docx(path: str, vm: Dict[str, Any], template: Dict[str, Any], cover_ba
     body.left_margin, body.right_margin = Mm(30), Mm(15)
     body.header_distance = body.footer_distance = Mm(10)
     _page_number_footer(body, bf, p["ink"])
+    _page_decor(body, t.get("page", "none"), p)
     header = body.header
     header.is_linked_to_previous = False
     if running:
@@ -279,7 +273,7 @@ def build_docx(path: str, vm: Dict[str, Any], template: Dict[str, Any], cover_ba
 
     heading_style = t["heading"]
     h_align = WD_ALIGN_PARAGRAPH.CENTER if heading_style in ("caps", "rule") else WD_ALIGN_PARAGRAPH.LEFT
-    h_color = p["ink"] if heading_style == "caps" else p["accent"]
+    h_color = {"caps": p["ink"], "marker": p["ink"], "pill": "#FFFFFF", "block": "#FFFFFF"}.get(heading_style, p["accent"])
 
     def heading(text: str, level: int, page_break: bool):
         hp = doc.add_paragraph()
@@ -290,13 +284,16 @@ def build_docx(path: str, vm: Dict[str, Any], template: Dict[str, Any], cover_ba
         hp.paragraph_format.space_after = Pt(12 if level == 1 else 6)
         hp.paragraph_format.keep_with_next = True
         hp.style = doc.styles["Heading 1" if level == 1 else "Heading 2"]
-        txt = text.upper() if (level == 1 and heading_style == "caps") else text
+        txt = text.upper() if (level == 1 and heading_style in ("caps", "overline")) else text
         _set_font(hp.add_run(txt), tf, 16 if level == 1 else 14, bold=True,
-                  color=h_color if level == 1 else (p["ink"] if heading_style == "caps" else p["accent"]))
-        if level == 1 and heading_style == "box":
+                  color=h_color if level == 1 else (p["ink"] if heading_style in ("caps", "marker") else p["accent"]))
+        if level == 1 and heading_style in ("box", "marker"):
             _para_shade(hp, p["soft"])
-        if level == 1 and heading_style in ("bar", "underline"):
-            _para_border(hp, "left" if heading_style == "bar" else "bottom", p["accent"] if heading_style == "bar" else p["accent2"])
+        if level == 1 and heading_style in ("pill", "block"):
+            _para_shade(hp, p["accent"])
+        if level == 1 and heading_style in ("bar", "underline", "overline", "numbig"):
+            side = {"bar": "left", "underline": "bottom", "overline": "top", "numbig": "bottom"}[heading_style]
+            _para_border(hp, side, p["accent2"] if heading_style in ("underline", "numbig") else p["accent"])
         return hp
 
     def body_par(text: str):
@@ -391,6 +388,34 @@ def _para_shade(paragraph, hex_: str) -> None:
     shd.set(qn("w:color"), "auto")
     shd.set(qn("w:fill"), hex_.lstrip("#"))
     ppr.append(shd)
+
+
+def _page_decor(section, kind: str, p: Dict[str, str]) -> None:
+    """Inner page decoration of the template, as Word page borders (measured from the page edge)."""
+    sides = {"band_top": {"top": (96, p["accent"])}, "band_bottom": {"bottom": (96, p["accent"])},
+             "side_band": {"left": (96, p["accent"])}, "side_line": {"left": (6, p["accent2"])},
+             "frame": {s: (6, p["accent"]) for s in ("top", "left", "bottom", "right")},
+             "corners": {s: (4, p["accent2"]) for s in ("top", "left", "bottom", "right")}}.get(kind)
+    if not sides:
+        return
+    sect = section._sectPr
+    bdr = OxmlElement("w:pgBorders")
+    bdr.set(qn("w:offsetFrom"), "page")
+    for side in ("top", "left", "bottom", "right"):
+        if side in sides:
+            sz, color = sides[side]
+            el = OxmlElement(f"w:{side}")
+            el.set(qn("w:val"), "single")
+            el.set(qn("w:sz"), str(sz))
+            el.set(qn("w:space"), "24" if sz < 50 else "0")
+            el.set(qn("w:color"), color.lstrip("#"))
+            bdr.append(el)
+    # pgBorders goes after w:pgMar / w:pgSz and before w:cols etc.
+    anchor = sect.find(qn("w:pgMar"))
+    if anchor is not None:
+        anchor.addnext(bdr)
+    else:
+        sect.append(bdr)
 
 
 def _para_border(paragraph, side: str, hex_: str) -> None:

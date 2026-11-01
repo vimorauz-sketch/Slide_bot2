@@ -1,0 +1,121 @@
+{
+ "language": "uz",
+ "meta": {
+  "ministry": "O‘ZBEKISTON RESPUBLIKASI OLIY TA’LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+  "kind": "REFERAT",
+  "city": "Toshkent",
+  "year": "2026",
+  "institution": "Alisher Navoiy nomidagi Toshkent davlat o‘zbek tili va adabiyoti universiteti",
+  "faculty": "O‘zbek filologiyasi fakulteti",
+  "subject": "O‘zbek mumtoz adabiyoti",
+  "topic": "Alisher Navoiy ijodi va «Xamsa» dostonlarining g‘oyaviy mazmuni",
+  "author": "Nilufar Karimova",
+  "group": "FL-23",
+  "teacher": "M. Olimova"
+ },
+ "sections": [
+  {
+   "kind": "intro",
+   "title": "Kirish",
+   "paragraphs": [
+    "Alisher Navoiy (1441–1501) — o‘zbek mumtoz adabiyotining asoschisi, buyuk shoir, mutafakkir va davlat arbobi. Uning ijodi turkiy tilning badiiy imkoniyatlarini to‘la namoyon etdi.",
+    "Ushbu referatda shoirning hayot yo‘li, «Xamsa» asarining tarkibi va dostonlardagi asosiy g‘oyalar tahlil qilinadi."
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Alisher Navoiyning hayoti va ijodiy merosi",
+   "subsections": [
+    {
+     "title": "Hayot yo‘li",
+     "paragraphs": [
+      "Alisher Navoiy Hirotda tug‘ilgan. U yoshligidan she’riyatga qiziqib, Mashhad va Samarqandda tahsil olgan. Keyinchalik Husayn Boyqaro saroyida muhrdor va vazir lavozimlarida xizmat qilgan.",
+      "Navoiy davlat ishlari bilan birga madrasalar, shifoxonalar va ko‘priklar qurdirib, ilm-fan va san’at ahliga homiylik qilgan."
+     ],
+     "image": {
+      "query": "old manuscript calligraphy",
+      "caption": "Qadimiy qo‘lyozma sahifasi"
+     }
+    },
+    {
+     "title": "Ijodiy merosi",
+     "paragraphs": [
+      "Shoir ijodi 30 dan ortiq yirik asarni o‘z ichiga oladi. «Xazoyin ul-maoniy» devoni, «Muhokamat ul-lug‘atayn», «Mahbub ul-qulub» kabi asarlar shular jumlasidandir.",
+      "«Muhokamat ul-lug‘atayn» asarida Navoiy turkiy tilning boyligi va badiiy imkoniyatlarini ilmiy dalillar bilan asoslab bergan."
+     ]
+    },
+    {
+     "title": "Badiiy uslub",
+     "paragraphs": [
+      "Navoiy she’riyatida ishq, insoniylik, adolat va ma’rifat g‘oyalari yetakchi o‘rin tutadi. U aruz vaznining deyarli barcha bahrlarida ijod qilgan."
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "«Xamsa» dostonlari",
+   "subsections": [
+    {
+     "title": "«Xamsa» tarkibi",
+     "paragraphs": [
+      "«Xamsa» besh dostondan iborat bo‘lib, 1483–1485-yillarda yozilgan."
+     ],
+     "table": {
+      "caption": "«Xamsa» dostonlari",
+      "head": [
+       "Doston",
+       "Asosiy g‘oya"
+      ],
+      "rows": [
+       [
+        "Hayrat ul-abror",
+        "Axloq va ma’rifat"
+       ],
+       [
+        "Farhod va Shirin",
+        "Sadoqat va mehnat"
+       ],
+       [
+        "Layli va Majnun",
+        "Pok muhabbat"
+       ],
+       [
+        "Sab’ai sayyor",
+        "Adolatli hukmdor"
+       ],
+       [
+        "Saddi Iskandariy",
+        "Ideal davlat"
+       ]
+      ]
+     }
+    },
+    {
+     "title": "Dostonlardagi umuminsoniy g‘oyalar",
+     "paragraphs": [
+      "«Xamsa» dostonlarida komil inson g‘oyasi markaziy o‘rinda turadi. Farhod obrazi orqali mehnatsevarlik, olijanoblik va vatanparvarlik ulug‘lanadi."
+     ],
+     "image": {
+      "query": "open book candle",
+      "caption": "Mumtoz adabiyot — ma’naviyat xazinasi"
+     }
+    }
+   ]
+  },
+  {
+   "kind": "conclusion",
+   "title": "Xulosa",
+   "paragraphs": [
+    "Alisher Navoiy ijodi o‘zbek adabiy tilining shakllanishida hal qiluvchi ahamiyatga ega bo‘ldi.",
+    "«Xamsa» dostonlarida ilgari surilgan insonparvarlik g‘oyalari bugungi avlod tarbiyasida ham muhim o‘rin tutadi."
+   ]
+  }
+ ],
+ "references": [
+  "Alisher Navoiy. To‘la asarlar to‘plami. 10 jildlik. — Toshkent: G‘afur G‘ulom, 2011.",
+  "Hayitmetov A. Navoiy lirikasi. — Toshkent: Fan, 1961.",
+  "Sirojiddinov Sh. Alisher Navoiy: manbalarning qiyosiy-tipologik, tekstologik tahlili. — Toshkent: Akademnashr, 2011.",
+  "Qayumov A. Alisher Navoiy. — Toshkent: Yosh gvardiya, 1991."
+ ]
+}

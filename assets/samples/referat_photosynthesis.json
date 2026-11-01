@@ -1,0 +1,100 @@
+{
+ "language": "uz",
+ "meta": {
+  "ministry": "O‘ZBEKISTON RESPUBLIKASI OLIY TA’LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+  "institution": "Toshkent davlat agrar universiteti",
+  "faculty": "Agrobiologiya fakulteti",
+  "kind": "REFERAT",
+  "subject": "Biologiya",
+  "topic": "Fotosintez jarayoni va uning tabiatdagi ahamiyati",
+  "author": "Doniyorbek Normurodov",
+  "group": "AB-21",
+  "teacher": "B. Karimova",
+  "city": "Toshkent",
+  "year": "2026"
+ },
+ "sections": [
+  {
+   "kind": "intro",
+   "title": "Kirish",
+   "paragraphs": [
+    "Yer yuzidagi hayotning deyarli barcha shakllari bir jarayonga — fotosintezga bog‘liq. Yashil o‘simliklar, suvo‘tlar va ayrim bakteriyalar quyosh nuri energiyasini kimyoviy bog‘lar energiyasiga aylantirib, organik moddalar hosil qiladi va atmosferaga kislorod chiqaradi.",
+    "Mavzuning dolzarbligi shundaki, iqlim o‘zgarishi, oziq-ovqat xavfsizligi va qayta tiklanuvchi energiya muammolarini hal qilish uchun fotosintez mexanizmlarini chuqur bilish zarur. Ushbu referatda fotosintezning bosqichlari, unga ta’sir etuvchi omillar va jarayonning biosferadagi o‘rni yoritiladi.",
+    "Ishning maqsadi — fotosintez jarayonini ilmiy manbalar asosida tahlil qilish va uning tabiat hamda inson hayotidagi ahamiyatini ko‘rsatib berish."
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Fotosintezning mohiyati va bosqichlari",
+   "subsections": [
+    {
+     "title": "Fotosintez tushunchasi",
+     "paragraphs": [
+      "Fotosintez (yunoncha «photos» — yorug‘lik, «synthesis» — birikish) — yorug‘lik energiyasi hisobiga karbonat angidrid va suvdan organik moddalar hosil bo‘lishi jarayonidir. Uning umumiy tenglamasi quyidagicha yoziladi: 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂.",
+      "Jarayon xloroplastlarda kechadi. Xloroplast ichidagi tilakoid membranalarida xlorofill pigmenti joylashgan bo‘lib, u asosan qizil va ko‘k nurlarni yutadi, yashil nurlarni esa qaytaradi — shuning uchun barglar yashil ko‘rinadi."
+     ],
+     "image": {"query": "green leaf sunlight macro", "caption": "Quyosh nuri tushib turgan yashil barg"}
+    },
+    {
+     "title": "Yorug‘lik bosqichi",
+     "paragraphs": [
+      "Yorug‘lik bosqichi tilakoid membranalarida boradi. Xlorofill molekulalari foton yutib, qo‘zg‘algan holatga o‘tadi; elektronlar tashuvchi zanjir bo‘ylab harakatlanib, ATF va NADF·H₂ molekulalari hosil bo‘ladi.",
+      "Shu bosqichda suv molekulasi parchalanadi (fotoliz): 2H₂O → 4H⁺ + 4e⁻ + O₂. Atmosferadagi erkin kislorodning asosiy manbai aynan shu reaksiyadir."
+     ]
+    },
+    {
+     "title": "Qorong‘ilik bosqichi (Kalvin sikli)",
+     "paragraphs": [
+      "Kalvin sikli xloroplast stromasida kechadi va bevosita yorug‘lik talab qilmaydi. Yorug‘lik bosqichida to‘plangan ATF va NADF·H₂ energiyasi hisobiga karbonat angidrid biriktirilib, glyukoza sintezlanadi.",
+      "Siklning asosiy fermenti — rubisko — Yer yuzidagi eng ko‘p tarqalgan oqsil hisoblanadi. Bir molekula glyukoza hosil bo‘lishi uchun sikl olti marta aylanishi kerak."
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Fotosintezga ta’sir etuvchi omillar va uning ahamiyati",
+   "subsections": [
+    {
+     "title": "Tashqi muhit omillari",
+     "paragraphs": [
+      "Fotosintez tezligi yorug‘lik intensivligi, karbonat angidrid konsentratsiyasi, harorat va suv bilan ta’minlanganlikka bog‘liq. Ushbu omillardan qaysi biri yetishmasa, jarayon tezligini aynan o‘sha omil cheklaydi."
+     ],
+     "table": {
+      "caption": "Fotosintezga ta’sir etuvchi asosiy omillar",
+      "head": ["Omil", "Maqbul qiymat", "Ta’siri"],
+      "rows": [
+       ["Yorug‘lik", "Yuqori, lekin kuydirmaydigan", "Energiya manbai"],
+       ["CO₂", "0,03–0,1 %", "Uglerod manbai"],
+       ["Harorat", "25–30 °C", "Fermentlar faolligi"],
+       ["Suv", "Yetarli namlik", "Elektronlar manbai"]
+      ]
+     }
+    },
+    {
+     "title": "Biosferadagi ahamiyati",
+     "paragraphs": [
+      "Fotosintez yiliga taxminan 150 milliard tonna organik modda hosil qiladi. Bu modda barcha oziq zanjirlarining boshlang‘ich bo‘g‘ini bo‘lib, inson iste’mol qiladigan oziq-ovqatning asosini tashkil etadi.",
+      "Bundan tashqari, fotosintez atmosferadagi karbonat angidridni yutib, iqlimni barqarorlashtiradi. Ko‘mir, neft va tabiiy gaz ham qadimgi fotosintez mahsulotlaridir."
+     ],
+     "image": {"query": "forest aerial view", "caption": "O‘rmonlar — sayyoramizning «o‘pkasi»"}
+    }
+   ]
+  },
+  {
+   "kind": "conclusion",
+   "title": "Xulosa",
+   "paragraphs": [
+    "Fotosintez — Yerdagi hayotning energetik asosi. U ikki bosqichda kechadi: yorug‘lik bosqichida quyosh energiyasi to‘planadi va kislorod ajraladi, Kalvin siklida esa organik moddalar sintezlanadi.",
+    "Jarayonga yorug‘lik, karbonat angidrid, harorat va suv ta’sir qiladi. Fotosintezni o‘rganish qishloq xo‘jaligida hosildorlikni oshirish va iqlim o‘zgarishiga qarshi kurashda muhim ahamiyatga ega."
+   ]
+  }
+ ],
+ "references": [
+  "Mustaqimov G‘. D. O‘simliklar fiziologiyasi. — Toshkent: O‘qituvchi, 2019. — 384 b.",
+  "Taiz L., Zeiger E. Plant Physiology and Development. — 6th ed. — Sinauer Associates, 2015.",
+  "Raven P. H., Evert R. F., Eichhorn S. E. Biology of Plants. — W. H. Freeman, 2013.",
+  "Xo‘jayev J. X. O‘simliklar fiziologiyasi. — Toshkent: Mehnat, 2004. — 224 b.",
+  "www.ziyonet.uz — Axborot-ta’lim portali."
+ ]
+}

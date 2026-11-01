@@ -1,0 +1,123 @@
+{
+ "language": "uz",
+ "meta": {
+  "ministry": "O‘ZBEKISTON RESPUBLIKASI OLIY TA’LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+  "kind": "REFERAT",
+  "city": "Samarqand",
+  "year": "2026",
+  "institution": "Samarqand davlat universiteti",
+  "faculty": "Tarix fakulteti",
+  "subject": "O‘zbekiston tarixi",
+  "topic": "Amir Temur davlati: boshqaruv tizimi va bunyodkorlik merosi",
+  "author": "Aziza Rahimova",
+  "group": "TR-22",
+  "teacher": "Sh. Xolmirzayev"
+ },
+ "sections": [
+  {
+   "kind": "intro",
+   "title": "Kirish",
+   "paragraphs": [
+    "XIV asrning ikkinchi yarmida Movarounnahrda Amir Temur tomonidan barpo etilgan davlat o‘z davrining eng qudratli saltanatlaridan biriga aylandi. Bu davlat siyosiy birlik, kuchli markaziy hokimiyat va keng ko‘lamli bunyodkorlik ishlari bilan tarixda alohida o‘rin egallaydi.",
+    "Ushbu referatda Amir Temur davlatining boshqaruv tizimi, «Temur tuzuklari»da aks etgan davlatchilik tamoyillari hamda Samarqand va Shahrisabzda yaratilgan me’moriy obidalar tahlil qilinadi."
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Amir Temur davlatining boshqaruv tizimi",
+   "subsections": [
+    {
+     "title": "Markaziy hokimiyat va devonlar",
+     "paragraphs": [
+      "Davlat boshlig‘i oliy hukmdor bo‘lib, uning qo‘l ostida vazirlar devoni faoliyat yuritgan. Devonlar moliya, harbiy ishlar, soliq va mulk masalalari bo‘yicha ixtisoslashgan bo‘lib, har biriga tajribali amaldorlar boshchilik qilgan.",
+      "Amir Temur muhim davlat qarorlarini qurultoyda, ya’ni amirlar va nufuzli shaxslar kengashida muhokama qilgan. Bu an’ana hokimiyatning qonuniyligini ta’minlash va zodagonlar qo‘llab-quvvatlashini saqlab qolishga xizmat qilgan."
+     ],
+     "image": {
+      "query": "registan samarkand",
+      "caption": "Samarqanddagi Registon maydoni"
+     }
+    },
+    {
+     "title": "«Temur tuzuklari» — davlatchilik qomusi",
+     "paragraphs": [
+      "«Temur tuzuklari» davlatni boshqarish, qo‘shin tuzish, amaldorlarni tanlash va fuqarolar bilan munosabat qoidalarini o‘z ichiga olgan asardir. Unda adolat, maslahat va tadbirkorlik davlat barqarorligining asosi sifatida ko‘rsatiladi.",
+      "Tuzuklarda «kuch — adolatda» degan g‘oya bir necha bor takrorlanadi. Hukmdor raiyatning ahvolidan xabardor bo‘lishi, soliqlarni me’yoridan oshirmasligi va zulmga yo‘l qo‘ymasligi lozimligi ta’kidlanadi."
+     ]
+    },
+    {
+     "title": "Harbiy tizim",
+     "paragraphs": [
+      "Qo‘shin o‘nlik, yuzlik, minglik va tumanlarga bo‘lingan. Har bir bo‘linma boshlig‘i o‘z askarlari uchun javobgar bo‘lgan, intizom va jangovar tayyorgarlikka katta e’tibor berilgan."
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Bunyodkorlik va madaniy meros",
+   "subsections": [
+    {
+     "title": "Samarqand me’morchiligi",
+     "paragraphs": [
+      "Amir Temur Samarqandni saltanat poytaxti sifatida obod qildi. Bibixonim jome masjidi, Go‘ri Amir maqbarasi, Shohizinda ansambli bu davr me’morchiligining yuksak namunalaridir.",
+      "Binolarda ko‘k va feruza rangli koshinlar, murakkab girih naqshlari va ulkan gumbazlar keng qo‘llangan. Bu uslub keyinchalik «temuriylar me’morchiligi» nomi bilan mashhur bo‘ldi."
+     ]
+    },
+    {
+     "title": "Asosiy obidalar",
+     "paragraphs": [
+      "Quyidagi jadvalda Amir Temur davrida bunyod etilgan eng muhim obidalar keltirilgan."
+     ],
+     "image": {
+      "query": "gur emir mausoleum",
+      "caption": "Go‘ri Amir maqbarasi"
+     },
+     "table": {
+      "caption": "Amir Temur davri obidalari",
+      "head": [
+       "Obida",
+       "Shahar",
+       "Qurilgan yili"
+      ],
+      "rows": [
+       [
+        "Oqsaroy",
+        "Shahrisabz",
+        "1380–1404"
+       ],
+       [
+        "Bibixonim masjidi",
+        "Samarqand",
+        "1399–1404"
+       ],
+       [
+        "Go‘ri Amir",
+        "Samarqand",
+        "1403–1404"
+       ],
+       [
+        "Ahmad Yassaviy maqbarasi",
+        "Turkiston",
+        "1389–1405"
+       ]
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "kind": "conclusion",
+   "title": "Xulosa",
+   "paragraphs": [
+    "Amir Temur davlati kuchli markaziy boshqaruv, aniq qonun-qoidalar va intizomli qo‘shinga tayangan. «Temur tuzuklari»da bayon etilgan adolat va maslahat tamoyillari bugungi kunda ham ahamiyatini yo‘qotmagan.",
+    "Bu davrda yaratilgan me’moriy obidalar jahon madaniyati xazinasidan munosib o‘rin olgan va O‘zbekistonning tarixiy merosi sifatida avaylab asralmoqda."
+   ]
+  }
+ ],
+ "references": [
+  "Temur tuzuklari / Tarjimon A. Sog‘uniy. — Toshkent: G‘afur G‘ulom, 1991. — 144 b.",
+  "Ahmedov B. Amir Temur. — Toshkent: Yozuvchi, 1996. — 304 b.",
+  "Muminov I. Amir Temurning O‘rta Osiyo tarixida tutgan o‘rni va roli. — Toshkent: Fan, 1993.",
+  "Manz B. F. The Rise and Rule of Tamerlane. — Cambridge University Press, 1989."
+ ]
+}

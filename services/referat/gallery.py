@@ -16,8 +16,13 @@ from services.referat import designs
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 BUNDLED = os.path.join(ROOT, "webapp", "referat", "thumbs")
-CACHE = os.path.join(ROOT, "storage", "gallery_cache", "referat_v1")
+CACHE = os.path.join(ROOT, "storage", "gallery_cache", "referat_v2")
 SAMPLE = os.path.join(ROOT, "assets", "referat_sample.json")
+SAMPLES = os.path.join(ROOT, "assets", "samples")
+# sample pictures drawn for each sample topic: (art style, icon)
+TOPIC_ART = {"photosynthesis": ("botanical", "leaf"), "timur": ("ikat", "landmark"), "heart": ("medical", "heart-pulse"),
+             "ai": ("circuit", "brain-circuit"), "startup": ("isometric", "rocket"), "navoi": ("ink", "feather"),
+             "climate": ("topo", "thermometer-sun"), "pedagogy": ("doodle", "graduation-cap")}
 PAGES = {1: 0, 4: 3}       # picture name -> PDF page index (title page, first chapter page)
 WIDTH = 620
 PAGE_SIZE = 10
@@ -30,8 +35,17 @@ def _sample_images(t: dict):
     p = t["palette"]
     pal = {"bg": p["soft"], "bg2": p["soft"], "primary": p["accent"], "secondary": p["accent2"], "accent": p["accent2"],
            "text": p["ink"], "muted": p["ink"], "ink": p["ink"], "surface": "#ffffff", "on_primary": "#ffffff"}
-    img = art_data_uri("botanical", pal, "leaf", "leaf", 800, 500)
-    return {"s1.0": img, "s2.1": img}, art_data_uri("botanical", pal, "leaf", "leaf", 1200, 700)
+    style, icon = TOPIC_ART.get(t.get("topic", ""), TOPIC_ART["photosynthesis"])
+    img = art_data_uri(style, pal, icon, icon, 800, 500)
+    img2 = art_data_uri(style, pal, icon, icon, 800, 500, seed=1)
+    return {"s1.0": img, "s2.1": img2}, art_data_uri(style, pal, icon, icon, 1200, 900, seed=2, badge=False)
+
+
+def sample_doc(t: dict) -> dict:
+    """The sample referat on the template's own topic (falls back to the photosynthesis one)."""
+    p = os.path.join(SAMPLES, f"referat_{t.get('topic', '')}.json")
+    with open(p if os.path.exists(p) else SAMPLE, encoding="utf-8") as f:
+        return json.load(f)
 
 
 def path(template_id: str, n: int) -> Optional[str]:
@@ -55,8 +69,7 @@ async def ensure(template_id: str) -> None:
             return
         from services.referat import render
         t = designs.get(template_id)
-        with open(SAMPLE, encoding="utf-8") as f:
-            doc = json.load(f)
+        doc = sample_doc(t)
         images, cover = _sample_images(t)
         tmp = tempfile.mkdtemp(prefix="refgal_")
         try:

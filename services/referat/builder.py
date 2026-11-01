@@ -98,8 +98,9 @@ async def render_files(saved: Dict[str, Any], storage_dir: str, want_docx: bool 
     imgs: Dict[str, Dict[str, Any]] = {k: v for k, v in (saved.get("images") or {}).items()
                                        if v.get("path") and os.path.exists(v["path"])}
     t = render.resolve_template(tid, style, doc.get("language", "uz"))
-    cover = imgs.get("cover", {}).get("src", "") if t["cover"] == "photo" else ""
-    if t["cover"] == "photo" and not cover:
+    has_photo = bool(t["layout"].get("photo"))
+    cover = imgs.get("cover", {}).get("src", "") if has_photo else ""
+    if has_photo and not cover:
         cover = _fallback_cover(t)
     srcs = {k: v["src"] for k, v in imgs.items() if k != "cover"}
     pdf = await render.html_to_pdf(render.build_html(doc, tid, srcs, cover, style), os.path.join(storage_dir, "referat.pdf"))
@@ -135,7 +136,7 @@ async def build_referat(data: Dict[str, Any], storage_dir: str, progress: Progre
         doc["meta"] = writer.build_meta(data)
     await tick("photos", 0, 1)
     try:
-        images = await _find_images(doc, need_cover=t["cover"] == "photo")
+        images = await _find_images(doc, need_cover=bool(t["layout"].get("photo")))
     except Exception:  # noqa: BLE001 - a referat without pictures is still a referat
         logger.exception("referat photos failed")
         images = {}
