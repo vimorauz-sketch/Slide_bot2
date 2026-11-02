@@ -361,7 +361,8 @@ async def process_webapp_choice(message: Message, state: FSMContext):
         payload, key = {}, message.web_app_data.data
     if isinstance(payload, dict) and payload.get("referat"):  # the referat templates Mini App
         from bot.handlers.referat import apply_template_choice as referat_choice
-        if not await referat_choice(message.bot, message.chat.id, state, str(payload["referat"])):
+        rstyle = {k: payload.get(k) for k in ("font_title", "font_body", "accent") if payload.get(k)}
+        if not await referat_choice(message.bot, message.chat.id, state, str(payload["referat"]), style=rstyle):
             await message.answer("⚠️ Shablon topilmadi, qaytadan tanlang.")
         return
     if not await apply_template_choice(message.bot, message.chat.id, state, key, style=style):
@@ -763,6 +764,10 @@ async def confirm_and_show_outline(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(PresentationForm.outline_review, F.data == "outline_regen")
 async def regenerate_outline(callback: CallbackQuery, state: FSMContext):
+    from services import guard
+    if not guard.ai_edit_allowed(callback.from_user.id):
+        await _safe_answer(callback, "⏳ Rejani juda ko‘p qayta yozdingiz. Birozdan so‘ng urinib ko‘ring.", show_alert=True)
+        return
     await _safe_answer(callback, "🔄 Yangi reja tuzilmoqda...")
     data = await state.get_data()
     await _make_outline(callback.message, state, previous=data.get("outline"))
@@ -783,6 +788,11 @@ async def ask_outline_changes(callback: CallbackQuery, state: FSMContext):
 
 @router.message(PresentationForm.outline_edit, F.text)
 async def apply_outline_changes(message: Message, state: FSMContext):
+    from services import guard
+    if not guard.ai_edit_allowed(message.from_user.id):
+        await message.answer("⏳ Rejani juda ko‘p o‘zgartirdingiz. Biroz kutib, keyin qayta yozing "
+                             "yoki «✅ Reja yaxshi» tugmasini bosing.")
+        return
     data = await state.get_data()
     wait = await message.answer("🧠 Reja yangilanmoqda...")
     await _make_outline(message, state, feedback=_clean(message.text), previous=data.get("outline"))
@@ -802,6 +812,22 @@ def _order_content(result, data) -> Optional[str]:
 
 
 async def _build_and_send(message: Message, user_id: int, state: FSMContext, back_state) -> None:
+    """One build per user at a time, a few per hour (services/guard.py) — a second press, or a new
+    wizard started from the menu while the first deck is still being made, is refused."""
+    from services import guard
+    refused = guard.start_build(user_id, "pres")
+    if refused:
+        await message.answer(refused, parse_mode="HTML")
+        if await _state_is(state, PresentationForm.generating):
+            await state.set_state(back_state)
+        return
+    try:
+        await _build_and_send_now(message, user_id, state, back_state)
+    finally:
+        guard.finish_build(user_id)
+
+
+async def _build_and_send_now(message: Message, user_id: int, state: FSMContext, back_state) -> None:
     """Makes the deck (reusing text written in the background when the answers still match),
     shows an animated progress bar, sends the previews and the payment buttons; the PDF and PPTX
     are finished in the background."""

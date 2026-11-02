@@ -137,7 +137,8 @@ async def webapp_select_handler(request: web.Request) -> web.Response:
     state = dp.fsm.get_context(bot=bot, chat_id=user_id, user_id=user_id)
     if body.get("referat"):  # the referat templates Mini App
         from bot.handlers.referat import apply_template_choice as referat_choice
-        ok = await referat_choice(bot, user_id, state, str(body["referat"]))
+        rstyle = {k: body.get(k) for k in ("font_title", "font_body", "accent") if body.get(k)}
+        ok = await referat_choice(bot, user_id, state, str(body["referat"]), style=rstyle)
         return web.json_response({"ok": ok}, status=200 if ok else 404)
     style = {k: body.get(k) for k in ("font_title", "font_body", "text_color") if body.get(k)}
     ok = await apply_template_choice(bot, user_id, state, str(body.get("theme", "")), style=style)
@@ -259,6 +260,27 @@ async def referat_index_handler(request: web.Request) -> web.StreamResponse:
     return web.Response(text=html, content_type="text/html", headers={"Cache-Control": "no-cache"})
 
 
+async def referat_styled_handler(request: web.Request) -> web.StreamResponse:
+    """Title page of a referat template in the fonts / colour chosen in the Mini App."""
+    from services.referat import designs, gallery as rgallery
+    tid = request.match_info["tid"]
+    q = request.query
+    style = designs.clean_style({"font_title": q.get("ft"), "font_body": q.get("fb"), "accent": q.get("c")})
+    if tid not in designs.BY_ID or not style:
+        raise web.HTTPNotFound()
+    _check_rate(request)
+    path = await rgallery.styled_path(tid, style)
+    if not path:
+        raise web.HTTPNotFound()
+    return web.FileResponse(path, headers={"Cache-Control": "public, max-age=604800", "Content-Type": "image/jpeg"})
+
+
+async def referat_accents_handler(request: web.Request) -> web.Response:
+    from services.referat import designs
+    return web.json_response({"accents": [{"emoji": e, "name": n, "hex": h} for e, n, h in designs.ACCENTS]},
+                             headers={"Cache-Control": "public, max-age=3600"})
+
+
 async def referat_page_handler(request: web.Request) -> web.StreamResponse:
     """Title page (1) or inner page (4) of a referat template."""
     from services.referat import designs, gallery as rgallery
@@ -332,7 +354,9 @@ def create_webhook_app(bot=None, dp=None) -> web.Application:
             app.router.add_static("/webapp/fonts/", str(_LIB_DIR), show_index=False)
         app.router.add_get("/webapp/referat", referat_index_handler)
         app.router.add_get("/webapp/referat/", referat_index_handler)
-        app.router.add_get(r"/webapp/referat/page/{tid:r\d{2}}_{n:\d}.jpg", referat_page_handler)
+        app.router.add_get(r"/webapp/referat/page/{tid:r\d{2,3}}_{n:\d}.jpg", referat_page_handler)
+        app.router.add_get(r"/webapp/referat/styled/{tid:r\d{2,3}}.jpg", referat_styled_handler)
+        app.router.add_get("/webapp/referat/api/accents", referat_accents_handler)
         app.router.add_static("/webapp/", WEBAPP_DIR, show_index=False)
     app.router.add_get("/health", health_handler)
     app.router.add_get("/", health_handler)

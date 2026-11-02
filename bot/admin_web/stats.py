@@ -51,7 +51,9 @@ async def overview(period: str = "7") -> Dict[str, Any]:
                                     )).all()
         created = (await s.execute(select(PresentationOrder.created_at, PresentationOrder.status,
                                           PresentationOrder.template_id, PresentationOrder.subject,
-                                          PresentationOrder.user_id, PresentationOrder.paid_by)
+                                          PresentationOrder.user_id, PresentationOrder.paid_by,
+                                          PresentationOrder.kind, PresentationOrder.paid_amount,
+                                          PresentationOrder.total_price)
                                    .where(PresentationOrder.created_at >= min(prev_start, now - timedelta(days=30))))).all()
         referred = (await s.execute(select(func.count()).select_from(User).where(
             User.referred_by.isnot(None), User.created_at >= start))).scalar() or 0
@@ -106,7 +108,26 @@ async def overview(period: str = "7") -> Dict[str, Any]:
     in_period = [r for r in created if in_range(r[0], start, now + timedelta(1))]
     status_counts = Counter(r[1] for r in in_period)
     month = [r for r in created if r[0] and r[0] >= now - timedelta(days=30)]
-    top_templates = Counter(r[2] for r in month if r[2]).most_common(5)
+    top_templates = Counter(r[2] for r in month if r[2] and (r[6] or "pres") != "referat").most_common(5)
+    top_referat = Counter(r[2] for r in month if r[2] and r[6] == "referat").most_common(5)
+
+    # presentations and referats side by side (orders made in the period)
+    kinds = {}
+    for k in ("pres", "referat"):
+        rows_k = [r for r in in_period if (r[6] or "pres") == k]
+        sold = [r for r in rows_k if r[1] == "PAID" and r[5] not in FREE_PAID_BY]
+        kinds[k] = {"made": len(rows_k), "paid": len(sold),
+                    "free": sum(1 for r in rows_k if r[1] == "PAID" and r[5] in ("TRIAL", "BONUS")),
+                    "revenue": sum(int(r[7] if r[7] is not None else r[8] or 0) for r in sold)}
+    k_total = (kinds["pres"]["revenue"] + kinds["referat"]["revenue"]) or 1
+    for k in kinds:
+        kinds[k]["share"] = round(100 * kinds[k]["revenue"] / k_total)
+        kinds[k]["conv"] = round(100 * kinds[k]["paid"] / kinds[k]["made"]) if kinds[k]["made"] else 0
+
+    # when people use the bot: orders by hour of the day (Tashkent time) over the last 7 days
+    week = [r for r in created if r[0] and r[0] >= now - timedelta(days=7)]
+    hours = Counter(((r[0] + TZ).hour) for r in week)
+    hourly = [hours.get(h, 0) for h in range(24)]
     top_subjects = Counter((r[3] or "—").strip().title() for r in month).most_common(6)
     users_with_order = len({r[4] for r in in_period})
     return {
@@ -127,7 +148,8 @@ async def overview(period: str = "7") -> Dict[str, Any]:
             "WAITING_PAYMENT": status_counts.get("WAITING_PAYMENT", 0),
             "CANCELLED": status_counts.get("CANCELLED", 0) + status_counts.get("REFUNDED", 0),
         },
-        "top_templates": top_templates, "top_subjects": top_subjects,
+        "top_templates": top_templates, "top_subjects": top_subjects, "top_referat": top_referat,
+        "kinds": kinds, "hourly": hourly,
         # each step is a subset of the previous one: everyone who made a preview was active, and so on
         "funnel": [("Botdan foydalanganlar", len(active_ids | {r[4] for r in in_period})),
                    ("Namuna yaratganlar", users_with_order),

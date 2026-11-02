@@ -23,7 +23,7 @@ from services.deck import fonts
 # Word names of library fonts that have a standard Windows twin with the same metrics
 WINDOWS_TWINS = {"g:tinos": "Times New Roman", "g:arimo": "Arial"}
 
-ALIGN = {"center": WD_ALIGN_PARAGRAPH.CENTER, "left": WD_ALIGN_PARAGRAPH.LEFT}
+ALIGN = {"center": WD_ALIGN_PARAGRAPH.CENTER, "left": WD_ALIGN_PARAGRAPH.LEFT, "right": WD_ALIGN_PARAGRAPH.RIGHT}
 
 
 def word_font(font_id: str) -> str:
@@ -212,6 +212,8 @@ def build_docx(path: str, vm: Dict[str, Any], template: Dict[str, Any], cover_ba
     ink = "#FFFFFF" if light else p["ink"]
     accent = "#FFFFFF" if light else p["accent"]
     kind_color = p["accent2"] if light else (p["ink"] if t["cover"] == "magazine" else p["accent"])
+    if g.get("kind_on"):
+        kind_color = "#FFFFFF"
     c0, c1, c2, c3 = (r.cells[0] for r in table.rows)
     c0.paragraphs[0].text = ""
     if m.get("ministry"):
@@ -231,7 +233,8 @@ def build_docx(path: str, vm: Dict[str, Any], template: Dict[str, Any], cover_ba
         _set_font(sp.add_run(f"{L['subject']}: "), bf, 13, color=ink)
         _set_font(sp.add_run(m["subject"]), bf, 13, bold=True, color=accent)
     _para(c1, f"{L['topic']}:".upper(), font=bf, size=12, bold=True, color=accent, align=align, before=14, spacing=1)
-    script = t["fonts"]["title"] in ("g:greatvibes", "g:dancingscript", "g:cookie", "g:parisienne")
+    from services.referat.render import SCRIPT_FONTS
+    script = t["fonts"]["title"] in SCRIPT_FONTS
     _para(c1, f"«{m.get('topic', '')}»", font=bf if script else tf, size={"minimal": 26, "magazine": 24}.get(t["cover"], 19), bold=True,
           color=ink, align=align, before=4, line=1.2)
     _delete_first_empty(c1)
@@ -248,7 +251,8 @@ def build_docx(path: str, vm: Dict[str, Any], template: Dict[str, Any], cover_ba
     _delete_first_empty(c2)
     city = " – ".join(x for x in (m.get("city"), m.get("year")) if x)
     city_color = "#FFFFFF" if (light or g.get("city_tone") == "light") else p["ink"]
-    cp = _para(c3, city, font=bf, size=12.5, bold=True, color=city_color, align=align)
+    cp = _para(c3, city, font=bf, size=12.5, bold=True, color=city_color,
+               align=ALIGN.get(g.get("city_align") or g["align"], align))
     _delete_first_empty(c3)
     if cover_background:  # anchored to the page, so it can live in any paragraph of the title page
         run = cp.add_run()
@@ -273,7 +277,9 @@ def build_docx(path: str, vm: Dict[str, Any], template: Dict[str, Any], cover_ba
 
     heading_style = t["heading"]
     h_align = WD_ALIGN_PARAGRAPH.CENTER if heading_style in ("caps", "rule") else WD_ALIGN_PARAGRAPH.LEFT
-    h_color = {"caps": p["ink"], "marker": p["ink"], "pill": "#FFFFFF", "block": "#FFFFFF"}.get(heading_style, p["accent"])
+    h_color = {"caps": p["ink"], "marker": p["ink"], "pill": "#FFFFFF", "block": "#FFFFFF", "tag": "#FFFFFF"}.get(heading_style, p["accent"])
+    if heading_style == "frame":
+        h_align = WD_ALIGN_PARAGRAPH.CENTER
 
     def heading(text: str, level: int, page_break: bool):
         hp = doc.add_paragraph()
@@ -289,8 +295,16 @@ def build_docx(path: str, vm: Dict[str, Any], template: Dict[str, Any], cover_ba
                   color=h_color if level == 1 else (p["ink"] if heading_style in ("caps", "marker") else p["accent"]))
         if level == 1 and heading_style in ("box", "marker"):
             _para_shade(hp, p["soft"])
-        if level == 1 and heading_style in ("pill", "block"):
+        if level == 1 and heading_style in ("pill", "block", "tag"):
             _para_shade(hp, p["accent"])
+        if level == 1 and heading_style == "shadow":
+            _para_shade(hp, p["soft"])
+            _para_border(hp, "right", p["accent2"])
+        if level == 1 and heading_style == "frame":
+            for side in ("top", "left", "bottom", "right"):
+                _para_border(hp, side, p["accent"])
+        if level == 1 and heading_style == "dotline":
+            _para_border(hp, "bottom", p["accent2"], val="dotted")
         if level == 1 and heading_style in ("bar", "underline", "overline", "numbig"):
             side = {"bar": "left", "underline": "bottom", "overline": "top", "numbig": "bottom"}[heading_style]
             _para_border(hp, side, p["accent2"] if heading_style in ("underline", "numbig") else p["accent"])
@@ -381,13 +395,31 @@ def _delete_first_empty(cell) -> None:
         ps[0]._p.getparent().remove(ps[0]._p)
 
 
+_PPR_ORDER = ("w:pStyle", "w:keepNext", "w:keepLines", "w:pageBreakBefore", "w:framePr", "w:widowControl", "w:numPr",
+              "w:suppressLineNumbers", "w:pBdr", "w:shd", "w:tabs", "w:suppressAutoHyphens", "w:kinsoku", "w:wordWrap",
+              "w:overflowPunct", "w:topLinePunct", "w:autoSpaceDE", "w:autoSpaceDN", "w:bidi", "w:adjustRightInd",
+              "w:snapToGrid", "w:spacing", "w:ind", "w:contextualSpacing", "w:mirrorIndents", "w:suppressOverlap", "w:jc",
+              "w:textDirection", "w:textAlignment", "w:textboxTightWrap", "w:outlineLvl", "w:divId", "w:cnfStyle",
+              "w:rPr", "w:sectPr", "w:pPrChange")
+
+
+def _place(ppr, el, tag: str) -> None:
+    """Puts a w:pPr child where the schema wants it (Word rejects files with children out of order)."""
+    seq = _PPR_ORDER
+    after = seq[seq.index(tag) + 1:]
+    ppr.insert_element_before(el, *after)
+
+
 def _para_shade(paragraph, hex_: str) -> None:
     ppr = paragraph._p.get_or_add_pPr()
+    old = ppr.find(qn("w:shd"))
+    if old is not None:
+        ppr.remove(old)
     shd = OxmlElement("w:shd")
     shd.set(qn("w:val"), "clear")
     shd.set(qn("w:color"), "auto")
     shd.set(qn("w:fill"), hex_.lstrip("#"))
-    ppr.append(shd)
+    _place(ppr, shd, "w:shd")
 
 
 def _page_decor(section, kind: str, p: Dict[str, str]) -> None:
@@ -395,7 +427,9 @@ def _page_decor(section, kind: str, p: Dict[str, str]) -> None:
     sides = {"band_top": {"top": (96, p["accent"])}, "band_bottom": {"bottom": (96, p["accent"])},
              "side_band": {"left": (96, p["accent"])}, "side_line": {"left": (6, p["accent2"])},
              "frame": {s: (6, p["accent"]) for s in ("top", "left", "bottom", "right")},
-             "corners": {s: (4, p["accent2"]) for s in ("top", "left", "bottom", "right")}}.get(kind)
+             "corners": {s: (4, p["accent2"]) for s in ("top", "left", "bottom", "right")},
+             "double_rule": {"top": (12, p["accent"], "double")}, "bottom_rule": {"bottom": (6, p["accent"])},
+             "side_dots": {"left": (12, p["accent2"], "dotted")}, "corner_tri": {"top": (24, p["accent"])}}.get(kind)
     if not sides:
         return
     sect = section._sectPr
@@ -403,9 +437,9 @@ def _page_decor(section, kind: str, p: Dict[str, str]) -> None:
     bdr.set(qn("w:offsetFrom"), "page")
     for side in ("top", "left", "bottom", "right"):
         if side in sides:
-            sz, color = sides[side]
+            sz, color, *style = sides[side]
             el = OxmlElement(f"w:{side}")
-            el.set(qn("w:val"), "single")
+            el.set(qn("w:val"), style[0] if style else "single")
             el.set(qn("w:sz"), str(sz))
             el.set(qn("w:space"), "24" if sz < 50 else "0")
             el.set(qn("w:color"), color.lstrip("#"))
@@ -418,13 +452,24 @@ def _page_decor(section, kind: str, p: Dict[str, str]) -> None:
         sect.append(bdr)
 
 
-def _para_border(paragraph, side: str, hex_: str) -> None:
+def _para_border(paragraph, side: str, hex_: str, val: str = "single") -> None:
     ppr = paragraph._p.get_or_add_pPr()
-    bdr = OxmlElement("w:pBdr")
+    bdr = ppr.find(qn("w:pBdr"))
+    if bdr is None:
+        bdr = OxmlElement("w:pBdr")
     el = OxmlElement(f"w:{side}")
-    el.set(qn("w:val"), "single")
+    el.set(qn("w:val"), val)
     el.set(qn("w:sz"), "24" if side == "left" else "12")
     el.set(qn("w:space"), "8" if side == "left" else "4")
     el.set(qn("w:color"), hex_.lstrip("#"))
+    order = ("top", "left", "bottom", "right")
+    for other in list(bdr):  # children must stay in the schema order: top, left, bottom, right
+        if other.tag.endswith("}" + side):
+            bdr.remove(other)
     bdr.append(el)
-    ppr.append(bdr)
+    for name in order:
+        for child in [c for c in bdr if c.tag.endswith("}" + name)]:
+            bdr.remove(child)
+            bdr.append(child)
+    if bdr.getparent() is None:
+        _place(ppr, bdr, "w:pBdr")

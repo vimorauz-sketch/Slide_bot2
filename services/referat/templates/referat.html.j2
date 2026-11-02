@@ -56,6 +56,20 @@
     linear-gradient(var(--accent), var(--accent)) no-repeat 14mm 12mm / .8mm 12mm; }
   @bottom-right-corner { content: ""; background: linear-gradient(var(--accent), var(--accent)) no-repeat calc(100% - 9mm) calc(100% - 12mm) / 12mm .8mm,
     linear-gradient(var(--accent), var(--accent)) no-repeat calc(100% - 9mm) calc(100% - 23.2mm) / .8mm 12mm; }
+  {% elif t.page == 'double_rule' %}
+  {% set dr = "linear-gradient(transparent 11.5mm, var(--accent) 11.5mm 12.3mm, transparent 12.3mm 13.6mm, var(--accent2) 13.6mm 14mm, transparent 14mm)" %}
+  @top-left-corner { {{ box(dr) }} } @top-left { {{ box(dr) }} } @top-center { {{ box(dr) }} } @top-right-corner { {{ box(dr) }} }
+  {% if not running %}@top-right { {{ box(dr) }} }{% else %}@top-right { background: {{ dr }}; }{% endif %}
+  {% elif t.page == 'corner_tri' %}
+  @top-right-corner { content: ""; background: linear-gradient(225deg, var(--accent) 0 34%, transparent 34%); }
+  @bottom-left-corner { content: ""; background: linear-gradient(45deg, var(--accent2) 0 30%, transparent 30%); }
+  {% elif t.page == 'side_dots' %}
+  {% set sd = "radial-gradient(circle, var(--accent2) .55mm, transparent .65mm) 17mm 0 / 4mm 6mm repeat-y" %}
+  @left-top { {{ box(sd) }} } @left-middle { {{ box(sd) }} } @left-bottom { {{ box(sd) }} }
+  {% elif t.page == 'bottom_rule' %}
+  {% set br = "linear-gradient(transparent 4mm, var(--accent) 4mm 4.6mm, transparent 4.6mm)" %}
+  @bottom-left-corner { {{ box(br) }} } @bottom-left { {{ box(br) }} } @bottom-right { {{ box(br) }} } @bottom-right-corner { {{ box(br) }} }
+  @bottom-center { content: counter(page); background: {{ br }}; }
   {% endif %}
 }
 @page cover { margin: 0;
@@ -112,6 +126,7 @@ body { font-family: var(--font-body); font-size: var(--body-size); line-height: 
 .L-notebook .topic, .L-notebook .kind { font-family: var(--font-title); }
 .L-band .kind, .L-book .kind, .L-stripes_v .kind, .L-timeline .kind, .L-side_photo .kind { letter-spacing: .06em; }
 .L-card .kind { font-size: 30pt; }
+.K-on .cv .kind { color: #fff; }
 
 /* ------------------------------------------------------------ inner pages */
 .page-break { break-before: page; }
@@ -152,6 +167,16 @@ h1 .n { display: none; }
 .H-block h1 .n { display: flex; align-items: center; background: var(--accent); color: #fff; padding: 1.5mm 4mm; margin-right: 4mm; }
 .H-block h1 .t { padding: 1.5mm 0; }
 .H-block h2 .n { color: #fff; background: var(--accent2); padding: 0 1.8mm; }
+.H-tag h1 { display: table; background: var(--accent); color: #fff; padding: 2mm 9mm 2mm 5mm; font-size: 15pt;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 4.5mm) 50%, 100% 100%, 0 100%); }
+.H-tag h2 { border-left: 2.4mm solid var(--accent2); padding-left: 2.5mm; }
+.H-dotline h1 { display: flex; align-items: baseline; gap: 3mm; }
+.H-dotline h1::after { content: ""; flex: 1; border-bottom: .6mm dotted var(--accent2); min-width: 10mm; }
+.H-dotline h2 { color: var(--ink); } .H-dotline h2 .n { color: var(--accent); }
+.H-frame h1 { border: .5mm solid var(--accent); padding: 2.5mm 4mm; text-align: center; }
+.H-frame h2 { border-bottom: .3mm solid var(--accent2); padding-bottom: 1mm; }
+.H-shadow h1 { background: var(--soft); padding: 2.5mm 5mm; box-shadow: 1.8mm 1.8mm 0 var(--accent2); margin-right: 2mm; }
+.H-shadow h2 .n { color: var(--accent2); }
 
 /* plan */
 .plan-title { text-align: center; font-size: 16pt; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8mm; }
@@ -175,7 +200,7 @@ ol.refs li { margin-bottom: 2mm; text-align: justify; }
 </head>
 <body class="H-{{ t.heading }}">
 
-<section class="cover L-{{ t.cover }} T-{{ g.tone }}{% if g.city_tone == 'light' %} C-light{% endif %}">
+<section class="cover L-{{ t.cover }}{% if g.kind_on %} K-on{% endif %} T-{{ g.tone }}{% if g.city_tone == 'light' %} C-light{% endif %}">
   {% if g.photo and cover_photo %}<img class="photo ph-{{ g.photo }}" src="{{ cover_photo }}">{% if g.photo == 'top' %}<div class="photo-shade"></div>{% endif %}{% endif %}
   {{ decor | safe }}
   <div class="cv">
@@ -196,7 +221,8 @@ ol.refs li { margin-bottom: 2mm; text-align: justify; }
       {% if m.group %}<div class="row"><span class="k">{{ m.group_label or L.group }}:</span><span>{{ m.group }}</span></div>{% endif %}
       {% if m.teacher %}<div class="row"><span class="k">{{ L.teacher }}:</span><span>{{ m.teacher }}</span></div>{% endif %}
     </div>
-    <div class="city" style="{% if g.align == 'left' %}left:{{ g.left }}mm;right:{{ g.right }}mm{% else %}left:0;right:0{% endif %};bottom:{{ g.city }}mm;text-align:{{ g.align }}">{{ m.city }}{% if m.city and m.year %} – {% endif %}{{ m.year }}</div>
+    {% set ca = g.city_align or g.align %}
+    <div class="city" style="{% if ca != 'center' %}left:{{ g.left }}mm;right:{{ g.right }}mm{% else %}left:0;right:0{% endif %};bottom:{{ g.city }}mm;text-align:{{ ca }}">{{ m.city }}{% if m.city and m.year %} – {% endif %}{{ m.year }}</div>
   </div>
 </section>
 

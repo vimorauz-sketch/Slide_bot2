@@ -110,3 +110,82 @@ async def may_prefetch(user_id: int) -> bool:
     except Exception:  # noqa: BLE001
         return False
     return paid > 0
+
+
+# ---------------------------------------------------------------- one build at a time per user
+# A user could press «create» again from the main menu while the first deck/referat was still being
+# built and start several expensive builds at once. Each user may now run one build at a time and
+# start at most max_builds_per_hour per hour; AI plan rewrites have their own hourly limit.
+import time as _time  # noqa: E402
+from collections import deque as _deque  # noqa: E402
+from typing import Deque, Dict  # noqa: E402
+
+_active: Dict[int, str] = {}                 # user -> "pres" / "referat"
+_starts: Dict[int, Deque[float]] = {}        # user -> monotonic times of recent build starts
+_edits: Dict[int, Deque[float]] = {}         # user -> monotonic times of recent AI plan rewrites
+HOUR = 3600.0
+BUSY_TEXT = ("⏳ <b>Oldingi buyurtmangiz hali tayyorlanmoqda.</b>\n\n"
+             "U tayyor bo‘lishi bilan shu yerga keladi — keyin yangisini boshlashingiz mumkin.")
+
+
+def _recent(store: Dict[int, Deque[float]], user_id: int, now: float) -> Deque[float]:
+    q = store.setdefault(user_id, _deque())
+    while q and now - q[0] > HOUR:
+        q.popleft()
+    if not q and len(store) > 20000:   # keep memory bounded
+        store.clear()
+        q = store.setdefault(user_id, _deque())
+    return q
+
+
+def start_build(user_id: int, kind: str = "pres", clock=_time.monotonic) -> Optional[str]:
+    """None when the user may start a build now (and it is now marked as running), else the text
+    to show. Every successful call must be followed by finish_build()."""
+    if runtime.is_admin(user_id):
+        _active[user_id] = kind
+        return None
+    if user_id in _active:
+        return BUSY_TEXT
+    now = clock()
+    q = _recent(_starts, user_id, now)
+    limit = runtime.get_int("max_builds_per_hour", 6)
+    if limit > 0 and len(q) >= limit:
+        wait = max(1, int((HOUR - (now - q[0])) // 60) + 1)
+        return (f"⏳ <b>Bir soatda {limit} tadan ko‘p buyurtma berib bo‘lmaydi.</b>\n\n"
+                f"Taxminan {wait} daqiqadan so‘ng yana urinib ko‘ring.")
+    q.append(now)
+    _active[user_id] = kind
+    return None
+
+
+def finish_build(user_id: int) -> None:
+    _active.pop(user_id, None)
+
+
+def building(user_id: int) -> bool:
+    return user_id in _active
+
+
+def active_builds() -> Dict[int, str]:
+    return dict(_active)
+
+
+def ai_edit_allowed(user_id: int, clock=_time.monotonic) -> bool:
+    """Plan rewrites and edits (each one is an AI request) per user per hour."""
+    if runtime.is_admin(user_id):
+        return True
+    limit = runtime.get_int("max_ai_edits_per_hour", 15)
+    if limit <= 0:
+        return True
+    now = clock()
+    q = _recent(_edits, user_id, now)
+    if len(q) >= limit:
+        return False
+    q.append(now)
+    return True
+
+
+def reset_user(user_id: int) -> None:
+    """Dashboard: clears the hourly counters of one user."""
+    _starts.pop(user_id, None)
+    _edits.pop(user_id, None)

@@ -121,8 +121,22 @@ def pay_chip(t) -> Markup:
     return Markup(f'<span class="chip {cls}"><span class="dot"></span>{escape(label)}</span>')
 
 
+def _referat_template(template_id: str):
+    if not (template_id or "").startswith("r") or not template_id[1:].isdigit():
+        return None
+    try:
+        from services.referat import designs
+        return designs.BY_ID.get(template_id)
+    except Exception:  # noqa: BLE001
+        return None
+
+
 @lru_cache(maxsize=512)
 def template_colors(template_id: str) -> Dict[str, str]:
+    rt = _referat_template(template_id)
+    if rt is not None:
+        p = rt["palette"]
+        return {"bg": p.get("soft", "#F5F6FB"), "fg": p["ink"], "ac": p["accent"], "referat": "1"}
     try:
         from services.deck import themes
         p = themes.get_theme(template_id or "").get("palette", {})
@@ -135,6 +149,9 @@ def template_colors(template_id: str) -> Dict[str, str]:
 def template_name(template_id: str) -> str:
     if not template_id or template_id == "custom_ai":
         return "AI maxsus dizayn"
+    rt = _referat_template(template_id)
+    if rt is not None:
+        return f"{rt['code']} · {rt['name']}"
     try:
         from services.deck import themes
         t = themes.get_theme(template_id)
@@ -145,6 +162,13 @@ def template_name(template_id: str) -> str:
 
 def thumb(o) -> Markup:
     c = template_colors(getattr(o, "template_id", "") or "")
+    if c.get("referat") or getattr(o, "kind", "") == "referat":   # a little A4 page
+        return Markup(
+            f'<span class="thumb thumb-a4" aria-hidden="true" style="background:#fff;box-shadow:inset 0 0 0 1px #E3E6F0">'
+            f'<i style="left:4px;top:4px;right:4px;height:5px;background:{escape(c["ac"])}"></i>'
+            f'<i style="left:6px;top:13px;width:10px;height:2px;background:{escape(c["fg"])}"></i>'
+            f'<i style="left:5px;top:18px;width:12px;height:1.5px;background:{escape(c["fg"])};opacity:.5"></i>'
+            f'<i style="left:5px;top:22px;width:12px;height:1.5px;background:{escape(c["fg"])};opacity:.5"></i></span>')
     return Markup(
         f'<span class="thumb" aria-hidden="true" style="background:{escape(c["bg"])}">'
         f'<i style="left:6px;top:8px;width:20px;height:3px;background:{escape(c["fg"])}"></i>'
@@ -152,6 +176,13 @@ def thumb(o) -> Markup:
         f'<i style="right:5px;top:5px;width:14px;height:20px;border-radius:3px;background:{escape(c["ac"])}"></i></span>')
 
 
+def kind_chip(o) -> Markup:
+    if getattr(o, "kind", "") == "referat":
+        return Markup('<span class="chip c-kind-r">📄 Referat</span>')
+    return Markup('<span class="chip c-kind-p">🖥 Taqdimot</span>')
+
+
+_env.globals.update(kind_chip=kind_chip)
 _env.globals.update(money=money, dt=dt, iso=iso, ago=ago, initials=initials, avatar_color=avatar_color,
                     status_chip=status_chip, user_chip=user_chip, pay_chip=pay_chip, thumb=thumb,
                     lang_name=lambda c: LANGS.get(c or "", c or "—"))
@@ -186,6 +217,14 @@ async def _nav_waiting() -> int:
                                 .where(PresentationOrder.status == "WAITING_PAYMENT"))).scalar() or 0
 
 
+def _banned_count() -> int:
+    try:
+        from bot.middlewares import throttling
+        return throttling.banned_now()
+    except Exception:  # noqa: BLE001
+        return 0
+
+
 async def render(request, name: str, active: str, **ctx) -> web.Response:
     sess = request.get("admin") or {}
     building, _, _ = _builds()
@@ -194,7 +233,7 @@ async def render(request, name: str, active: str, **ctx) -> web.Response:
         "maintenance": runtime.get_bool("maintenance"), "nav_waiting": await _nav_waiting(),
         "uptime": _uptime(), "building": building,
         "flash": request.query.get("ok") or request.query.get("err"), "flash_err": bool(request.query.get("err")),
-        "pay_banner": _pay_banner(),
+        "pay_banner": _pay_banner(), "nav_banned": _banned_count(),
     }
     base.update(ctx)
     html = _env.get_template(name).render(**base)
@@ -358,6 +397,10 @@ async def dashboard(request: web.Request) -> web.Response:
         acc += ln
     tmax = s["top_templates"][0][1] if s["top_templates"] else 1
     templates = [{"name": template_name(t), "n": n, "w": round(n / tmax * 100), **template_colors(t)} for t, n in s["top_templates"]]
+    rmax = s["top_referat"][0][1] if s["top_referat"] else 1
+    rtemplates = [{"name": template_name(t), "n": n, "w": round(n / rmax * 100), **template_colors(t)} for t, n in s["top_referat"]]
+    hour_max_val = max(s["hourly"]) if s["hourly"] else 0
+    peak_hour = f"{s['hourly'].index(hour_max_val):02d}:00–{(s['hourly'].index(hour_max_val) + 1) % 24:02d}:00" if hour_max_val else "—"
     smax = s["top_subjects"][0][1] if s["top_subjects"] else 1
     scol = ["#6E7BFF", "#F59E0B", "#10B981", "#EC4899", "#0EA5E9", "#8B5CF6"]
     subjects = [{"name": n[:14], "n": c, "h": max(6, round(c / smax * 82)), "color": scol[i % 6]} for i, (n, c) in enumerate(s["top_subjects"])]
@@ -376,6 +419,7 @@ async def dashboard(request: web.Request) -> web.Response:
     greeting = "Xayrli tong" if 5 <= hour < 12 else "Xayrli kun" if hour < 18 else "Xayrli kech"
     return await render(request, "dashboard.html", "home", s=s, kpis=kpis, chart=chart, yticks=yticks, xlabels=xlabels,
                         donut=donut, donut_total=total, templates=templates, subjects=subjects, funnel=funnel,
+                        rtemplates=rtemplates, hour_max=max(1, hour_max_val), hour_max_val=hour_max_val, peak_hour=peak_hour,
                         recent=recent, greeting=greeting, now=stats.local_now().strftime("%d.%m.%Y %H:%M"),
                         periods=[(k, v[0]) for k, v in stats.PERIODS.items()],
                         conv_dash=f"{max(0.0, min(1.0, s['conversion'] / 100)) * 2 * math.pi * 48:.1f} 302")
@@ -387,8 +431,22 @@ ORDER_FILTERS = [("all", "Barchasi", None), ("prev", "Namuna", ("PREVIEW_READY",
                  ("canc", "Bekor", ("CANCELLED", "REFUNDED"))]
 
 
-def _order_conditions(f: str, q: str):
+KIND_FILTERS = [("", "Hammasi"), ("pres", "🖥 Taqdimot"), ("referat", "📄 Referat")]
+
+
+def _kind_condition(k: str):
+    if k == "referat":
+        return PresentationOrder.kind == "referat"
+    if k == "pres":
+        return or_(PresentationOrder.kind.is_(None), PresentationOrder.kind != "referat")
+    return None
+
+
+def _order_conditions(f: str, q: str, k: str = ""):
     conds = []
+    kc = _kind_condition(k)
+    if kc is not None:
+        conds.append(kc)
     statuses = dict((k, v) for k, _, v in ORDER_FILTERS).get(f)
     if statuses:
         conds.append(PresentationOrder.status.in_(statuses))
@@ -409,7 +467,9 @@ async def orders_page(request: web.Request) -> web.Response:
     page = int(request.query.get("page", "1")) if request.query.get("page", "1").isdigit() else 1
     page = max(1, page)
     oid = request.query.get("o", "")
-    conds = _order_conditions(f, q)
+    k = request.query.get("k", "")
+    k = k if k in ("pres", "referat") else ""
+    conds = _order_conditions(f, q, k)
     base = select(PresentationOrder, User.full_name, User.username).join(
         User, User.telegram_id == PresentationOrder.user_id, isouter=True)
     async with AsyncSessionLocal() as db:
@@ -420,14 +480,25 @@ async def orders_page(request: web.Request) -> web.Response:
         rows = (await db.execute(base.where(*conds).order_by(PresentationOrder.created_at.desc())
                                  .offset((page - 1) * PAGE).limit(PAGE))).all()
         counts = {}
+        kc = _kind_condition(k)
         for key, _, st in ORDER_FILTERS:
             cq = select(func.count()).select_from(PresentationOrder)
             if st:
                 cq = cq.where(PresentationOrder.status.in_(st))
+            if kc is not None:
+                cq = cq.where(kc)
             counts[key] = (await db.execute(cq)).scalar() or 0
+        kind_counts = {}
+        for key, _ in KIND_FILTERS:
+            cq = select(func.count()).select_from(PresentationOrder)
+            kcond = _kind_condition(key)
+            if kcond is not None:
+                cq = cq.where(kcond)
+            kind_counts[key] = (await db.execute(cq)).scalar() or 0
         month_rev = (await db.execute(select(func.coalesce(func.sum(func.coalesce(PresentationOrder.paid_amount, PresentationOrder.total_price)), 0))
                                       .where(PresentationOrder.status == "PAID",
-                                             PresentationOrder.paid_at >= datetime.utcnow() - timedelta(days=30)))).scalar() or 0
+                                             PresentationOrder.paid_at >= datetime.utcnow() - timedelta(days=30),
+                                             *([kc] if kc is not None else [])))).scalar() or 0
         sel = sel_user = None
         if oid:
             r = (await db.execute(base.where(PresentationOrder.id == oid))).first()
@@ -445,7 +516,7 @@ async def orders_page(request: web.Request) -> web.Response:
     if sel is not None:
         d = os.path.dirname(sel.pdf_path or sel.pptx_path or "") or os.path.join(ROOT, "storage", sel.id)
         sel_slides = [n for n in (1, 2, 3) if os.path.exists(os.path.join(d, f"slide_{n:02d}.png"))]
-    qs = urlencode({k: v for k, v in (("f", f), ("q", q)) if v})
+    qs = urlencode({a: b for a, b in (("f", f), ("q", q), ("k", k)) if b})
     cards = [
         {"label": "Jami buyurtma", "value": money(counts["all"]), "tint": "#EEF0FF", "color": "#6E7BFF", "icon": "M6 2h9l5 5v15H6zM14 2v6h6"},
         {"label": "To‘langan", "value": money(counts["paid"]), "tint": "#E7F8F1", "color": "#10B981", "icon": "M20 6 9 17l-5-5"},
@@ -462,7 +533,8 @@ async def orders_page(request: web.Request) -> web.Response:
             pay = "Hali to‘lash bosilmagan"
     return await render(request, "orders.html", "orders", rows=out, total=total, page=page, pages=pages,
                         shown_from=(page - 1) * PAGE + (1 if out else 0), shown_to=(page - 1) * PAGE + len(out),
-                        filters=[(k, label, money(counts[k])) for k, label, _ in ORDER_FILTERS], f=f, q=q,
+                        filters=[(key, label, money(counts[key])) for key, label, _ in ORDER_FILTERS], f=f, q=q, k=k,
+                        kinds=[(key, label, money(kind_counts[key])) for key, label in KIND_FILTERS],
                         qs=qs, base_qs=(qs + ("&" if qs else "") + f"page={page}"), cards=cards, sel=sel,
                         sel_user=sel_user, sel_slides=sel_slides,
                         sel_colors=template_colors(sel.template_id if sel else ""),
@@ -470,20 +542,20 @@ async def orders_page(request: web.Request) -> web.Response:
 
 
 async def orders_csv(request: web.Request) -> web.Response:
-    conds = _order_conditions(request.query.get("f", "all"), request.query.get("q", "")[:100])
+    conds = _order_conditions(request.query.get("f", "all"), request.query.get("q", "")[:100], request.query.get("k", ""))
     async with AsyncSessionLocal() as db:
         rows = (await db.execute(select(PresentationOrder, User.full_name, User.username)
                                  .join(User, User.telegram_id == PresentationOrder.user_id, isouter=True)
                                  .where(*conds).order_by(PresentationOrder.created_at.desc()).limit(50000))).all()
     buf = io.StringIO()
     w = csv.writer(buf)
-    w.writerow(["ID", "Sana", "Telegram ID", "Username", "Ism", "Mavzu", "Fan", "Slayd", "Narx", "Holat",
+    w.writerow(["ID", "Sana", "Tur", "Telegram ID", "Username", "Ism", "Mavzu", "Fan", "Hajm", "Narx", "Holat",
                 "To'langan sana", "To'lagan summa", "Komissiya", "Kim belgiladi", "Usul"])
     for o, fn, un in rows:
         def safe(v):
             v = "" if v is None else str(v)
             return "'" + v if v[:1] in ("=", "+", "-", "@") else v  # no formulas in Excel
-        w.writerow([o.id, dt(o.created_at), o.user_id, safe(un), safe(fn), safe(o.topic), safe(o.subject), o.slide_count,
+        w.writerow([o.id, dt(o.created_at), "Referat" if o.kind == "referat" else "Taqdimot", o.user_id, safe(un), safe(fn), safe(o.topic), safe(o.subject), o.slide_count,
                     o.total_price, STATUS.get(o.status, (o.status,))[0], dt(o.paid_at) if o.paid_at else "",
                     o.paid_amount or "", o.fee_amount or "", o.paid_by or "", o.payment_provider or ""])
     await audit(request, "export", f"{len(rows)} ta buyurtma CSV")
@@ -582,7 +654,16 @@ def _order_exists():
     return exists().where(PresentationOrder.user_id == User.telegram_id)
 
 
-USER_FILTERS = [("all", "Barchasi"), ("paid", "To‘laganlar"), ("unpaid", "To‘lamaganlar"), ("blocked", "Bloklanganlar")]
+USER_FILTERS = [("all", "Barchasi"), ("paid", "To‘laganlar"), ("unpaid", "To‘lamaganlar"), ("blocked", "Bloklanganlar"),
+                ("spam", "Spam (hozir)")]
+
+
+def _flood_banned_ids():
+    try:
+        from bot.middlewares import throttling
+        return {r["user_id"]: r for r in throttling.banned_list()}
+    except Exception:  # noqa: BLE001
+        return {}
 
 
 def _user_conditions(f: str, q: str):
@@ -593,6 +674,8 @@ def _user_conditions(f: str, q: str):
         conds += [_order_exists(), ~_paid_exists()]
     elif f == "blocked":
         conds.append(User.is_blocked.is_(True))
+    elif f == "spam":
+        conds.append(User.telegram_id.in_(list(_flood_banned_ids()) or [-1]))
     q = (q or "").strip()
     if q:
         like = f"%{q.lstrip('@')}%"
@@ -649,11 +732,19 @@ async def users_page(request: web.Request) -> web.Response:
         {"label": "Kamida 1 marta to‘lagan", "value": money(counts["paid"]), "w": round(counts["paid"] / allc * 100), "color": "#F59E0B"},
         {"label": "Bloklangan", "value": money(counts["blocked"]), "w": round(counts["blocked"] / allc * 100), "color": "#E5484D"},
     ]
-    qs = urlencode({k: v for k, v in (("f", f), ("q", q)) if v})
+    qs = urlencode({a: b for a, b in (("f", f), ("q", q)) if b})
     return await render(request, "users.html", "users", rows=out, total=total, page=page, pages=pages,
                         shown_from=(page - 1) * PAGE + (1 if out else 0), shown_to=(page - 1) * PAGE + len(out),
                         filters=[(k, label, money(counts[k])) for k, label in USER_FILTERS], f=f, q=q,
-                        base_qs=(qs + ("&" if qs else "") + f"page={page}"), cards=cards, sel=sel, sel_stats=sel_stats)
+                        base_qs=(qs + ("&" if qs else "") + f"page={page}"), cards=cards, sel=sel, sel_stats=sel_stats,
+                        sel_flood=_flood_banned_ids().get(sel.telegram_id) if sel is not None else None,
+                        sel_building=_user_building(sel.telegram_id) if sel is not None else "")
+
+
+def _user_building(uid: int) -> str:
+    from services import guard
+    k = guard.active_builds().get(uid)
+    return ("Referat" if k == "referat" else "Taqdimot") if k else ""
 
 
 async def user_action(request: web.Request) -> web.Response:
@@ -788,8 +879,27 @@ async def payments_page(request: web.Request) -> web.Response:
     cards.append({"label": "Yo‘ldagi pul", "value": f"{money((pend or 0) // 100)} so‘m" if pend is not None else "—",
                   "note": "Bankingizga tushishi kutilmoqda" if pend else "", "tint": "#E7F8F1", "color": "#10B981",
                   "icon": "M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"})
+    # the bot's own records (work with any payment system, and without one)
+    now = datetime.utcnow()
+    db_cards = []
+    async with AsyncSessionLocal() as db:
+        for label, days in (("Bugun", 1), ("7 kun", 7), ("30 kun", 30)):
+            since = stats.period_start(days)
+            row = (await db.execute(select(func.count(), func.coalesce(func.sum(func.coalesce(
+                PresentationOrder.paid_amount, PresentationOrder.total_price)), 0))
+                .where(PresentationOrder.status == "PAID", PresentationOrder.paid_at >= since,
+                       or_(PresentationOrder.paid_by.is_(None), PresentationOrder.paid_by.notin_(stats.FREE_PAID_BY))))).one()
+            db_cards.append({"label": f"{label} · sotuv", "value": f"{money(row[1])} so‘m", "note": f"{row[0]} ta to‘lov",
+                             "tint": "#F3EEFF", "color": "#8B5CF6", "icon": "M3 3v18h18M7 15l4-4 3 3 5-6"})
+        free = (await db.execute(select(func.count()).select_from(PresentationOrder).where(
+            PresentationOrder.status == "PAID", PresentationOrder.paid_by.in_(("TRIAL", "BONUS")),
+            PresentationOrder.paid_at >= now - timedelta(days=30)))).scalar() or 0
+    db_cards.append({"label": "Bepul berilgan · 30 kun", "value": f"{free} ta", "note": "birinchi bepul + referal bonus",
+                     "tint": "#FDF2F8", "color": "#EC4899", "icon": "M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"})
     return await render(request, "payments.html", "payments", tc=tc, remote=remote, next_cursor=next_cursor,
-                        problems=problems, local=local, cards=cards)
+                        problems=problems, local=local, cards=cards, db_cards=db_cards,
+                        paid_by_label={"TEZCHECK": "TezCheck", "TRIAL": "🎁 Bepul", "BONUS": "👥 Bonus", "ADMIN": "Admin",
+                                       "DEMO": "Demo", "TEST": "Test", "CLICK": "Click", "PAYME": "Payme"})
 
 
 # ---------------------------------------------------------------------- broadcast
@@ -1021,6 +1131,93 @@ async def system_page(request: web.Request) -> web.Response:
                         audit=audit_rows, now=stats.local_now().strftime("%d.%m.%Y %H:%M:%S"))
 
 
+# ---------------------------------------------------------------------- security
+SECURITY_FIELDS = {"throttle_burst": (3, 100), "throttle_rate_pm": (6, 600), "throttle_ban_minutes": (1, 1440),
+                   "max_builds_per_hour": (0, 100), "max_ai_edits_per_hour": (0, 500), "max_parallel_builds": (1, 20),
+                   "max_previews_per_day": (0, 1000), "max_unpaid_open": (0, 50), "daily_preview_cap": (0, 100000)}
+
+
+async def _names(ids) -> Dict[int, Any]:
+    ids = [int(i) for i in ids]
+    if not ids:
+        return {}
+    async with AsyncSessionLocal() as db:
+        rows = (await db.execute(select(User).where(User.telegram_id.in_(ids)))).scalars().all()
+    return {u.telegram_id: u for u in rows}
+
+
+async def security_page(request: web.Request) -> web.Response:
+    from bot.middlewares import throttling
+    from services import guard
+    banned = throttling.banned_list()
+    noisy = throttling.noisy_list(15)
+    active = guard.active_builds()
+    day = datetime.utcnow() - timedelta(days=1)
+    async with AsyncSessionLocal() as db:
+        heavy = (await db.execute(select(PresentationOrder.user_id, func.count().label("n"))
+                                  .where(PresentationOrder.created_at >= day)
+                                  .group_by(PresentationOrder.user_id).order_by(func.count().desc()).limit(10))).all()
+        blocked_n = (await db.execute(select(func.count()).select_from(User).where(User.is_blocked.is_(True)))).scalar() or 0
+        audit_rows = (await db.execute(select(AuditLog).order_by(AuditLog.id.desc()).limit(30))).scalars().all()
+    people = await _names({r["user_id"] for r in banned} | {r["user_id"] for r in noisy} | set(active)
+                          | {uid for uid, _ in heavy})
+
+    def who(uid):
+        u = people.get(uid)
+        name = (u.full_name or (f"@{u.username}" if u.username else "")) if u else ""
+        return {"id": uid, "name": name or str(uid), "username": (u.username if u else "") or "",
+                "blocked": bool(u and u.is_blocked)}
+    for r in banned:
+        r.update(who=who(r["user_id"]), left=f"{r['seconds_left'] // 60} daq {r['seconds_left'] % 60} s")
+    for r in noisy:
+        r.update(who=who(r["user_id"]))
+    heavy_rows = [{"who": who(uid), "n": n} for uid, n in heavy]
+    builders = [{"who": who(uid), "kind": "Referat" if k == "referat" else "Taqdimot"} for uid, k in active.items()]
+    v = {k: runtime.get(k) for k in SECURITY_FIELDS}
+    cards = [
+        {"label": "Spam uchun bloklangan (hozir)", "value": str(len(banned)), "tint": "#FDECEC", "color": "#E5484D",
+         "icon": "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"},
+        {"label": "Hozir yaratayotganlar", "value": str(len(builders)), "tint": "#EEF0FF", "color": "#6E7BFF",
+         "icon": "M4 4h16v12H4zM8 20h8M12 16v4"},
+        {"label": "Ko‘p so‘rov yuborganlar", "value": str(len(noisy)), "tint": "#FEF6E4", "color": "#F59E0B",
+         "icon": "M3 11v2l13 5V6zM16 8a4 4 0 0 1 0 8"},
+        {"label": "Doimiy bloklangan", "value": str(blocked_n), "tint": "#F1F2F6", "color": "#5A6080",
+         "icon": "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM5.6 5.6l12.8 12.8"},
+    ]
+    return await render(request, "security.html", "security", cards=cards, banned=banned, noisy=noisy,
+                        heavy=heavy_rows, builders=builders, v=v, audit=audit_rows)
+
+
+async def security_post(request: web.Request) -> web.Response:
+    form = request.get("form") or {}
+    values: Dict[str, str] = {}
+    for key, (lo, hi) in SECURITY_FIELDS.items():
+        try:
+            n = int(str(form.get(key, runtime.get(key))).strip())
+        except ValueError:
+            raise redirect("/admin/security", err=f"«{key}» butun son bo‘lishi kerak.")
+        if not lo <= n <= hi:
+            raise redirect("/admin/security", err=f"«{key}» {lo} dan {hi} gacha bo‘lishi kerak.")
+        values[key] = str(n)
+    before = {k: runtime.get(k) for k in values}
+    await runtime.set_many(values)
+    changed = {k: v for k, v in values.items() if before.get(k) != v}
+    if changed:
+        await audit(request, "security", ", ".join(f"{k}={v}" for k, v in changed.items()))
+    raise redirect("/admin/security", ok="Himoya sozlamalari saqlandi — darhol kuchga kirdi.")
+
+
+async def security_unban(request: web.Request) -> web.Response:
+    from bot.middlewares import throttling
+    from services import guard
+    uid = int(request.match_info["uid"])
+    throttling.unban(uid)
+    guard.reset_user(uid)
+    await audit(request, "unban", f"user {uid}: spam bloki olib tashlandi")
+    back = "/admin/users?u=" + str(uid) if (request.get("form") or {}).get("back") == "user" else "/admin/security"
+    raise redirect(back, ok=f"{uid} — spam bloki olib tashlandi.")
+
+
 # ---------------------------------------------------------------------- wiring
 def setup_admin(app: web.Application) -> None:
     app.middlewares.append(admin_guard)
@@ -1045,6 +1242,9 @@ def setup_admin(app: web.Application) -> None:
     r.add_get("/admin/settings", settings_page)
     r.add_post("/admin/settings", settings_post)
     r.add_get("/admin/system", system_page)
+    r.add_get("/admin/security", security_page)
+    r.add_post("/admin/security", security_post)
+    r.add_post(r"/admin/security/unban/{uid:\d+}", security_unban)
     app.on_startup.append(_on_startup)
 
 

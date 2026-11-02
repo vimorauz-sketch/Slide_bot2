@@ -50,6 +50,39 @@ h1 { margin: 0; font-size: 21px; letter-spacing: -.01em; }
 .pick { position: fixed; left: 16px; right: 16px; bottom: calc(14px + env(safe-area-inset-bottom)); height: 50px; border-radius: 14px;
   background: var(--accent); color: var(--on-accent); font-weight: 700; font-size: 16px; z-index: 11; }
 .pick[hidden] { display: none; }
+/* design: the user's own fonts and main colour */
+.design { padding: 4px 16px 0; display: grid; gap: 8px; }
+.design h3 { margin: 6px 0 2px; font-size: 16px; }
+.design .hint { color: var(--hint); font-size: 12.5px; margin: 0 0 4px; }
+.srow { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: var(--bg2); border-radius: 13px; padding: 13px 14px; }
+.srow .sl { font-weight: 650; font-size: 14px; flex: none; }
+.srow .sv { flex: 1; min-width: 0; text-align: right; color: var(--hint); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.srow .sv.set { color: var(--accent); font-weight: 650; }
+.srow .ar { color: var(--hint); font-size: 18px; flex: none; }
+.sw2 { width: 16px; height: 16px; border-radius: 50%; display: inline-block; vertical-align: -3px; margin-right: 6px; box-shadow: 0 0 0 1.5px var(--line); }
+.sreset { justify-self: start; color: var(--accent); font-size: 13.5px; font-weight: 600; padding: 4px 2px; }
+.stwrap { position: relative; }
+.stwrap img.loading { opacity: .45; }
+.stwrap .badge { position: absolute; left: 8px; top: 8px; background: var(--accent); color: var(--on-accent); font-size: 11.5px; font-weight: 700; padding: 3px 8px; border-radius: 7px; }
+.sheet2 { position: fixed; inset: 0; z-index: 30; background: var(--bg); display: flex; flex-direction: column; transform: translateY(100%); transition: transform .25s cubic-bezier(.2,.8,.2,1); }
+.sheet2.open { transform: none; }
+.sheet2 .body2 { flex: 1; overflow-y: auto; padding: 4px 16px calc(24px + env(safe-area-inset-bottom)); }
+.fsearch { margin: 8px 16px 0; height: 40px; border-radius: 12px; background: var(--bg2); display: flex; align-items: center; padding: 0 12px; gap: 8px; }
+.fsearch input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--text); font: inherit; }
+.fchips { display: flex; gap: 8px; overflow-x: auto; padding: 10px 16px 6px; scrollbar-width: none; }
+.fchips::-webkit-scrollbar { display: none; }
+.frow { display: block; width: 100%; text-align: left; background: var(--bg2); border: 2px solid transparent; border-radius: 13px; padding: 10px 14px 12px; margin-top: 8px; }
+.frow.on { border-color: var(--accent); }
+.frow .fn { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--hint); font-weight: 600; }
+.frow .ru { font-size: 10px; font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 5px; padding: 1px 5px; }
+.frow .fs { font-size: 24px; line-height: 1.25; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.frow.body .fs { font-size: 18px; }
+.cgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }
+.cbtn { display: flex; flex-direction: column; align-items: center; gap: 6px; background: var(--bg2); border: 2px solid transparent; border-radius: 13px; padding: 12px 4px; font-size: 12px; font-weight: 600; }
+.cbtn.on { border-color: var(--accent); }
+.cbtn i { width: 32px; height: 32px; border-radius: 50%; box-shadow: 0 0 0 1.5px var(--line); }
+.toast { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); background: rgba(20,24,34,.92); color: #fff; padding: 10px 14px; border-radius: 12px; font-size: 13.5px; z-index: 40; display: none; max-width: 90vw; text-align: center; }
+[hidden] { display: none !important; }
 </style>
 </head>
 <body>
@@ -62,8 +95,31 @@ h1 { margin: 0; font-size: 21px; letter-spacing: -.01em; }
 
 <div class="sheet" id="sheet" hidden>
   <div class="sheet-top"><b id="sheetTitle"></b><button class="close" id="close" aria-label="Yopish">✕</button></div>
-  <div class="pages" id="pages"></div>
+  <div class="scroll" style="flex:1;overflow-y:auto">
+  <div class="pages" id="pages" style="overflow:visible;padding-bottom:14px"></div>
+  <div class="design" id="design">
+    <h3>✍️ Shrift va rang</h3>
+    <p class="hint">Ixtiyoriy: o‘zingizga yoqqan yozuv shrifti va asosiy rangni tanlang — referat shu ko‘rinishda tayyorlanadi.</p>
+    <div class="stwrap" id="stwrap" hidden><img id="stPrev" alt="Sizning tanlovingiz bilan titul varag‘i" style="width:100%;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.18);aspect-ratio:210/297;object-fit:cover;background:#fff"><span class="badge">Sizning tanlovingiz</span></div>
+    <button class="srow" id="r-title"><span class="sl">🔤 Sarlavha shrifti</span><span class="sv" id="sv-title">Shablondagi</span><span class="ar">›</span></button>
+    <button class="srow" id="r-body"><span class="sl">📝 Matn shrifti</span><span class="sv" id="sv-body">Shablondagi</span><span class="ar">›</span></button>
+    <button class="srow" id="r-color"><span class="sl">🎨 Asosiy rang</span><span class="sv" id="sv-color">Shablondagi</span><span class="ar">›</span></button>
+    <button class="sreset" id="stReset" hidden>↺ Shablondagi ko‘rinishga qaytarish</button>
+    <div style="height:110px"></div>
+  </div>
+  </div>
 </div>
+<section class="sheet2" id="fsheet" aria-hidden="true">
+  <div class="sheet-top"><button class="close" id="fback" aria-label="Orqaga">←</button><b id="ftitle">Shrift</b></div>
+  <div class="fsearch">🔎<input id="fq" type="search" placeholder="Shrift nomi" autocomplete="off"></div>
+  <div class="fchips" id="fchips"></div>
+  <div class="body2" id="flist"></div>
+</section>
+<section class="sheet2" id="csheet" aria-hidden="true">
+  <div class="sheet-top"><button class="close" id="cback" aria-label="Orqaga">←</button><b>🎨 Asosiy rang</b></div>
+  <div class="body2"><div class="cgrid" id="cgrid"></div><p class="hint" style="color:var(--hint);font-size:12.5px">Sarlavhalar, «REFERAT» so‘zi va bezaklar shu rangda bo‘ladi.</p></div>
+</section>
+<div class="toast" id="toast"></div>
 <button class="pick" id="pick" hidden>Shu shablonni tanlash</button>
 
 <script>
@@ -90,6 +146,8 @@ function render() {
 
 function open(t) {
   current = t;
+  ST = { font_title: "", font_body: "", accent: "" };
+  setTimeout(renderStyle, 0);
   document.getElementById("sheetTitle").textContent = "№ " + t.n + " · " + t.name;
   document.getElementById("pages").innerHTML =
     '<figure><img src="page/' + t.id + '_1.jpg" alt="Titul varag‘i"><figcaption>Titul varag‘i</figcaption></figure>' +
@@ -104,7 +162,122 @@ function open(t) {
   }
 }
 
+// ---------------------------------------------------------------- design: fonts and main colour
+var $ = function (id) { return document.getElementById(id); };
+var ST = { font_title: "", font_body: "", accent: "" };
+var F = { lib: null, accents: [], role: "title", cat: "", q: "", loaded: {} };
+var SAMPLE = { title: "Amir Temur davri", body: "Referat matni shunday ko‘rinadi, 2026-yil" };
+var CAT_ICON = { modern: "✨", classic: "📜", display: "💥", hand: "✍️", tech: "💻" };
+function toast(t, ms) { var e = $("toast"); e.textContent = t; e.style.display = "block"; clearTimeout(toast.h); toast.h = setTimeout(function () { e.style.display = "none"; }, ms || 2600); }
+function norm(x) { return String(x || "").toLowerCase().replace(/[‘’ʻʼ'`]/g, ""); }
+function loadLib() {
+  if (F.lib) return Promise.resolve(F.lib);
+  return Promise.all([fetch("../api/fonts").then(function (r) { return r.json(); }),
+                      fetch("api/accents").then(function (r) { return r.json(); })])
+    .then(function (d) { F.lib = d[0]; F.accents = d[1].accents; return F.lib; });
+}
+function fontByKey(k) { return F.lib ? F.lib.fonts.filter(function (f) { return f.key === k; })[0] : null; }
+function fam(f) { return "SL_" + f.key.replace(/[^a-z0-9]/gi, "_"); }
+function loadFont(f) {
+  if (F.loaded[f.key] || !window.FontFace) return;
+  F.loaded[f.key] = 1;
+  try { new FontFace(fam(f), "url(../" + f.file + ")", { weight: String(f.weight) }).load().then(function (ff) { document.fonts.add(ff); }).catch(function () {}); } catch (e) {}
+}
+function styleSet() { return !!(ST.font_title || ST.font_body || ST.accent); }
+function renderStyle() {
+  var ft = fontByKey(ST.font_title), fb = fontByKey(ST.font_body);
+  var sv = function (id, txt, set) { var e = $(id); e.textContent = txt; e.classList.toggle("set", !!set); };
+  sv("sv-title", ft ? ft.name : "Shablondagi", ft);
+  sv("sv-body", fb ? fb.name : "Shablondagi", fb);
+  if (ST.accent) {
+    var a = F.accents.filter(function (x) { return x.hex === ST.accent; })[0];
+    $("sv-color").innerHTML = '<i class="sw2" style="background:' + esc(ST.accent) + '"></i>' + esc(a ? a.name : ST.accent);
+    $("sv-color").classList.add("set");
+  } else sv("sv-color", "Shablondagi", false);
+  $("stReset").hidden = !styleSet();
+  var im = $("stPrev");
+  if (!styleSet() || !current) { $("stwrap").hidden = true; im.removeAttribute("src"); return; }
+  var q = [];
+  if (ST.font_title) q.push("ft=" + encodeURIComponent(ST.font_title));
+  if (ST.font_body) q.push("fb=" + encodeURIComponent(ST.font_body));
+  if (ST.accent) q.push("c=" + encodeURIComponent(ST.accent));
+  var src = "styled/" + current.id + ".jpg?" + q.join("&");
+  if (im.getAttribute("src") === src) return;
+  $("stwrap").hidden = false; im.classList.add("loading");
+  im.onload = function () { im.classList.remove("loading"); };
+  im.onerror = function () { im.classList.remove("loading"); toast("Ko‘rinishni chizib bo‘lmadi — tanlovingiz baribir saqlanadi"); };
+  im.src = src;
+  setTimeout(function () { $("stwrap").scrollIntoView({ behavior: "smooth", block: "nearest" }); }, 60);
+}
+function openSub(id) { $(id).classList.add("open"); $(id).setAttribute("aria-hidden", "false"); }
+function closeSubs() {
+  var was = false;
+  ["fsheet", "csheet"].forEach(function (id) { if ($(id).classList.contains("open")) { was = true; $(id).classList.remove("open"); $(id).setAttribute("aria-hidden", "true"); } });
+  return was;
+}
+var obs = window.IntersectionObserver ? new IntersectionObserver(function (es) {
+  es.forEach(function (e) { if (e.isIntersecting) { var f = fontByKey(e.target.getAttribute("data-k")); if (f) loadFont(f); obs.unobserve(e.target); } });
+}, { rootMargin: "300px" }) : null;
+function renderFonts() {
+  var role = F.role, cur = ST["font_" + role], q = norm(F.q).trim();
+  var list = F.lib.fonts.filter(function (f) { return (!F.cat || f.category === F.cat) && (!q || norm(f.name).indexOf(q) >= 0); });
+  var cats = F.lib.categories, html = '<button class="chip" aria-pressed="' + !F.cat + '" data-c="">Hammasi</button>';
+  Object.keys(cats).forEach(function (k) { html += '<button class="chip" aria-pressed="' + (F.cat === k) + '" data-c="' + esc(k) + '">' + esc((CAT_ICON[k] || "") + " " + cats[k]) + "</button>"; });
+  $("fchips").innerHTML = html;
+  var rows = '<button class="frow ' + role + (cur ? "" : " on") + '" data-k=""><div class="fn">♻️ Shablondagi shrift</div><div class="fs">' + esc(SAMPLE[role]) + "</div></button>";
+  rows += list.map(function (f) {
+    return '<button class="frow ' + role + (cur === f.key ? " on" : "") + '" data-k="' + esc(f.key) + '"><div class="fn">' + esc(f.name) +
+      (f.cyrillic ? '<span class="ru">RU</span>' : "") + '</div><div class="fs" style="font-family:\'' + fam(f) + '\', serif' +
+      (role === "title" ? ";font-weight:700" : "") + '">' + esc(SAMPLE[role]) + "</div></button>";
+  }).join("");
+  if (!list.length) rows += '<p style="text-align:center;color:var(--hint)">Shrift topilmadi</p>';
+  $("flist").innerHTML = rows; $("flist").scrollTop = 0;
+  Array.prototype.forEach.call($("flist").querySelectorAll(".frow[data-k]"), function (b) {
+    var k = b.getAttribute("data-k"); if (!k) return;
+    if (obs) obs.observe(b); else { var f = fontByKey(k); if (f) loadFont(f); }
+  });
+}
+function openFonts(role) {
+  loadLib().then(function () {
+    F.role = role; F.cat = ""; F.q = ""; $("fq").value = "";
+    $("ftitle").textContent = role === "title" ? "🔤 Sarlavha shrifti" : "📝 Matn shrifti";
+    renderFonts(); openSub("fsheet");
+  }).catch(function () { toast("Shriftlarni yuklab bo‘lmadi"); });
+}
+function openColors() {
+  loadLib().then(function () {
+    var html = '<button class="cbtn' + (ST.accent ? "" : " on") + '" data-h=""><i style="background:conic-gradient(#1E3A8A 0 25%,#15803D 0 50%,#881337 0 75%,#B45309 0)"></i>Shablondagi</button>';
+    html += F.accents.map(function (c) {
+      return '<button class="cbtn' + (ST.accent === c.hex ? " on" : "") + '" data-h="' + esc(c.hex) + '"><i style="background:' + esc(c.hex) + '"></i>' + esc(c.name) + "</button>";
+    }).join("");
+    $("cgrid").innerHTML = html; openSub("csheet");
+  }).catch(function () { toast("Ranglarni yuklab bo‘lmadi"); });
+}
+$("r-title").onclick = function () { openFonts("title"); };
+$("r-body").onclick = function () { openFonts("body"); };
+$("r-color").onclick = openColors;
+$("stReset").onclick = function () { ST = { font_title: "", font_body: "", accent: "" }; renderStyle(); };
+$("fback").onclick = closeSubs; $("cback").onclick = closeSubs;
+$("fq").oninput = function () { F.q = this.value; if (F.lib) renderFonts(); };
+$("fchips").onclick = function (e) { var b = e.target.closest("[data-c]"); if (!b) return; F.cat = b.getAttribute("data-c"); renderFonts(); };
+$("flist").onclick = function (e) {
+  var b = e.target.closest(".frow"); if (!b) return;
+  ST["font_" + F.role] = b.getAttribute("data-k") || "";
+  closeSubs(); renderStyle();
+};
+$("cgrid").onclick = function (e) {
+  var b = e.target.closest(".cbtn"); if (!b) return;
+  ST.accent = b.getAttribute("data-h") || "";
+  closeSubs(); renderStyle();
+};
+function payload(t) {
+  var p = { referat: t.id };
+  ["font_title", "font_body", "accent"].forEach(function (k) { if (ST[k]) p[k] = ST[k]; });
+  return p;
+}
+
 function closeSheet() {
+  if (closeSubs()) return;
   document.getElementById("sheet").hidden = true;
   document.getElementById("pick").hidden = true;
   if (tg && tg.MainButton) tg.MainButton.hide();
@@ -120,7 +293,7 @@ function deepLink(t) { return BOT ? "https://t.me/" + BOT + "?start=rtpl_" + t.i
 function handOver(t) {  // last resort: open the bot chat with the template in the /start link
   var link = deepLink(t);
   if (link) { if (inTg) { tg.openTelegramLink(link); tg.close(); } else location.href = link; return; }
-  if (inTg) { try { tg.sendData(JSON.stringify({ referat: t.id })); return; } catch (e) {} }
+  if (inTg) { try { tg.sendData(JSON.stringify(payload(t))); return; } catch (e) {} }
   document.getElementById("sheetTitle").textContent = "№ " + t.n + " tanlandi — botga qayting";
 }
 
@@ -131,11 +304,11 @@ function choose() {
   if (!inTg) { handOver(t); return; }
   var viaInline = !!(tg.initDataUnsafe && tg.initDataUnsafe.query_id);
   // opened with the keyboard button: the choice goes straight back to the chat (no number to type)
-  if (!viaInline) { try { tg.sendData(JSON.stringify({ referat: t.id })); return; } catch (e) {} }
+  if (!viaInline) { try { tg.sendData(JSON.stringify(payload(t))); return; } catch (e) {} }
   if (!tg.initData) { handOver(t); return; }
   if (tg.MainButton) tg.MainButton.showProgress();
   fetch("../api/select", { method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ init_data: tg.initData, referat: t.id }) })
+    body: JSON.stringify(Object.assign({ init_data: tg.initData }, payload(t))) })
     .then(function (r) { return r.json(); })
     .then(function (j) { if (j && j.ok) tg.close(); else handOver(t); })
     .catch(function () { handOver(t); })

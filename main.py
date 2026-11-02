@@ -89,6 +89,9 @@ async def main():
 
     try:
         await bot.delete_webhook(drop_pending_updates=True)
+        from bot.commands import setup_commands
+        from services import runtime as _rt
+        await setup_commands(bot, sorted(_rt.admin_ids()))  # the «Menu» button list
         await dp.start_polling(bot)
     except TelegramUnauthorizedError:
         logger.error("❌ XATO: Kiritilgan Telegram BOT_TOKEN bekor qilingan yoki nohaq (Unauthorized)!")

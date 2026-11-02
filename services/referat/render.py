@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import logging
 import os
+import threading
 from typing import Any, Dict, List, Optional
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -27,7 +28,8 @@ LABELS = {
 }
 CLASSIC_COVERS = ("frame", "double", "ornament", "emblem", "arch")
 # cursive title fonts: fine for the word REFERAT, too hard to read for a long topic
-SCRIPT_FONTS = ("g:greatvibes", "g:dancingscript", "g:cookie", "g:parisienne")
+SCRIPT_FONTS = ("g:greatvibes", "g:dancingscript", "g:cookie", "g:parisienne", "g:monoton", "g:rubikglitch",
+                "g:satisfy", "g:pacifico", "g:permanentmarker")
 
 
 def _clean(v: Any, lang: str) -> Any:
@@ -80,6 +82,8 @@ def resolve_template(template_id: str, style: Optional[Dict[str, Any]] = None, l
     t = designs.get(template_id)
     t["fonts"] = dict(t["fonts"])
     style = style or {}
+    if style.get("accent"):
+        designs.apply_accent(t, str(style["accent"]).upper())
     for role in ("title", "body"):
         fid = style.get(f"font_{role}")
         if fid and fonts.is_library_font(fid):
@@ -164,8 +168,18 @@ async def html_to_pdf(html: str, pdf_path: str) -> str:
     return pdf_path
 
 
+# PDFium is not thread-safe: two pictures drawn at once from asyncio.to_thread() crashed the whole
+# process ("double free or corruption"). Every call goes through this lock.
+_PDFIUM_LOCK = threading.Lock()
+
+
 def pdf_pages_to_images(pdf_path: str, out_dir: str, pages: List[int], width: int = 900, prefix: str = "page") -> List[str]:
     """Pictures of the given PDF pages (0-based), JPEG."""
+    with _PDFIUM_LOCK:
+        return _pdf_pages_to_images(pdf_path, out_dir, pages, width, prefix)
+
+
+def _pdf_pages_to_images(pdf_path: str, out_dir: str, pages: List[int], width: int, prefix: str) -> List[str]:
     import pypdfium2 as pdfium
     os.makedirs(out_dir, exist_ok=True)
     pdf = pdfium.PdfDocument(pdf_path)
@@ -187,8 +201,9 @@ def pdf_pages_to_images(pdf_path: str, out_dir: str, pages: List[int], width: in
 
 def page_count(pdf_path: str) -> int:
     import pypdfium2 as pdfium
-    pdf = pdfium.PdfDocument(pdf_path)
-    try:
-        return len(pdf)
-    finally:
-        pdf.close()
+    with _PDFIUM_LOCK:
+        pdf = pdfium.PdfDocument(pdf_path)
+        try:
+            return len(pdf)
+        finally:
+            pdf.close()

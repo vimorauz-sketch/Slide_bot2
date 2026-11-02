@@ -31,7 +31,7 @@ class ReferatResult:
 
 
 def style_of(data: Dict[str, Any]) -> Dict[str, Any]:
-    return {k: data.get(k) for k in ("font_title", "font_body") if data.get(k)}
+    return {k: data.get(k) for k in ("font_title", "font_body", "accent") if data.get(k)}
 
 
 async def _find_images(doc: Dict[str, Any], need_cover: bool) -> Dict[str, Dict[str, Any]]:

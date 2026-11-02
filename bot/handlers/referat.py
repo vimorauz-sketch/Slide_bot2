@@ -191,11 +191,27 @@ async def template_number(message: Message, state: FSMContext):
                          "rasm ostidagi tugmani bosing.", parse_mode="HTML")
 
 
-async def apply_template_choice(bot, chat_id: int, state: FSMContext, template_id: str) -> bool:
-    """Shared by the buttons, typed numbers and the Mini App."""
+def _style_line(style: dict) -> str:
+    """«🔤 Playfair Display / Inter · 🎨 Bordo» for the confirmation message."""
+    from services.deck import fonts
+    parts = []
+    if style.get("font_title") or style.get("font_body"):
+        ft = fonts.family_name(style["font_title"]) if style.get("font_title") else "shablondagi"
+        fb = fonts.family_name(style["font_body"]) if style.get("font_body") else "shablondagi"
+        parts.append(f"🔤 Sarlavha: <b>{escape_html(ft)}</b> · Matn: <b>{escape_html(fb)}</b>")
+    if style.get("accent"):
+        parts.append(f"🎨 Rang: <b>{escape_html(designs.accent_name(style['accent']))}</b>")
+    return "\n".join(parts)
+
+
+async def apply_template_choice(bot, chat_id: int, state: FSMContext, template_id: str,
+                                style: Optional[dict] = None) -> bool:
+    """Shared by the buttons, typed numbers and the Mini App (which may also send the user's own
+    fonts and main colour: {font_title, font_body, accent})."""
     if template_id not in designs.BY_ID:
         return False
     t = designs.get(template_id)
+    style = designs.clean_style(style or {})
     cur = await state.get_state()
     cur = getattr(cur, "state", cur)
     starting = cur in (None, ReferatForm.template.state) or not str(cur or "").startswith("ReferatForm:")
@@ -207,16 +223,23 @@ async def apply_template_choice(bot, chat_id: int, state: FSMContext, template_i
                 await bot.send_message(chat_id, block.text, parse_mode="HTML")
                 return True
             await state.set_data({})
-        await state.update_data(referat_template=template_id)
+        await state.update_data(referat_template=template_id, font_title=style.get("font_title"),
+                                font_body=style.get("font_body"), accent=style.get("accent"))
         await state.set_state(ReferatForm.subject)
-        text = (f"✅ <b>№ {t['code']} · {escape_html(t['name'])}</b> tanlandi!\n\n"
-                "📚 <b>Fan nomini kiriting:</b>\n(Masalan: <i>Tarix, Biologiya, Iqtisodiyot</i>)")
+        line = _style_line(style)
+        text = (f"✅ <b>№ {t['code']} · {escape_html(t['name'])}</b> tanlandi!\n"
+                + (f"{line}\n" if line else "") +
+                "\n📚 <b>Fan nomini kiriting:</b>\n(Masalan: <i>Tarix, Biologiya, Iqtisodiyot</i>)")
         markup = get_subject_keyboard()
     else:
-        await state.update_data(referat_template=template_id)
-        text = f"🎨 <b>Shablon o‘zgartirildi:</b> № {t['code']} · {escape_html(t['name'])}"
+        await state.update_data(referat_template=template_id, font_title=style.get("font_title"),
+                                font_body=style.get("font_body"), accent=style.get("accent"))
+        line = _style_line(style)
+        text = f"🎨 <b>Shablon o‘zgartirildi:</b> № {t['code']} · {escape_html(t['name'])}" + (f"\n{line}" if line else "")
         markup = None
-    p1, p4 = await gallery.page_path(template_id, 1), await gallery.page_path(template_id, 4)
+    p1 = (await gallery.styled_path(template_id, style)) if style else None
+    p1 = p1 or await gallery.page_path(template_id, 1)
+    p4 = await gallery.page_path(template_id, 4)
     if p1 and p4 and hasattr(bot, "send_media_group"):
         try:
             await bot.send_media_group(chat_id, [InputMediaPhoto(media=FSInputFile(p1)), InputMediaPhoto(media=FSInputFile(p4))])
@@ -419,6 +442,19 @@ async def confirm(callback: CallbackQuery, state: FSMContext):
 
 
 async def build_and_send(message: Message, user_id: int, state: FSMContext) -> None:
+    """One build per user at a time, a few per hour (services/guard.py)."""
+    from services import guard
+    refused = guard.start_build(user_id, "referat")
+    if refused:
+        await message.answer(refused, parse_mode="HTML")
+        return
+    try:
+        await _build_and_send_now(message, user_id, state)
+    finally:
+        guard.finish_build(user_id)
+
+
+async def _build_and_send_now(message: Message, user_id: int, state: FSMContext) -> None:
     from bot.handlers.create_pres import _blocked, _build_slot, _deliver_free, _payment_keyboard, _state_is
     from bot.progress import REFERAT_STAGES, ProgressMessage
     from services.referat import builder

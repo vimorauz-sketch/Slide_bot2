@@ -1,5 +1,5 @@
 """
-Referat templates (100): a title-page layout (and its mirrored / recoloured variant), a heading
+Referat templates (200; 101–200 live in designs_more.py): a title-page layout (and its mirrored / recoloured variant), a heading
 style, a page decoration for the inner pages, a colour palette, a font pair and a sample topic.
 
 Inner pages always keep the academic standard teachers expect (A4, 14 pt body text, 1.5 line
@@ -105,6 +105,11 @@ LAYOUTS: Dict[str, Dict] = {
 for _k, _v in LAYOUTS.items():
     LAYOUTS[_k] = {**_D, **_v}
 
+from services.referat import designs_more as _more  # noqa: E402
+
+PALETTES.update(_more.PALETTES)
+LAYOUTS.update(_more.merge(LAYOUTS, _D))
+
 COVERS = {k: v["name"] for k, v in LAYOUTS.items()}
 
 # Mini App filter groups
@@ -118,6 +123,8 @@ GROUPS = {
     "Tabiat": ("wave", "waves_top", "botanical", "watercolor", "mountains", "skyline", "sunrays"),
     "Ilmiy": ("notebook", "graph", "dots", "halftone", "circle_big", "arcs", "orbits", "molecule"),
 }
+for _g, _lays in _more.GROUPS.items():
+    GROUPS[_g] = tuple(GROUPS.get(_g, ())) + tuple(_lays)
 GROUP_OF = {lay: g for g, lays in GROUPS.items() for lay in lays}
 assert set(GROUP_OF) == set(LAYOUTS), set(LAYOUTS) ^ set(GROUP_OF)
 
@@ -133,6 +140,7 @@ HEADINGS = {
     "overline": "Ustki chiziq",
     "marker": "Marker bilan",
     "block": "Rangli raqam bloki",
+    **_more.HEADINGS,
 }
 
 PAGES = {
@@ -144,9 +152,10 @@ PAGES = {
     "frame": "Sahifa ramkasi",
     "band_bottom": "Pastda rangli tasma",
     "corners": "Burchak belgilari",
+    **_more.PAGES,
 }
 
-TOPICS = ("photosynthesis", "timur", "heart", "ai", "startup", "navoi", "climate", "pedagogy")
+TOPICS = ("photosynthesis", "timur", "heart", "ai", "startup", "navoi", "climate", "pedagogy") + _more.TOPICS
 
 # (name, layout, variant, heading, page decoration, palette, title font, body font, topic)
 _TEMPLATES = [
@@ -251,13 +260,13 @@ _TEMPLATES = [
     ("Rangli mozaika", "mosaic", 1, "pill", "band_top", "coral", "g:rubik", "g:rubik", "pedagogy"),
     ("Galaktika", "orbits", 1, "overline", "frame", "purple", "g:tektur", "g:exo2", "ai"),
     ("Biokimyo", "molecule", 1, "numbig", "band_bottom", "sky", "g:lexend", "g:inter", "heart"),
-]
+] + _more.TEMPLATES
 
 
 
 def _build() -> List[Dict]:
     out = []
-    for n, (name, cover, variant, heading, page, pal, tf, bf, topic) in enumerate(_TEMPLATES[:100], start=1):
+    for n, (name, cover, variant, heading, page, pal, tf, bf, topic) in enumerate(_TEMPLATES[:200], start=1):
         out.append({"id": f"r{n:02d}", "code": n, "name": name, "cover": cover, "variant": variant, "heading": heading,
                     "page": page, "palette_id": pal, "palette": dict(PALETTES[pal]), "fonts": {"title": tf, "body": bf},
                     "topic": topic, "layout": geometry(cover, variant)})
@@ -270,6 +279,8 @@ def geometry(cover: str, variant: int = 0) -> Dict:
     if variant % 2 and g.get("mirror"):
         g["left"], g["right"] = g["right"], g["left"]
         g["info_left"] = 210 - g["info_left"] - 86
+        if g.get("city_align") in ("left", "right"):  # the city line moves to the free side
+            g["city_align"] = "right" if g["city_align"] == "left" else "left"
         g["mirrored"] = True
     return g
 
@@ -289,3 +300,56 @@ def by_number(n) -> Dict:
         return get(f"r{int(n):02d}")
     except (TypeError, ValueError):
         return get(DEFAULT)
+
+
+# ---------------------------------------------------------------------- the user's own fonts and colour
+# Main colour of headings, the word REFERAT and the decoration accents. All of them stay readable on
+# the white inner pages.
+ACCENTS = [  # (emoji, name, hex)
+    ("⬛", "Qora", "#111827"), ("🌑", "Grafit", "#374151"), ("🟦", "To‘q ko‘k", "#1E3A8A"), ("🔵", "Ko‘k", "#2563EB"),
+    ("🌊", "Moviy", "#0E7490"), ("🟩", "Yashil", "#15803D"), ("🌿", "Zumrad", "#047857"), ("🟥", "Qizil", "#DC2626"),
+    ("🍷", "Bordo", "#881337"), ("🟧", "To‘q sariq", "#C2410C"), ("🏅", "Oltin", "#B45309"), ("🟪", "Binafsha", "#7C3AED"),
+    ("🌸", "Pushti", "#BE185D"), ("🟫", "Jigarrang", "#78350F"), ("🫒", "Zaytun", "#4D7C0F"), ("🌌", "Indigo", "#4338CA"),
+]
+ACCENT_HEX = {h for _, _, h in ACCENTS}
+
+
+def accent_name(hex_: str) -> str:
+    return next((n for _, n, h in ACCENTS if h == hex_), hex_ or "")
+
+
+def clean_style(style) -> Dict[str, str]:
+    """Only known library fonts and listed colours are kept: {font_title, font_body, accent}."""
+    from services.deck import fonts
+    out: Dict[str, str] = {}
+    if not isinstance(style, dict):
+        return out
+    for k in ("font_title", "font_body"):
+        v = str(style.get(k) or "")
+        if v and fonts.is_library_font(v):
+            out[k] = v
+    a = str(style.get("accent") or "").upper()
+    if a in ACCENT_HEX:
+        out["accent"] = a
+    return out
+
+
+def _mix(hex_: str, weight: float) -> str:
+    """hex_ mixed with white (weight = share of the colour)."""
+    h = hex_.lstrip("#")
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return "#{:02X}{:02X}{:02X}".format(*(round(255 - (255 - c) * weight) for c in (r, g, b)))
+
+
+def apply_accent(t: Dict, accent: str) -> Dict:
+    """The template in another main colour (title page decoration, headings, page bands)."""
+    if accent not in ACCENT_HEX:
+        return t
+    p = dict(t["palette"])
+    old = p["accent"]
+    p["accent"] = accent
+    if p.get("accent2") == old or t.get("layout", {}).get("tone") == "light":
+        p["accent2"] = _mix(accent, .45)   # on a dark title page the second colour must be a light one
+    p["soft"] = _mix(accent, .12)
+    t["palette"] = p
+    return t

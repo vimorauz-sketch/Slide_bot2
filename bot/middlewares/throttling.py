@@ -5,14 +5,17 @@ Each user has a token bucket: BURST tokens, refilled at RATE tokens per second. 
 button press costs 1 token (/start costs 3), so normal use is never slowed down, while scripts and
 people hammering /start thousands of times are cut off:
   * an update without a token is dropped (the user gets one short notice per NOTICE_EVERY seconds);
-  * a user who keeps flooding (FLOOD_BAN drops in a row) is ignored for BAN_SECONDS entirely.
+  * a user who keeps flooding is ignored for BAN_SECONDS entirely: FLOOD_BAN dropped updates without a
+    CALM_SECONDS pause count, even when some updates in between got through (flooding at twice the allowed
+    speed used to pass every other update forever);
+  * the dashboard lists who is banned right now and can lift a ban.
 Admins are never limited. The state lives in memory and is pruned, so it cannot grow without end.
 """
 from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Awaitable, Callable, Dict, Optional
+from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject, Update
@@ -20,19 +23,23 @@ from aiogram.types import CallbackQuery, Message, TelegramObject, Update
 logger = logging.getLogger(__name__)
 
 NOTICE_EVERY = 20.0   # seconds between "too fast" notices to the same user
-FLOOD_BAN = 40        # dropped updates (without a pause) that lead to a temporary ban
+FLOOD_BAN = 30        # dropped updates (without a calm pause) that lead to a temporary ban
+CALM_SECONDS = 15.0   # a pause this long without a dropped update forgives the earlier ones
 PRUNE_EVERY = 300.0
 
 
 class _Bucket:
-    __slots__ = ("tokens", "stamp", "dropped", "noticed", "banned_until")
+    __slots__ = ("tokens", "stamp", "dropped", "last_drop", "noticed", "banned_until", "total_drops", "bans")
 
     def __init__(self, burst: float, now: float):
         self.tokens = burst
         self.stamp = now
         self.dropped = 0
+        self.last_drop = -1e9
         self.noticed = 0.0
         self.banned_until = 0.0
+        self.total_drops = 0
+        self.bans = 0
 
 
 _instances: list = []
@@ -40,8 +47,44 @@ _instances: list = []
 
 def banned_now() -> int:
     """Users ignored right now for flooding (for the dashboard)."""
-    now = time.monotonic()
-    return sum(1 for m in _instances for b in m.buckets.values() if b.banned_until > now)
+    return len(banned_list())
+
+
+def banned_list() -> List[Dict[str, Any]]:
+    """[{user_id, seconds_left, drops, bans}] of users ignored right now, longest ban first."""
+    out = []
+    for m in _instances:
+        now = m.clock()
+        for uid, b in m.buckets.items():
+            if b.banned_until > now:
+                out.append({"user_id": uid, "seconds_left": int(b.banned_until - now), "drops": b.total_drops,
+                            "bans": b.bans})
+    return sorted(out, key=lambda r: -r["seconds_left"])
+
+
+def noisy_list(limit: int = 20) -> List[Dict[str, Any]]:
+    """Users whose updates were dropped lately (still in memory), most dropped first."""
+    rows = []
+    for m in _instances:
+        now = m.clock()
+        for uid, b in m.buckets.items():
+            if b.total_drops:
+                rows.append({"user_id": uid, "drops": b.total_drops, "bans": b.bans,
+                             "banned": b.banned_until > now})
+    return sorted(rows, key=lambda r: -r["drops"])[:limit]
+
+
+def unban(user_id: int) -> bool:
+    """Lifts a flood ban (dashboard). True when the user was banned."""
+    found = False
+    for m in _instances:
+        b = m.buckets.get(user_id)
+        if b is not None:
+            found = found or b.banned_until > m.clock()
+            b.banned_until = 0.0
+            b.dropped = 0
+            b.tokens = m.burst
+    return found
 
 
 class ThrottlingMiddleware(BaseMiddleware):
@@ -88,6 +131,7 @@ class ThrottlingMiddleware(BaseMiddleware):
             return
         from services import runtime
         self.burst = max(3, runtime.get_int("throttle_burst", self.burst))
+        self.rate = max(0.05, runtime.get_int("throttle_rate_pm", int(self.rate * 60)) / 60.0)
         self.ban_seconds = 60 * max(1, runtime.get_int("throttle_ban_minutes", max(1, self.ban_seconds // 60)))
 
     def allow(self, user_id: int, cost: float = 1.0) -> Optional[str]:
@@ -102,14 +146,18 @@ class ThrottlingMiddleware(BaseMiddleware):
             return "drop"
         b.tokens = min(self.burst, b.tokens + (now - b.stamp) * self.rate)
         b.stamp = now
+        if now - b.last_drop >= CALM_SECONDS:
+            b.dropped = 0      # calmed down: earlier drops are forgiven
         if b.tokens >= cost:
             b.tokens -= cost
-            b.dropped = 0
             return None
         b.dropped += 1
+        b.total_drops += 1
+        b.last_drop = now
         if b.dropped >= FLOOD_BAN:
             b.banned_until = now + self.ban_seconds
             b.dropped = 0
+            b.bans += 1
             logger.warning("user %s is flooding the bot: ignored for %d s", user_id, self.ban_seconds)
             return "ban"
         if now - b.noticed >= NOTICE_EVERY:
