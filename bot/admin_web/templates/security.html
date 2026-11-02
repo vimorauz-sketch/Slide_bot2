@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Xavfsizlik{% endblock %}
+{% block head %}<meta http-equiv="refresh" content="60">{% endblock %}
+{% block content %}
+<header style="display:flex;flex-wrap:wrap;align-items:center;gap:14px;justify-content:space-between">
+  <div style="display:flex;flex-direction:column;gap:4px"><h1>Xavfsizlik</h1><span class="sub">Spam, ko‘p so‘rov yuboruvchilar va limitlar · har daqiqada yangilanadi</span></div>
+</header>
+
+<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+  {% for c in cards %}
+  <div class="card" style="padding:18px 20px;display:flex;align-items:center;gap:14px">
+    <div class="tile" style="background:{{ c.tint }};color:{{ c.color }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{ c.icon }}"/></svg></div>
+    <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600;color:#6B7194">{{ c.label }}</span><span class="num" style="font-size:24px;font-weight:800">{{ c.value }}</span></div>
+  </div>
+  {% endfor %}
+</section>
+
+<section class="row" style="align-items:flex-start">
+  <div class="card" style="flex:999 1 520px;min-width:0;overflow:hidden">
+    <div style="padding:22px 22px 6px;display:flex;flex-direction:column;gap:4px"><h2>🚫 Hozir spam uchun bloklanganlar</h2>
+      <span class="hint">Juda tez-tez xabar yuborgan foydalanuvchilarni bot vaqtincha e’tiborsiz qoldiradi. Xato bo‘lsa — blokni olib tashlang.</span></div>
+    <div class="scroll"><table class="table" style="min-width:560px">
+      <thead><tr><th>Foydalanuvchi</th><th>Qolgan vaqt</th><th>Tashlab yuborilgan</th><th>Necha marta</th><th></th></tr></thead>
+      <tbody>
+      {% for r in banned %}
+      <tr>
+        <td><span style="display:flex;align-items:center;gap:10px"><span class="av" style="background:{{ avatar_color(r.who.id) }}">{{ initials(r.who.name) }}</span><span style="display:flex;flex-direction:column"><a href="/admin/users?q={{ r.who.id }}" style="font-weight:700;color:#12153A">{{ r.who.name }}</a><span style="font-size:12px;color:#8D93B3">{{ r.who.id }}{% if r.who.username %} · @{{ r.who.username }}{% endif %}</span></span></span></td>
+        <td class="num" style="font-weight:700">{{ r.left }}</td>
+        <td class="num">{{ r.drops }}</td>
+        <td><span class="pill-lim">{{ r.bans }}×</span></td>
+        <td style="text-align:right"><form method="post" action="/admin/security/unban/{{ r.who.id }}" style="margin:0"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn-sm btn-ok">Blokni olib tashlash</button></form></td>
+      </tr>
+      {% else %}<tr><td colspan="5" class="empty">Hozir hech kim bloklanmagan 🎉</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card pad" style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:12px">
+    <h2>⚙️ Hozir tayyorlanmoqda</h2>
+    <span class="hint">Har bir foydalanuvchi bir vaqtda faqat bitta buyurtma yarata oladi.</span>
+    {% for b in builders %}
+    <div style="display:flex;align-items:center;gap:10px"><span class="av" style="background:{{ avatar_color(b.who.id) }}">{{ initials(b.who.name) }}</span><a class="ell" href="/admin/users?q={{ b.who.id }}" style="flex:1;font-weight:700;color:#12153A">{{ b.who.name }}</a><span class="chip {{ 'c-kind-r' if b.kind == 'Referat' else 'c-kind-p' }}">{{ b.kind }}</span></div>
+    {% else %}<div class="empty" style="padding:16px">Hozir hech narsa yaratilmayapti</div>{% endfor %}
+  </div>
+</section>
+
+<section class="row" style="align-items:flex-start">
+  <div class="card" style="flex:1 1 380px;min-width:0;overflow:hidden">
+    <div style="padding:22px 22px 6px;display:flex;flex-direction:column;gap:4px"><h2>📈 Eng ko‘p so‘rov yuborganlar</h2><span class="hint">Server qayta ishga tushgandan beri tashlab yuborilgan xabarlar soni.</span></div>
+    <div class="scroll"><table class="table" style="min-width:420px">
+      <thead><tr><th>Foydalanuvchi</th><th>Tashlab yuborilgan</th><th>Holat</th></tr></thead>
+      <tbody>
+      {% for r in noisy %}
+      <tr><td><a href="/admin/users?q={{ r.who.id }}" style="font-weight:700;color:#12153A">{{ r.who.name }}</a> <span style="font-size:12px;color:#8D93B3">{{ r.who.id }}</span></td>
+        <td class="num" style="font-weight:700">{{ r.drops }}</td>
+        <td>{% if r.who.blocked %}<span class="chip c-ref">Doimiy blok</span>{% elif r.banned %}<span class="chip c-wait">Vaqtincha blok</span>{% else %}<span class="chip c-flat">Kuzatuvda</span>{% endif %}</td></tr>
+      {% else %}<tr><td colspan="3" class="empty">Hech kim limitdan oshmagan</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card" style="flex:1 1 380px;min-width:0;overflow:hidden">
+    <div style="padding:22px 22px 6px;display:flex;flex-direction:column;gap:4px"><h2>🧾 24 soatda eng ko‘p buyurtma</h2><span class="hint">Shubhali faollikni shu yerdan ko‘rasiz.</span></div>
+    <div class="scroll"><table class="table" style="min-width:380px">
+      <thead><tr><th>Foydalanuvchi</th><th>Buyurtmalar</th><th></th></tr></thead>
+      <tbody>
+      {% for r in heavy %}
+      <tr><td><a href="/admin/users?q={{ r.who.id }}" style="font-weight:700;color:#12153A">{{ r.who.name }}</a> <span style="font-size:12px;color:#8D93B3">{{ r.who.id }}</span></td>
+        <td class="num" style="font-weight:700">{{ r.n }}</td>
+        <td style="text-align:right"><a class="btn btn-sm" href="/admin/orders?q={{ r.who.id }}">Buyurtmalari</a></td></tr>
+      {% else %}<tr><td colspan="3" class="empty">Oxirgi 24 soatda buyurtma yo‘q</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<form class="card pad" method="post" action="/admin/security" style="display:flex;flex-direction:column;gap:18px">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:4px"><h2>🛡 Himoya limitlari</h2><span class="hint">Saqlangan zahoti kuchga kiradi. Adminlarga hech qanday cheklov yo‘q.</span></div>
+    <button class="btn btn-p">Saqlash</button>
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px">
+    <div class="field"><label class="lbl" for="tb">Spam: birdaniga xabarlar</label><input class="inp" id="tb" name="throttle_burst" type="number" min="3" max="100" value="{{ v.throttle_burst }}"><span class="hint">Shuncha xabarni birdaniga yuborish mumkin, keyin tezlik cheklanadi.</span></div>
+    <div class="field"><label class="lbl" for="tr">Spam: daqiqasiga xabar</label><input class="inp" id="tr" name="throttle_rate_pm" type="number" min="6" max="600" value="{{ v.throttle_rate_pm }}"><span class="hint">Undan tez yozilganlari tashlab yuboriladi; davom etsa — vaqtincha blok.</span></div>
+    <div class="field"><label class="lbl" for="tm">Vaqtincha blok, daqiqa</label><input class="inp" id="tm" name="throttle_ban_minutes" type="number" min="1" max="1440" value="{{ v.throttle_ban_minutes }}"></div>
+    <div class="field"><label class="lbl" for="bh">Bir soatda buyurtmalar (1 kishi)</label><input class="inp" id="bh" name="max_builds_per_hour" type="number" min="0" max="100" value="{{ v.max_builds_per_hour }}"><span class="hint">Taqdimot + referat. 0 = cheklovsiz.</span></div>
+    <div class="field"><label class="lbl" for="ae">Bir soatda reja qayta yozish</label><input class="inp" id="ae" name="max_ai_edits_per_hour" type="number" min="0" max="500" value="{{ v.max_ai_edits_per_hour }}"><span class="hint">Har biri AI so‘rovi. 0 = cheklovsiz.</span></div>
+    <div class="field"><label class="lbl" for="pb">Bir vaqtda yaratish (butun bot)</label><input class="inp" id="pb" name="max_parallel_builds" type="number" min="1" max="20" value="{{ v.max_parallel_builds }}"><span class="hint">Qolganlar navbatda kutadi — server qotib qolmaydi.</span></div>
+    <div class="field"><label class="lbl" for="pd">Kunlik namuna (1 kishi)</label><input class="inp" id="pd" name="max_previews_per_day" type="number" min="0" max="1000" value="{{ v.max_previews_per_day }}"></div>
+    <div class="field"><label class="lbl" for="uo">To‘lanmagan namuna (1 kishi)</label><input class="inp" id="uo" name="max_unpaid_open" type="number" min="0" max="50" value="{{ v.max_unpaid_open }}"></div>
+    <div class="field"><label class="lbl" for="dc">Kunlik umumiy chegara</label><input class="inp" id="dc" name="daily_preview_cap" type="number" min="0" max="100000" value="{{ v.daily_preview_cap }}"><span class="hint">Butun bot bo‘yicha — AI xarajatini cheklaydi.</span></div>
+  </div>
+</form>
+
+<section class="card" style="overflow:hidden">
+  <div style="padding:22px 22px 6px"><h2>Admin amallari jurnali</h2></div>
+  <div class="scroll"><table class="table">
+    <thead><tr><th>Vaqt</th><th>Admin</th><th>Amal</th><th>Tafsilot</th></tr></thead>
+    <tbody>
+    {% for a in audit %}
+    <tr><td class="num" style="color:#8D93B3;font-size:13px">{{ dt(a.at) }}</td><td style="font-weight:700">{{ a.admin }}</td><td><span class="chip c-prev">{{ a.action }}</span></td><td class="ell" style="max-width:420px;color:#3D4266">{{ a.details }}</td></tr>
+    {% else %}<tr><td colspan="4" class="empty">Hali amal yo‘q</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</section>
+{% endblock %}

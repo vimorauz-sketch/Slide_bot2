@@ -85,6 +85,13 @@
       <form method="post" action="/admin/users/{{ sel.telegram_id }}/trial_reset"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn" style="width:100%">Birinchi bepul taqdimotni qayta berish</button></form>
       {% endif %}
       <a class="btn" href="/admin/orders?q={{ sel.telegram_id }}">Buyurtmalari</a>
+      {% if sel_building %}<div class="flash flash-ok" style="font-size:13px">⚙️ Hozir {{ sel_building|lower }} tayyorlanmoqda</div>{% endif %}
+      {% if sel_flood %}
+      <div style="background:#FEF2F2;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+        <b style="color:#B91C1C;font-size:13px">⛔ Spam uchun vaqtincha bloklangan · yana {{ sel_flood.seconds_left // 60 }} daqiqa</b>
+        <form method="post" action="/admin/security/unban/{{ sel.telegram_id }}" style="margin:0"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="back" value="user"><button class="btn btn-sm btn-ok" style="width:100%">Spam blokini olib tashlash</button></form>
+      </div>
+      {% endif %}
       {% if sel.is_blocked %}
       <form method="post" action="/admin/users/{{ sel.telegram_id }}/unblock"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn-ok" style="width:100%">Blokdan chiqarish</button></form>
       {% else %}

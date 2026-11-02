@@ -116,7 +116,8 @@ async def test_every_page_renders_and_escapes_user_text(env):
     await _login(client)
     for path in ("/admin", "/admin?p=1", "/admin?p=30", "/admin/orders", "/admin/orders?f=paid", "/admin/orders?q=Ali",
                  "/admin/users", "/admin/users?f=unpaid", "/admin/users?q=111", "/admin/payments",
-                 "/admin/broadcast", "/admin/settings", "/admin/system"):
+                 "/admin/broadcast", "/admin/settings", "/admin/system", "/admin/security", "/admin/orders?k=referat",
+                 "/admin/orders?k=pres&f=paid", "/admin/users?f=spam"):
         r = await client.get(path)
         html = await r.text()
         assert r.status == 200, path
@@ -246,3 +247,47 @@ async def test_every_page_renders_when_payments_are_off(env, monkeypatch):
         r = await client.get(path)
         assert r.status == 200, path
         assert "To‘lov tizimi ulanmagan" in await r.text(), path
+
+
+async def test_referat_orders_are_told_apart(env):
+    client, _, db = env
+    await _login(client)
+    async with db() as s:
+        s.add(PresentationOrder(user_id=222, topic="Referat mavzusi", subject="Tarix", slide_count=12, template_id="r15",
+                                total_price=6000, status="PAID", kind="referat", paid_at=datetime.utcnow(),
+                                paid_amount=6000, paid_by="TEZCHECK"))
+        await s.commit()
+    html = await (await client.get("/admin/orders?k=referat")).text()
+    assert "Referat mavzusi" in html and "Mavzu 0" not in html and "📄 Referat" in html
+    html = await (await client.get("/admin/orders?k=pres")).text()
+    assert "Referat mavzusi" not in html
+    html = await (await client.get("/admin")).text()
+    assert "Taqdimot va referat" in html and "6 000" in html
+    csv_text = await (await client.get("/admin/orders.csv?k=referat")).text()
+    assert "Referat mavzusi" in csv_text and "Mavzu 0" not in csv_text
+
+
+async def test_security_page_lifts_a_flood_ban_and_saves_limits(env):
+    from bot.middlewares import throttling
+    from bot.middlewares.throttling import ThrottlingMiddleware
+    client, *_ = env
+    await _login(client)
+    m = ThrottlingMiddleware(rate=1, burst=3, ban_seconds=600)
+    throttling._instances.append(m)
+    try:
+        for _ in range(200):
+            m.allow(333)
+        html = await (await client.get("/admin/security")).text()
+        assert "Spam Bot" in html and "/admin/security/unban/333" in html
+        html = await (await client.get("/admin/users?f=spam")).text()
+        assert "Spam Bot" in html and "Ali Valiyev" not in html
+        csrf = await _csrf(client, "/admin/security")
+        r = await client.post("/admin/security/unban/333", data={"csrf": csrf}, allow_redirects=False)
+        assert r.status == 302 and throttling.banned_list() == []
+        r = await client.post("/admin/security", data={"csrf": csrf, "max_builds_per_hour": "4", "throttle_rate_pm": "30"},
+                              allow_redirects=False)
+        assert r.status == 302 and runtime.get_int("max_builds_per_hour") == 4 and runtime.get_int("throttle_rate_pm") == 30
+        r = await client.post("/admin/security", data={"csrf": csrf, "max_builds_per_hour": "-5"}, allow_redirects=False)
+        assert "err=" in r.headers["Location"]
+    finally:
+        throttling._instances.remove(m)

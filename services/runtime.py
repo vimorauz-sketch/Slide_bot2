@@ -27,6 +27,9 @@ def defaults() -> Dict[str, str]:
         "max_parallel_builds": str(settings.MAX_PARALLEL_BUILDS),
         "throttle_burst": str(settings.THROTTLE_BURST),
         "throttle_ban_minutes": str(max(1, int(settings.THROTTLE_BAN_SECONDS) // 60)),
+        "throttle_rate_pm": str(int(float(settings.THROTTLE_RATE) * 60)),  # messages per minute after the burst
+        "max_builds_per_hour": "6",     # presentations + referats one user may start per hour (0 = no limit)
+        "max_ai_edits_per_hour": "15",  # plan rewrites / edits per user per hour (each one is an AI request)
         "ai_fast_model": settings.OPENAI_FAST_MODEL,
         "ai_effort": settings.OPENAI_REASONING_EFFORT,
         "orders_mode": "auto",

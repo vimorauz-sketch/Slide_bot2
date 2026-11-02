@@ -22,15 +22,16 @@ def _sample():
         return json.load(f)
 
 
-def test_hundred_distinct_templates_with_known_parts():
-    assert len(designs.TEMPLATES) == 100
+def test_two_hundred_distinct_templates_with_known_parts():
+    assert len(designs.TEMPLATES) == 200
     looks = set()
     for t in designs.TEMPLATES:
         assert t["cover"] in designs.COVERS and t["heading"] in designs.HEADINGS and t["page"] in designs.PAGES
         assert t["topic"] in designs.TOPICS and t["cover"] in designs.GROUP_OF
         assert t["palette"]["accent"].startswith("#")
         looks.add((t["cover"], t["variant"], t["palette_id"], t["heading"]))
-    assert len(looks) == 100  # no two templates look the same
+    assert len(looks) == 200  # no two templates look the same
+    assert len({t["name"] for t in designs.TEMPLATES}) == 200
     assert len({t["cover"] for t in designs.TEMPLATES}) == len(designs.LAYOUTS)
     assert designs.by_number(7)["id"] == "r07" and designs.get("nope")["id"] == designs.DEFAULT
 
@@ -204,3 +205,42 @@ async def test_mini_app_send_data_starts_the_referat_wizard():
     await create_pres.process_webapp_choice(msg, state)
     assert await state.get_state() == ReferatForm.subject
     assert (await state.get_data())["referat_template"] == "r12"
+
+
+@pytest.mark.asyncio
+async def test_mini_app_sends_the_users_fonts_and_colour():
+    from types import SimpleNamespace
+    from bot.handlers import create_pres
+    state = FakeFSMContext()
+    msg = FakeMessage(text="")
+    msg.web_app_data = SimpleNamespace(data=json.dumps({"referat": "r15", "font_title": "g:playfairdisplay",
+                                                        "font_body": "g:nope", "accent": "#881337"}))
+    await create_pres.process_webapp_choice(msg, state)
+    data = await state.get_data()
+    assert data["referat_template"] == "r15" and data["font_title"] == "g:playfairdisplay"
+    assert data["accent"] == "#881337" and not data.get("font_body")   # unknown fonts are dropped
+    assert builder.style_of(data) == {"font_title": "g:playfairdisplay", "accent": "#881337"}
+    t = render.resolve_template("r15", builder.style_of(data))
+    assert t["palette"]["accent"] == "#881337" and t["fonts"]["title"] == "g:playfairdisplay"
+    assert designs.get("r15")["palette"]["accent"] != "#881337"         # the template itself is untouched
+
+
+def test_style_is_cleaned():
+    assert designs.clean_style({"accent": "#123456", "font_title": "<script>"}) == {}
+    assert designs.clean_style({"accent": "#881337"}) == {"accent": "#881337"}
+
+
+@pytest.mark.asyncio
+async def test_styled_title_page_and_template_100(tmp_path, monkeypatch):
+    from aiohttp.test_utils import TestClient, TestServer
+    from bot.webhook_app import create_webhook_app
+    from services.referat import gallery
+    monkeypatch.setattr(gallery, "STYLED", str(tmp_path))
+    async with TestClient(TestServer(create_webhook_app(None, None))) as client:
+        r = await client.get("/webapp/referat/page/r100_1.jpg")
+        assert r.status == 200
+        r = await client.get("/webapp/referat/styled/r07.jpg?ft=g:playfairdisplay&c=%23881337")
+        assert r.status == 200 and r.headers["Content-Type"] == "image/jpeg"
+        assert (await client.get("/webapp/referat/styled/r07.jpg?c=%23000001")).status == 404
+        accents = await (await client.get("/webapp/referat/api/accents")).json()
+        assert len(accents["accents"]) == len(designs.ACCENTS)

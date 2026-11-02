@@ -1,0 +1,116 @@
+{
+ "language": "uz",
+ "meta": {
+  "ministry": "O‘ZBEKISTON RESPUBLIKASI OLIY TA’LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+  "kind": "REFERAT",
+  "city": "Toshkent",
+  "year": "2026",
+  "institution": "Toshkent kimyo-texnologiya instituti",
+  "faculty": "Kimyoviy texnologiya fakulteti",
+  "subject": "Umumiy kimyo",
+  "topic": "Suv molekulasining tuzilishi va xossalari",
+  "author": "Dilshod Mirzayev",
+  "group": "KT-19",
+  "teacher": "Z. Nazarova"
+ },
+ "sections": [
+  {
+   "kind": "intro",
+   "title": "Kirish",
+   "paragraphs": [
+    "Suv — Yerdagi eng ko‘p tarqalgan va hayot uchun zarur modda. U tirik organizmlar massasining 60–90 foizini tashkil etadi.",
+    "Ushbu ishda suv molekulasining tuzilishi, vodorod bog‘lari va suvning noyob fizik-kimyoviy xossalari tahlil qilinadi."
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Suv molekulasining tuzilishi",
+   "subsections": [
+    {
+     "title": "Molekula geometriyasi",
+     "paragraphs": [
+      "Suv molekulasi (H₂O) bitta kislorod va ikkita vodorod atomidan iborat. Atomlar orasidagi burchak taxminan 104,5° ga teng.",
+      "Kislorod vodorodga nisbatan elektromanfiyroq bo‘lgani uchun molekula qutbli bo‘ladi."
+     ],
+     "image": {
+      "query": "water molecule model",
+      "caption": "Suv molekulasi modeli"
+     }
+    },
+    {
+     "title": "Vodorod bog‘lari",
+     "paragraphs": [
+      "Qo‘shni suv molekulalari orasida vodorod bog‘lari hosil bo‘ladi. Aynan shu bog‘lar suvning yuqori qaynash haroratini tushuntiradi."
+     ]
+    },
+    {
+     "title": "Muzning tuzilishi",
+     "paragraphs": [
+      "Muzlaganda molekulalar ochiq kristall panjara hosil qiladi, shu sabab muzning zichligi suvnikidan kichik va u suv yuzida suzadi."
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Suvning xossalari va ahamiyati",
+   "subsections": [
+    {
+     "title": "Fizik xossalar",
+     "paragraphs": [
+      "Suvning asosiy fizik ko‘rsatkichlari quyidagicha."
+     ],
+     "table": {
+      "caption": "Suvning fizik xossalari",
+      "head": [
+       "Ko‘rsatkich",
+       "Qiymati"
+      ],
+      "rows": [
+       [
+        "Qaynash harorati",
+        "100 °C"
+       ],
+       [
+        "Muzlash harorati",
+        "0 °C"
+       ],
+       [
+        "Zichligi (4 °C)",
+        "1 g/sm³"
+       ],
+       [
+        "Solishtirma issiqlik sig‘imi",
+        "4,18 J/(g·K)"
+       ]
+      ]
+     }
+    },
+    {
+     "title": "Universal erituvchi",
+     "paragraphs": [
+      "Qutbliligi tufayli suv ko‘plab tuz, kislota va asoslarni eritadi. Bu xususiyat tirik hujayralardagi moddalar almashinuvi uchun hal qiluvchi ahamiyatga ega."
+     ],
+     "image": {
+      "query": "laboratory flask water",
+      "caption": "Laboratoriya tajribasi"
+     }
+    }
+   ]
+  },
+  {
+   "kind": "conclusion",
+   "title": "Xulosa",
+   "paragraphs": [
+    "Suv molekulasining qutbliligi va vodorod bog‘lari uning noyob xossalarini belgilaydi.",
+    "Toza suv resurslarini asrash har birimizning burchimizdir."
+   ]
+  }
+ ],
+ "references": [
+  "Parpiyev N. A. va boshq. Anorganik kimyo. — Toshkent: O‘zbekiston, 2003.",
+  "Atkins P., Jones L. Chemical Principles. — 7th ed. — Freeman, 2016.",
+  "Glinka N. L. Umumiy kimyo. — Toshkent: O‘qituvchi, 1991.",
+  "Chaplin M. Water Structure and Science. — London South Bank University, 2022."
+ ]
+}

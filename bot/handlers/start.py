@@ -172,7 +172,70 @@ async def show_help(message: Message):
         user = await repository.get_user(session, message.from_user.id)
         lang = user.language if user else "uz"
     loc = load_locale(lang)
-    await message.answer(loc.get("help_info", "Help center"), parse_mode="HTML")
+    text = loc.get("help_info", "Help center")
+    if lang == "uz":
+        text += ("\n\n<b>Buyruqlar</b>\n"
+                 "/new — 🎨 yangi taqdimot\n/referat — 📄 referat (Word + PDF)\n/templates — 🖼 shablonlar\n"
+                 "/profile — 👤 profil va bepul taqdimotlar\n/invite — 🎁 do‘st taklif qilish\n"
+                 "/prices — 💰 narxlar\n/cancel — ❌ bekor qilish\n/start — 🏠 bosh menyu")
+    await message.answer(text, parse_mode="HTML")
+
+
+# ---------------------------------------------------------------- the «Menu» commands (bot/commands.py)
+# They live in this router, which is included first, so a command works from any step of a wizard
+# (otherwise the wizard would take «/referat» as the answer to its question).
+@router.message(Command("new", "taqdimot", "presentation"))
+async def cmd_new(message: Message, state: FSMContext):
+    from bot.handlers.create_pres import start_pres_wizard
+    if await _busy(message, state):
+        return
+    await start_pres_wizard(message, state)
+
+
+@router.message(Command("templates", "shablonlar"))
+async def cmd_templates(message: Message, state: FSMContext):
+    from bot.handlers.create_pres import start_pres_wizard
+    if await _busy(message, state):
+        return
+    await start_pres_wizard(message, state)
+
+
+@router.message(Command("referat", "paper"))
+async def cmd_referat(message: Message, state: FSMContext):
+    from bot.handlers.referat import start_referat
+    if await _busy(message, state):
+        return
+    await start_referat(message, state)
+
+
+@router.message(Command("profile", "profil"))
+async def cmd_profile(message: Message):
+    await show_profile(message)
+
+
+@router.message(Command("invite", "referral", "referal"))
+async def cmd_invite(message: Message):
+    await show_referral(message)
+
+
+@router.message(Command("prices", "narxlar"))
+async def cmd_prices(message: Message):
+    await show_prices(message)
+
+
+@router.message(Command("help", "yordam"))
+async def cmd_help(message: Message):
+    await show_help(message)
+
+
+async def _busy(message: Message, state: FSMContext) -> bool:
+    """While a deck or referat is being made, a new wizard must not wipe its state."""
+    from bot.states.forms import PresentationForm, ReferatForm
+    cur = await state.get_state()
+    if getattr(cur, "state", cur) in (PresentationForm.generating.state, ReferatForm.generating.state):
+        await message.answer("⏳ Buyurtmangiz tayyorlanmoqda — tayyor bo‘lgach shu yerga keladi, keyin yangisini boshlang.")
+        return True
+    return False
 
 
 @router.message(Command("cancel"))

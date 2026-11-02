@@ -16,13 +16,15 @@ from services.referat import designs
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 BUNDLED = os.path.join(ROOT, "webapp", "referat", "thumbs")
-CACHE = os.path.join(ROOT, "storage", "gallery_cache", "referat_v2")
+CACHE = os.path.join(ROOT, "storage", "gallery_cache", "referat_v3")
 SAMPLE = os.path.join(ROOT, "assets", "referat_sample.json")
 SAMPLES = os.path.join(ROOT, "assets", "samples")
 # sample pictures drawn for each sample topic: (art style, icon)
 TOPIC_ART = {"photosynthesis": ("botanical", "leaf"), "timur": ("ikat", "landmark"), "heart": ("medical", "heart-pulse"),
              "ai": ("circuit", "brain-circuit"), "startup": ("isometric", "rocket"), "navoi": ("ink", "feather"),
-             "climate": ("topo", "thermometer-sun"), "pedagogy": ("doodle", "graduation-cap")}
+             "climate": ("topo", "thermometer-sun"), "pedagogy": ("doodle", "graduation-cap"),
+             "space": ("cosmos", "telescope"), "law": ("academic", "scale"), "chemistry": ("blueprint", "flask-conical"),
+             "math": ("swiss", "sigma")}
 PAGES = {1: 0, 4: 3}       # picture name -> PDF page index (title page, first chapter page)
 WIDTH = 620
 PAGE_SIZE = 10
@@ -136,4 +138,43 @@ async def sheet(page: int) -> Optional[str]:
         d.text((x + 4, y + th + 10), f"{t['code']}. {t['name']}", fill=(28, 34, 48), font=f)
     os.makedirs(CACHE, exist_ok=True)
     img.save(out, quality=84)
+    return out
+
+
+STYLED = os.path.join(ROOT, "storage", "gallery_cache", "referat_styled_v1")
+
+
+async def styled_path(template_id: str, style: dict) -> Optional[str]:
+    """Title page of a template in the user's fonts / colour (Mini App preview), drawn once and cached."""
+    import hashlib
+    style = designs.clean_style(style)
+    if template_id not in designs.BY_ID or not style:
+        return None
+    name = hashlib.sha1(json.dumps([template_id, style], sort_keys=True).encode()).hexdigest()[:20]
+    out = os.path.join(STYLED, f"{name}.jpg")
+    if os.path.exists(out):
+        return out
+    global _sem
+    if _sem is None:
+        _sem = asyncio.Semaphore(2)
+    lock = _locks.setdefault("styled:" + name, asyncio.Lock())
+    async with lock:
+        if os.path.exists(out):
+            return out
+        from services.referat import render
+        t = designs.get(template_id)
+        images, cover = _sample_images(t)
+        tmp = tempfile.mkdtemp(prefix="refsty_")
+        try:
+            async with _sem:
+                pdf = await render.html_to_pdf(render.build_html(sample_doc(t), template_id, images, cover, style),
+                                               os.path.join(tmp, "s.pdf"))
+            pics = await asyncio.to_thread(render.pdf_pages_to_images, pdf, tmp, [0], WIDTH, "p1")
+            if not pics:
+                return None
+            os.makedirs(STYLED, exist_ok=True)
+            Image.open(pics[0]).convert("RGB").save(out, quality=82)
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+            _locks.pop("styled:" + name, None)
     return out

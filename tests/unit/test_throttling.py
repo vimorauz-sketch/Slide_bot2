@@ -67,3 +67,34 @@ async def test_admins_are_not_limited():
     for _ in range(50):
         await m(handler, Ev(), {})
     assert len(calls) == 50
+
+
+def test_flooding_at_twice_the_speed_is_banned():
+    """Every other update got through before, so the drop streak never grew and the user was never banned."""
+    c = Clock()
+    m = ThrottlingMiddleware(rate=1, burst=12, ban_seconds=300, clock=c)
+    passed = 0
+    for _ in range(400):           # two messages a second for over three minutes
+        passed += m.allow(9) is None
+        c.t += 0.5
+    assert m.buckets[9].banned_until > c.t
+    assert passed < 80
+
+
+def test_a_calm_user_is_forgiven_and_an_admin_can_lift_a_ban():
+    from bot.middlewares import throttling
+    c = Clock()
+    m = ThrottlingMiddleware(rate=1, burst=12, ban_seconds=300, clock=c)
+    throttling._instances.append(m)
+    try:
+        for _ in range(20):
+            m.allow(3)
+        c.t += 60                   # a calm minute
+        assert m.allow(3) is None and m.buckets[3].dropped == 0
+        for _ in range(500):
+            m.allow(4)
+        assert [r["user_id"] for r in throttling.banned_list()] == [4]
+        assert throttling.unban(4) and m.allow(4) is None
+        assert throttling.noisy_list()[0]["user_id"] == 4
+    finally:
+        throttling._instances.remove(m)

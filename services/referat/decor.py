@@ -341,6 +341,8 @@ def _layouts(p: Dict[str, str], v: int):
                   + _star(165, 238, 7, a2, 0.6, fill=a2 + "55", points=5))
     L["diag_split"] = (f'<polygon points="0,297 210,297 210,210 0,262" fill="{a}"/>'
                        f'<polygon points="0,262 210,210 210,204 0,256" fill="{a2}"/>')
+    from services.referat import decor_more
+    L.update(decor_more.layouts(p, v, rnd))
     return L
 
 
@@ -350,7 +352,8 @@ def cover_svg(layout: str, p: Dict[str, str], variant: int = 0, mirror: bool = F
     from services.referat.designs import LAYOUTS
     g = LAYOUTS.get(layout, {})
     if variant % 2 and not mirror:  # symmetric layouts: the second variant swaps the two colours
-        text_on_colour = g.get("tone") != "dark" or g.get("city_tone") == "light" or layout in ("card", "notebook")
+        text_on_colour = (g.get("tone") != "dark" or g.get("city_tone") == "light" or g.get("kind_on")
+                          or layout in ("card", "notebook"))
         if not text_on_colour:
             pal["accent"], pal["accent2"] = p["accent2"], p["accent"]
     body = _layouts(pal, variant).get(layout, "")

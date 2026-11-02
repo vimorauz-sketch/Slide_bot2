@@ -78,6 +78,20 @@ label.lbl{font-size:13px;font-weight:700;color:#3D4266}
 .bar{height:6px;border-radius:3px;background:#EEF0F6}.bar i{display:block;height:6px;border-radius:3px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.thumb-a4{width:22px;height:30px;margin:0 14px}
+.c-kind-p{background:#EEF0FF;color:#3240B8}.c-kind-r{background:#FEF6E4;color:#92400E}
+.mini-h{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-top:4px}
+.split-bar{display:flex;width:180px;height:10px;border-radius:5px;overflow:hidden;background:#EEF0F6}.split-bar i{display:block;height:100%}
+.kind-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.kind-box{border:2px solid;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.kind-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.kind-stats div{display:flex;flex-direction:column;gap:2px;background:#F7F8FC;border-radius:10px;padding:8px 10px}
+.kind-stats span{font-size:11px;color:var(--muted);font-weight:600}.kind-stats b{font-size:16px}
+@media(max-width:520px){.kind-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.hours{display:flex;align-items:flex-end;gap:3px;height:150px;padding-top:6px}
+.h-col{flex:1;height:100%;display:flex;align-items:flex-end}.h-col i{display:block;width:100%;border-radius:4px 4px 2px 2px;min-height:2px}
+.h-axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted2);font-weight:600;margin-top:-6px}
+.pill-lim{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;background:#FDECEC;color:#B91C1C}
 /* phones: the menu becomes a compact bar with scrollable buttons */
 @media(max-width:899px){
   .side{flex:1 1 100%;flex-direction:row;align-items:center;gap:6px;padding:12px 12px;overflow-x:auto;position:sticky;top:0;z-index:5}
@@ -104,6 +118,7 @@ label.lbl{font-size:13px;font-weight:700;color:#3D4266}
   <a class="nav-a {{ 'nav-on' if active=='payments' }}" href="/admin/payments"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg>To‘lovlar</a>
   <span class="sec">BOSHQARUV</span>
   <a class="nav-a {{ 'nav-on' if active=='broadcast' }}" href="/admin/broadcast"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11v2l13 5V6zM16 8a4 4 0 0 1 0 8M7 13v5h3"/></svg>Xabar tarqatish</a>
+  <a class="nav-a {{ 'nav-on' if active=='security' }}" href="/admin/security"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>Xavfsizlik{% if nav_banned %}<span class="badge" style="background:#F87171;color:#fff">{{ nav_banned }}</span>{% endif %}</a>
   <a class="nav-a {{ 'nav-on' if active=='settings' }}" href="/admin/settings"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Sozlamalar</a>
   <a class="nav-a {{ 'nav-on' if active=='system' }}" href="/admin/system"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Tizim holati</a>
   <div class="side-foot">
@@ -112,7 +127,7 @@ label.lbl{font-size:13px;font-weight:700;color:#3D4266}
     <span>Bot foydalanuvchilarga yopiq</span>
     {% else %}
     <div style="display:flex;align-items:center;gap:8px;color:#fff;font-weight:700;font-size:13px"><span style="width:8px;height:8px;border-radius:50%;background:#34D399;box-shadow:0 0 0 4px rgba(52,211,153,.2)"></span>Bot ishlayapti</div>
-    <span>{{ uptime }} · {{ building }} ta taqdimot yaratilmoqda</span>
+    <span>{{ uptime }} · {{ building }} ta buyurtma tayyorlanmoqda</span>
     {% endif %}
     <form method="post" action="/admin/logout" style="margin:6px 0 0"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn-sm" style="width:100%;background:rgba(255,255,255,.08);color:#DDE1FA">Chiqish · {{ admin_label }}</button></form>
   </div>

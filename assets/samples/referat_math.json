@@ -1,0 +1,121 @@
+{
+ "language": "uz",
+ "meta": {
+  "ministry": "O‘ZBEKISTON RESPUBLIKASI OLIY TA’LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+  "kind": "REFERAT",
+  "city": "Toshkent",
+  "year": "2026",
+  "institution": "Toshkent davlat pedagogika universiteti",
+  "faculty": "Fizika-matematika fakulteti",
+  "subject": "Matematika",
+  "topic": "Pifagor teoremasi va uning amaliy tatbiqlari",
+  "author": "Asadbek Qosimov",
+  "group": "MF-23",
+  "teacher": "N. Hamidova"
+ },
+ "sections": [
+  {
+   "kind": "intro",
+   "title": "Kirish",
+   "paragraphs": [
+    "Pifagor teoremasi — geometriyaning eng mashhur teoremalaridan biri bo‘lib, to‘g‘ri burchakli uchburchak tomonlari orasidagi bog‘lanishni ifodalaydi.",
+    "Referatda teoremaning tarixi, isbot usullari va kundalik hayotdagi tatbiqlari ko‘rib chiqiladi."
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Teorema va uning isbotlari",
+   "subsections": [
+    {
+     "title": "Teoremaning ifodasi",
+     "paragraphs": [
+      "To‘g‘ri burchakli uchburchakda gipotenuza kvadrati katetlar kvadratlarining yig‘indisiga teng: c² = a² + b².",
+      "Masalan, katetlari 3 va 4 bo‘lgan uchburchakning gipotenuzasi 5 ga teng, chunki 9 + 16 = 25."
+     ],
+     "image": {
+      "query": "geometry triangle chalkboard",
+      "caption": "Doskada chizilgan uchburchak"
+     }
+    },
+    {
+     "title": "Tarixi",
+     "paragraphs": [
+      "Teorema qadimgi Bobil va Hindiston olimlariga ham ma’lum bo‘lgan. Uning birinchi umumiy isboti Pifagor maktabiga nisbat beriladi. Al-Xorazmiy ham o‘z asarlarida bu bog‘lanishdan foydalangan."
+     ]
+    },
+    {
+     "title": "Isbot usullari",
+     "paragraphs": [
+      "Teoremaning 400 dan ortiq isboti ma’lum: yuzalar orqali, o‘xshash uchburchaklar orqali va algebraik usullar shular jumlasidandir."
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Amaliy tatbiqlari",
+   "subsections": [
+    {
+     "title": "Pifagor uchliklari",
+     "paragraphs": [
+      "Butun sonlardan iborat yechimlar Pifagor uchliklari deyiladi."
+     ],
+     "table": {
+      "caption": "Pifagor uchliklari",
+      "head": [
+       "a",
+       "b",
+       "c"
+      ],
+      "rows": [
+       [
+        "3",
+        "4",
+        "5"
+       ],
+       [
+        "5",
+        "12",
+        "13"
+       ],
+       [
+        "8",
+        "15",
+        "17"
+       ],
+       [
+        "7",
+        "24",
+        "25"
+       ]
+      ]
+     }
+    },
+    {
+     "title": "Hayotdagi qo‘llanilishi",
+     "paragraphs": [
+      "Quruvchilar to‘g‘ri burchakni tekshirishda, navigatorlar masofani hisoblashda, dasturchilar esa ekrandagi nuqtalar orasidagi masofani topishda bu teoremadan foydalanadi."
+     ],
+     "image": {
+      "query": "architect measuring building",
+      "caption": "Qurilishda o‘lchash"
+     }
+    }
+   ]
+  },
+  {
+   "kind": "conclusion",
+   "title": "Xulosa",
+   "paragraphs": [
+    "Pifagor teoremasi oddiy ko‘rinsa-da, matematika va texnikaning ko‘plab sohalariga asos bo‘lgan.",
+    "Uni chuqur tushunish geometrik tafakkurni rivojlantiradi."
+   ]
+  }
+ ],
+ "references": [
+  "Pogorelov A. V. Geometriya 7–11. — Toshkent: O‘qituvchi, 2018.",
+  "Maor E. The Pythagorean Theorem: A 4,000-Year History. — Princeton University Press, 2007.",
+  "Al-Xorazmiy M. Al-jabr val-muqobala. — Toshkent: Fan, 1983.",
+  "Sharigin I. F. Geometriya. — Moskva: Drofa, 2010."
+ ]
+}

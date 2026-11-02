@@ -1,0 +1,122 @@
+{
+ "language": "uz",
+ "meta": {
+  "ministry": "O‘ZBEKISTON RESPUBLIKASI OLIY TA’LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+  "kind": "REFERAT",
+  "city": "Toshkent",
+  "year": "2026",
+  "institution": "Mirzo Ulug‘bek nomidagi O‘zbekiston Milliy universiteti",
+  "faculty": "Fizika fakulteti",
+  "subject": "Astronomiya",
+  "topic": "Quyosh tizimi sayyoralari va ularni o‘rganish usullari",
+  "author": "Javohir Sobirov",
+  "group": "AF-21",
+  "teacher": "O. Rasulov"
+ },
+ "sections": [
+  {
+   "kind": "intro",
+   "title": "Kirish",
+   "paragraphs": [
+    "Quyosh tizimi — Quyosh va uning tortishish kuchi ta’sirida harakatlanuvchi sayyoralar, ularning yo‘ldoshlari, asteroid va kometalardan iborat tizimdir. U taxminan 4,6 milliard yil oldin gaz-chang bulutidan shakllangan.",
+    "Ushbu referatda sayyoralarning asosiy xususiyatlari hamda ularni o‘rganishda qo‘llaniladigan zamonaviy usullar ko‘rib chiqiladi."
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Quyosh tizimining tuzilishi",
+   "subsections": [
+    {
+     "title": "Ichki sayyoralar",
+     "paragraphs": [
+      "Merkuriy, Venera, Yer va Mars ichki — yer guruhidagi sayyoralar hisoblanadi. Ular qattiq tog‘ jinslaridan tashkil topgan, nisbatan kichik va zich.",
+      "Venera eng issiq sayyora bo‘lib, uning qalin karbonat angidrid atmosferasi kuchli issiqxona effektini yuzaga keltiradi."
+     ],
+     "image": {
+      "query": "solar system planets",
+      "caption": "Quyosh tizimi sayyoralari"
+     }
+    },
+    {
+     "title": "Gaz gigantlari",
+     "paragraphs": [
+      "Yupiter va Saturn asosan vodorod va geliydan tashkil topgan ulkan sayyoralardir. Yupiter massasi qolgan barcha sayyoralar massasining ikki baravaridan ko‘p.",
+      "Uran va Neptun «muz gigantlari» deb ataladi: ularning tarkibida suv, ammiak va metan muzlari ko‘p."
+     ]
+    },
+    {
+     "title": "Kichik jismlar",
+     "paragraphs": [
+      "Mars va Yupiter orbitalari orasida asteroidlar kamari joylashgan. Neptundan narida esa Koyper kamari va Oort buluti mavjud."
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Sayyoralarni o‘rganish usullari",
+   "subsections": [
+    {
+     "title": "Asosiy ko‘rsatkichlar",
+     "paragraphs": [
+      "Quyidagi jadvalda ayrim sayyoralarning asosiy ko‘rsatkichlari berilgan."
+     ],
+     "table": {
+      "caption": "Sayyoralarning asosiy ko‘rsatkichlari",
+      "head": [
+       "Sayyora",
+       "Quyoshgacha masofa, a.b.",
+       "Yo‘ldoshlar soni"
+      ],
+      "rows": [
+       [
+        "Yer",
+        "1,0",
+        "1"
+       ],
+       [
+        "Mars",
+        "1,5",
+        "2"
+       ],
+       [
+        "Yupiter",
+        "5,2",
+        "95"
+       ],
+       [
+        "Saturn",
+        "9,5",
+        "146"
+       ]
+      ]
+     }
+    },
+    {
+     "title": "Teleskoplar va kosmik apparatlar",
+     "paragraphs": [
+      "Yerdagi va orbitadagi teleskoplar, shuningdek, sayyoralarga yuborilgan kosmik apparatlar yangi ma’lumotlar olishning asosiy manbaidir. Ulug‘bek rasadxonasi esa o‘z davrida yulduzlar jadvalini yaratgan eng aniq ilmiy markaz edi."
+     ],
+     "image": {
+      "query": "observatory telescope night",
+      "caption": "Rasadxona teleskopi"
+     }
+    }
+   ]
+  },
+  {
+   "kind": "conclusion",
+   "title": "Xulosa",
+   "paragraphs": [
+    "Quyosh tizimi sayyoralari tarkibi, kattaligi va atmosferasi jihatidan bir-biridan keskin farq qiladi.",
+    "Zamonaviy teleskoplar va kosmik missiyalar koinot haqidagi bilimlarimizni muttasil boyitmoqda."
+   ]
+  }
+ ],
+ "references": [
+  "Mamadazimov M. Astronomiya. — Toshkent: O‘qituvchi, 2014.",
+  "Ulug‘bek M. Ziji Ko‘ragoniy. — Toshkent: Fan, 1994.",
+  "NASA. Solar System Exploration. — 2023.",
+  "Kononovich E. V., Moroz V. I. Umumiy astronomiya kursi. — Moskva, 2004."
+ ]
+}

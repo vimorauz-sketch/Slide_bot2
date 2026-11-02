@@ -1,0 +1,116 @@
+{
+ "language": "uz",
+ "meta": {
+  "ministry": "O‘ZBEKISTON RESPUBLIKASI OLIY TA’LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+  "kind": "REFERAT",
+  "city": "Toshkent",
+  "year": "2026",
+  "institution": "Toshkent davlat yuridik universiteti",
+  "faculty": "Davlat huquqi fakulteti",
+  "subject": "Konstitutsiyaviy huquq",
+  "topic": "O‘zbekiston Respublikasi Konstitutsiyasi — inson huquqlarining kafolati",
+  "author": "Shahzoda Ergasheva",
+  "group": "DH-12",
+  "teacher": "A. Yo‘ldoshev"
+ },
+ "sections": [
+  {
+   "kind": "intro",
+   "title": "Kirish",
+   "paragraphs": [
+    "Konstitutsiya — davlatning asosiy qonuni bo‘lib, jamiyat va davlat qurilishi asoslarini, inson va fuqaro huquq hamda erkinliklarini belgilaydi.",
+    "Referatda Konstitutsiyaning tuzilishi, unda mustahkamlangan asosiy huquqlar va ularni himoya qilish mexanizmlari yoritiladi."
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Konstitutsiyaning mohiyati va tuzilishi",
+   "subsections": [
+    {
+     "title": "Asosiy qonunning o‘rni",
+     "paragraphs": [
+      "Konstitutsiya qonunlar tizimida eng yuqori yuridik kuchga ega. Boshqa barcha qonun va normativ hujjatlar unga muvofiq bo‘lishi shart.",
+      "2023-yilda umumxalq referendumi orqali Konstitutsiyaning yangi tahriri qabul qilindi va unda inson qadri birinchi o‘ringa qo‘yildi."
+     ],
+     "image": {
+      "query": "constitution law book",
+      "caption": "Asosiy qonun"
+     }
+    },
+    {
+     "title": "Tuzilishi",
+     "paragraphs": [
+      "Konstitutsiya muqaddima, bo‘limlar, boblar va moddalardan iborat. Har bir bo‘lim davlat va jamiyat hayotining muayyan sohasini tartibga soladi."
+     ]
+    },
+    {
+     "title": "Davlat hokimiyatining bo‘linishi",
+     "paragraphs": [
+      "Davlat hokimiyati qonun chiqaruvchi, ijro etuvchi va sud hokimiyatiga bo‘linadi. Bu tamoyil hokimiyatning bir qo‘lda to‘planishiga yo‘l qo‘ymaydi."
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "chapter",
+   "title": "Inson huquqlari va ularning kafolatlari",
+   "subsections": [
+    {
+     "title": "Asosiy huquqlar",
+     "paragraphs": [
+      "Konstitutsiyada quyidagi huquq guruhlari mustahkamlangan."
+     ],
+     "table": {
+      "caption": "Inson huquqlarining guruhlari",
+      "head": [
+       "Guruh",
+       "Misollar"
+      ],
+      "rows": [
+       [
+        "Shaxsiy huquqlar",
+        "Yashash, erkinlik, sha’n va qadr-qimmat"
+       ],
+       [
+        "Siyosiy huquqlar",
+        "Saylash va saylanish, murojaat qilish"
+       ],
+       [
+        "Iqtisodiy huquqlar",
+        "Mulkdor bo‘lish, mehnat qilish"
+       ],
+       [
+        "Ijtimoiy huquqlar",
+        "Ta’lim, tibbiy yordam"
+       ]
+      ]
+     }
+    },
+    {
+     "title": "Himoya mexanizmlari",
+     "paragraphs": [
+      "Huquqlar sud, Inson huquqlari bo‘yicha vakil (ombudsman) va Konstitutsiyaviy sud orqali himoya qilinadi."
+     ],
+     "image": {
+      "query": "courthouse columns",
+      "caption": "Sud binosi"
+     }
+    }
+   ]
+  },
+  {
+   "kind": "conclusion",
+   "title": "Xulosa",
+   "paragraphs": [
+    "Konstitutsiya inson huquqlari va erkinliklarining oliy kafolati hisoblanadi.",
+    "Har bir fuqaroning o‘z huquqlarini bilishi huquqiy davlat va fuqarolik jamiyati qurishning muhim sharti."
+   ]
+  }
+ ],
+ "references": [
+  "O‘zbekiston Respublikasi Konstitutsiyasi. — Toshkent: Adolat, 2023.",
+  "Saidov A. X. Konstitutsiyaviy huquq. — Toshkent: TDYU, 2020.",
+  "Inson huquqlari umumjahon deklaratsiyasi. — BMT, 1948.",
+  "Odilqoriyev X. T. Konstitutsiya va fuqarolik jamiyati. — Toshkent: Sharq, 2002."
+ ]
+}

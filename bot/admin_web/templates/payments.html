@@ -2,7 +2,7 @@
 {% block title %}To‘lovlar{% endblock %}
 {% block content %}
 <header style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;justify-content:space-between">
-  <div style="display:flex;flex-direction:column;gap:4px"><h1>To‘lovlar</h1><span class="sub">TezCheck orqali kelgan to‘lovlar (Click · Payme)</span></div>
+  <div style="display:flex;flex-direction:column;gap:4px"><h1>To‘lovlar</h1><span class="sub">Sotuvlar, bepul berilganlar va TezCheck orqali kelgan to‘lovlar (Click · Payme)</span></div>
   <span class="chip {{ 'c-paid' if tc.configured else 'c-wait' }}" style="font-size:13px;padding:6px 12px"><span class="dot"></span>{{ tc.mode_label }}</span>
 </header>
 
@@ -14,15 +14,24 @@
 </div>
 {% endif %}
 
-<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
-  {% for c in cards %}
+<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))" aria-label="Bot bazasi bo‘yicha">
+  {% for c in db_cards %}
   <div class="card" style="padding:18px 20px;display:flex;align-items:center;gap:14px"><span class="tile" style="background:{{ c.tint }};color:{{ c.color }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{ c.icon }}"/></svg></span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:13px;color:#6B7194;font-weight:600">{{ c.label }}</span><span class="num" style="font-size:20px;font-weight:800">{{ c.value }}</span>{% if c.note %}<span class="hint">{{ c.note }}</span>{% endif %}</div></div>
   {% endfor %}
 </section>
 
+{% if tc.configured %}
+<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))" aria-label="TezCheck">
+  {% for c in cards %}
+  <div class="card" style="padding:18px 20px;display:flex;align-items:center;gap:14px"><span class="tile" style="background:{{ c.tint }};color:{{ c.color }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="{{ c.icon }}"/></svg></span><div style="display:flex;flex-direction:column;min-width:0"><span style="font-size:13px;color:#6B7194;font-weight:600">{{ c.label }}</span><span class="num" style="font-size:20px;font-weight:800">{{ c.value }}</span>{% if c.note %}<span class="hint">{{ c.note }}</span>{% endif %}</div></div>
+  {% endfor %}
+</section>
+{% endif %}
+
 {% if tc.error %}<div class="flash flash-err">TezCheck: {{ tc.error }}</div>{% endif %}
 
 <div class="row" style="align-items:flex-start">
+  {% if tc.configured %}
   <section class="card" style="flex:999 1 560px;min-width:0;overflow:hidden">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:22px 22px 8px;flex-wrap:wrap;gap:10px">
       <h2>TezCheck tranzaksiyalari</h2>
@@ -51,20 +60,22 @@
     </div>
     {% if next_cursor %}<div style="padding:14px 22px;border-top:1px solid #F0F1F6"><a class="btn btn-sm" href="?cursor={{ next_cursor }}{% if problems %}&problems=1{% endif %}">Keyingi sahifa →</a></div>{% endif %}
   </section>
+  {% endif %}
 
-  <section class="card" style="flex:1 1 330px;min-width:0;overflow:hidden">
+  <section class="card" style="flex:1 1 360px;min-width:0;overflow:hidden">
     <div style="padding:22px 22px 8px"><h2>Bot bazasidagi to‘lovlar</h2></div>
     <div class="scroll">
-      <table class="table" style="min-width:0">
-        <thead><tr><th>Buyurtma</th><th>Summa</th><th>Kim</th></tr></thead>
+      <table class="table" style="min-width:{{ '0' if tc.configured else '640px' }}">
+        <thead><tr><th>Buyurtma</th>{% if not tc.configured %}<th>Tur</th>{% endif %}<th>Summa</th><th style="padding-right:20px">Kim</th></tr></thead>
         <tbody>
         {% for o in local %}
         <tr class="clk" onclick="location.href='/admin/orders?o={{ o.id }}'">
-          <td><a class="ell" style="font-weight:700;color:#12153A;display:block;max-width:200px" href="/admin/orders?o={{ o.id }}">{{ o.topic }}</a><span class="num hint">{{ dt(o.paid_at) }}</span></td>
+          <td><a class="ell" style="font-weight:700;color:#12153A;display:block;max-width:170px" href="/admin/orders?o={{ o.id }}">{{ o.topic }}</a><span class="num hint">{{ dt(o.paid_at) }}</span></td>
+          {% if not tc.configured %}<td>{{ kind_chip(o) }}</td>{% endif %}
           <td class="num" style="font-weight:700">{{ money(o.paid_amount or o.total_price) }}</td>
-          <td><span class="chip {{ 'c-paid' if o.paid_by == 'TEZCHECK' else 'c-prev' }}">{{ o.paid_by or '—' }}{% if o.payment_provider %} · {{ o.payment_provider }}{% endif %}</span></td>
+          <td style="padding-right:20px"><span class="chip {{ 'c-paid' if o.paid_by == 'TEZCHECK' else 'c-prev' }}">{{ paid_by_label.get(o.paid_by, o.paid_by or '—') }}</span>{% if o.payment_provider %}<div class="hint" style="text-transform:capitalize">{{ o.payment_provider }}</div>{% endif %}</td>
         </tr>
-        {% else %}<tr><td colspan="3" class="empty">Hali to‘lov yo‘q</td></tr>{% endfor %}
+        {% else %}<tr><td colspan="4" class="empty">Hali to‘lov yo‘q</td></tr>{% endfor %}
         </tbody>
       </table>
     </div>
