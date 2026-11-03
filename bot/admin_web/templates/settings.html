@@ -12,16 +12,27 @@
 .sw input:checked ~ .track{background:#F97316}
 .sw input:checked ~ .knob{left:30px}
 .sw input:focus-visible ~ .track{outline:2px solid #fff;outline-offset:2px}
+.set-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;align-items:start}
+.set-nav{position:sticky;top:20px;display:flex;flex-direction:column;gap:4px;background:#fff;border-radius:16px;padding:8px;box-shadow:0 1px 2px rgba(16,20,48,.06)}
+.set-nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-weight:700;font-size:13.5px;color:#5A6080}
+.set-nav a:hover{background:#F5F6FB;color:#12153A}
+.set-nav a.on{background:#EEF0FF;color:#3240B8}
+.set-pane{display:none;flex-direction:column;gap:20px}
+.set-pane.on{display:flex}
+.save-bar{position:sticky;bottom:0;z-index:4;display:flex;align-items:center;gap:14px;justify-content:flex-end;background:rgba(238,240,246,.92);backdrop-filter:blur(8px);padding:12px 0}
+@media(max-width:899px){.set-layout{grid-template-columns:1fr}.set-nav{position:static;flex-direction:row;overflow-x:auto}.set-nav a{white-space:nowrap}}
 </style>{% endblock %}
-{% block content %}
-<form method="post" action="/admin/settings" style="display:flex;flex-direction:column;gap:22px">
-<input type="hidden" name="csrf" value="{{ csrf }}">
-<header style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;justify-content:space-between">
-  <div style="display:flex;flex-direction:column;gap:4px"><h1>Sozlamalar</h1><span class="sub">Saqlangan zahoti kuchga kiradi — deploy kerak emas</span></div>
-  <button class="btn btn-p"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Saqlash</button>
-</header>
 
-<section aria-label="Texnik ishlar rejimi" style="background:{{ '#7C2D12' if v.maintenance else '#1B2150' }};border-radius:22px;padding:26px 28px;display:flex;flex-wrap:wrap;gap:22px;align-items:center;position:relative;overflow:hidden">
+{% block content %}
+<form method="post" action="/admin/settings" style="display:flex;flex-direction:column;gap:20px" id="setform">
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<header class="page-head">
+  <div class="t"><h1>Sozlamalar</h1><span class="sub">Saqlangan zahoti kuchga kiradi — deploy kerak emas</span></div>
+</header>
+<div class="set-layout">
+<nav class="set-nav" aria-label="Sozlamalar bo‘limlari"><a href="#umumiy" data-pane="umumiy"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>Umumiy</a><a href="#narx" data-pane="narx"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Narxlar</a><a href="#buyurtma" data-pane="buyurtma"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16v12H4zM8 20h8M12 16v4"/></svg>Buyurtmalar</a><a href="#bepul" data-pane="bepul"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7"/></svg>Bepul va referal</a><a href="#ai" data-pane="ai"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>AI</a><a href="#adminlar" data-pane="adminlar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>Adminlar</a><a href="#tolov" data-pane="tolov"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 5h20v14H2zM2 10h20"/></svg>To‘lov tizimi</a></nav>
+<div>
+<div class="set-pane" id="pane-umumiy" role="region" aria-label="Umumiy"><section aria-label="Texnik ishlar rejimi" style="background:{{ '#7C2D12' if v.maintenance else '#1B2150' }};border-radius:22px;padding:26px 28px;display:flex;flex-wrap:wrap;gap:22px;align-items:center;position:relative;overflow:hidden">
   <div style="position:absolute;right:-40px;top:-70px;width:220px;height:220px;border-radius:50%;background:{{ '#9A3412' if v.maintenance else '#2B3470' }}"></div>
   <div style="position:relative;width:58px;height:58px;border-radius:16px;background:{{ '#F97316' if v.maintenance else '#6E7BFF' }};display:flex;align-items:center;justify-content:center;color:#fff;flex:none"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></div>
   <div style="position:relative;flex:1 1 300px;display:flex;flex-direction:column;gap:6px">
@@ -38,8 +49,8 @@
   </div>
 </section>
 
-<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(330px,1fr))">
-  <section class="card pad" style="display:flex;flex-direction:column;gap:18px">
+</div>
+<div class="set-pane" id="pane-narx" role="region" aria-label="Narxlar"><section class="card pad" style="display:flex;flex-direction:column;gap:18px">
     <div style="display:flex;align-items:center;gap:12px"><span class="tile" style="background:#EEF0FF;color:#6E7BFF"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><h2>Narx va slaydlar</h2></div>
     <div class="field"><label for="p1" class="lbl">1 slayd narxi, so‘m</label><input id="p1" name="price_per_slide" class="inp" type="number" min="1" max="1000000" required value="{{ v.price_per_slide }}"></div>
     <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
@@ -52,7 +63,8 @@
     <span class="hint">TezCheck’da eng kichik to‘lov — 1 000 so‘m.</span>
   </section>
 
-  <section class="card pad" style="display:flex;flex-direction:column;gap:16px">
+</div>
+<div class="set-pane" id="pane-buyurtma" role="region" aria-label="Buyurtmalar"><section class="card pad" style="display:flex;flex-direction:column;gap:16px">
     <div style="display:flex;align-items:center;gap:12px"><span class="tile" style="background:#FEF6E4;color:#F59E0B"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h16v12H4zM8 20h8M12 16v4"/></svg></span><h2>Taqdimot yaratish</h2>
       <span class="chip {{ 'c-paid' if creation_open else 'c-ref' }}" style="margin-left:auto">{{ 'Ochiq' if creation_open else 'Yopiq' }}</span></div>
     <div role="radiogroup" aria-label="Taqdimot yaratish" style="display:flex;gap:8px;flex-wrap:wrap">
@@ -67,7 +79,10 @@
     <span class="hint"><b>To‘lanmagan namuna</b> — bir foydalanuvchi 24 soatda to‘lamasdan nechta namuna yarata oladi (keyingisi uchun avvalgisini to‘lashi kerak). <b>Kunlik umumiy chegara</b> — butun bot bo‘yicha sutkadagi namunalar (AI xarajatini cheklaydi). 0 = cheklovsiz.</span>
   </section>
 
-  <section class="card pad" style="display:flex;flex-direction:column;gap:16px">
+<section class="card pad" style="display:flex;flex-direction:column;gap:10px"><h2>🛡 Limitlar va spam himoyasi</h2>
+    <span class="hint">Kunlik namuna, bir vaqtda yaratish, spam chegaralari va soatlik limitlar endi bitta joyda — «Xavfsizlik» sahifasida.</span>
+    <a class="btn" href="/admin/security" style="align-self:flex-start">Xavfsizlik sahifasiga o‘tish →</a></section></div>
+<div class="set-pane" id="pane-bepul" role="region" aria-label="Bepul va referal"><section class="card pad" style="display:flex;flex-direction:column;gap:16px">
     <div style="display:flex;align-items:center;gap:12px"><span class="tile" style="background:#E8F8EF;color:#16A34A"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></span><h2>Bepul taqdimot va referal</h2>
       <label class="sw" aria-label="Birinchi taqdimot bepul" style="margin-left:auto"><input type="checkbox" name="free_trial" value="1" {{ 'checked' if v.free_trial }}><span class="track"></span><span class="knob"></span></label></div>
     <span class="hint" style="margin-top:-6px"><b>Birinchi taqdimot bepul</b> — har bir foydalanuvchiga bir marta. To‘lov ulanmagan bo‘lsa ham ishlaydi.</span>
@@ -80,19 +95,8 @@
     <span class="hint"><b>Bepul taqdimot, slayd</b> — bepul taqdimot necha slaydgacha (0 = cheklovsiz). <b>Bonus</b> — taklif qilgan odamga har bir do‘sti uchun beriladigan bepul taqdimotlar (0 = referal bonusi o‘chiq).</span>
   </section>
 
-  <section class="card pad" style="display:flex;flex-direction:column;gap:18px">
-    <div style="display:flex;align-items:center;gap:12px"><span class="tile" style="background:#FDECEC;color:#E5484D"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><h2>Limitlar va himoya</h2></div>
-    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
-      <div class="field"><label for="l1" class="lbl">Kunlik namuna</label><input id="l1" name="max_previews_per_day" class="inp" type="number" min="0" max="1000" required value="{{ v.max_previews_per_day }}"></div>
-      <div class="field"><label for="l2" class="lbl">Bir vaqtda yaratish</label><input id="l2" name="max_parallel_builds" class="inp" type="number" min="1" max="20" required value="{{ v.max_parallel_builds }}"></div>
-      <div class="field"><label for="l3" class="lbl">Spam: birdaniga</label><input id="l3" name="throttle_burst" class="inp" type="number" min="3" max="100" required value="{{ v.throttle_burst }}"></div>
-      <div class="field"><label for="l4" class="lbl">Blok, daqiqa</label><input id="l4" name="throttle_ban_minutes" class="inp" type="number" min="1" max="1440" required value="{{ v.throttle_ban_minutes }}"></div>
-    </div>
-    <span class="hint">Kunlik namuna — bitta foydalanuvchi sutkada yaratishi mumkin bo‘lgan bepul namunalar soni (0 = cheksiz). Adminlarga cheklov yo‘q.</span>
-    <a class="btn btn-sm" href="/admin/security">🛡 Barcha himoya sozlamalari va spamchilar →</a>
-  </section>
-
-  <section class="card pad" style="display:flex;flex-direction:column;gap:18px">
+</div>
+<div class="set-pane" id="pane-ai" role="region" aria-label="AI"><section class="card pad" style="display:flex;flex-direction:column;gap:18px">
     <div style="display:flex;align-items:center;gap:12px"><span class="tile" style="background:#F3EEFF;color:#8B5CF6"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 16l.9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9z"/></svg></span><h2>AI</h2></div>
     <span class="lbl">Slayd yozish modeli</span>
     <div role="radiogroup" aria-label="Model" style="display:flex;gap:8px;flex-wrap:wrap">
@@ -103,7 +107,8 @@
     <span class="hint">Model hisobingizda bo‘lmasa, bot avtomatik ravishda asosiy modelga ({{ main_model }}) o‘tadi.</span>
   </section>
 
-  <section class="card pad" style="display:flex;flex-direction:column;gap:14px">
+</div>
+<div class="set-pane" id="pane-adminlar" role="region" aria-label="Adminlar"><section class="card pad" style="display:flex;flex-direction:column;gap:14px">
     <div style="display:flex;align-items:center;gap:12px"><span class="tile" style="background:#E7F8F1;color:#10B981"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6"/></svg></span><h2>Adminlar</h2></div>
     {% for a in admins %}
     <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #F0F1F6">
@@ -117,8 +122,7 @@
     <span class="hint">Railway’dagi ADMIN_IDS’dagi adminlarni faqat o‘sha yerdan o‘zgartirish mumkin.</span>
   </section>
 </div>
-
-<section class="card pad" style="display:flex;flex-direction:column;gap:14px">
+<div class="set-pane" id="pane-tolov" role="region" aria-label="To‘lov tizimi"><section class="card pad" style="display:flex;flex-direction:column;gap:14px">
   <div style="display:flex;align-items:center;gap:12px"><span class="tile" style="background:#FEF6E4;color:#F59E0B"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></span><h2>TezCheck to‘lov tizimi</h2>
     <span class="chip {{ 'c-paid' if tc.ok else 'c-wait' if tc.configured else 'c-ref' }}" style="margin-left:auto">{{ tc.status }}</span></div>
   <div class="kv">
@@ -130,5 +134,25 @@
   </div>
   <span class="hint">Kalitlar Railway → Variables’da saqlanadi (xavfsizlik uchun bu yerdan o‘zgartirilmaydi).</span>
 </section>
+</div>
+</div>
+</div>
+<div class="save-bar"><span class="hint" id="dirty" hidden>Saqlanmagan o‘zgarishlar bor</span>
+  <button class="btn btn-p"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Saqlash</button></div>
 </form>
+<script>
+(function () {
+  var links = document.querySelectorAll('.set-nav a');
+  function show(k) {
+    var ok = document.getElementById('pane-' + k) ? k : 'umumiy';
+    links.forEach(function (a) { a.classList.toggle('on', a.dataset.pane === ok); });
+    document.querySelectorAll('.set-pane').forEach(function (p) { p.classList.toggle('on', p.id === 'pane-' + ok); });
+  }
+  links.forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); history.replaceState(null, '', '#' + a.dataset.pane); show(a.dataset.pane); }); });
+  show((location.hash || '#umumiy').slice(1));
+  var f = document.getElementById('setform');
+  f.addEventListener('input', function () { document.getElementById('dirty').hidden = false; });
+  f.addEventListener('submit', function () { f.action = '/admin/settings' + location.hash; });
+})();
+</script>
 {% endblock %}

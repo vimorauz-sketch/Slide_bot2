@@ -286,8 +286,30 @@ def geometry(cover: str, variant: int = 0) -> Dict:
 
 
 TEMPLATES = _build()
+BASE_TEMPLATES = list(TEMPLATES)
 BY_ID = {t["id"]: t for t in TEMPLATES}
 DEFAULT = "r01"
+_DRAFTS: Dict[str, Dict] = {}
+
+
+def set_custom(entries: List[Dict]) -> None:
+    """Templates published in the dashboard's AI studio (services/custom_templates.py), after the 200."""
+    TEMPLATES[:] = BASE_TEMPLATES + [e for e in entries if e.get("id") not in {t["id"] for t in BASE_TEMPLATES}]
+    BY_ID.clear()
+    BY_ID.update({t["id"]: t for t in TEMPLATES})
+    BY_ID.update(_DRAFTS)
+
+
+def add_draft(entry: Dict) -> None:
+    """A previewable AI-studio template that users do not see yet."""
+    _DRAFTS[entry["id"]] = entry
+    while len(_DRAFTS) > 60:
+        _DRAFTS.pop(next(iter(_DRAFTS)))
+    BY_ID[entry["id"]] = entry
+
+
+def is_custom(template_id: str) -> bool:
+    return bool(BY_ID.get(template_id, {}).get("ai"))
 
 
 def get(template_id: str) -> Dict:
@@ -297,9 +319,18 @@ def get(template_id: str) -> Dict:
 
 def by_number(n) -> Dict:
     try:
-        return get(f"r{int(n):02d}")
+        n = int(n)
     except (TypeError, ValueError):
         return get(DEFAULT)
+    t = next((t for t in TEMPLATES if int(t["code"]) == n), None)
+    return get(t["id"] if t else DEFAULT)
+
+
+def has_number(n) -> bool:
+    try:
+        return any(int(t["code"]) == int(n) for t in TEMPLATES)
+    except (TypeError, ValueError):
+        return False
 
 
 # ---------------------------------------------------------------------- the user's own fonts and colour

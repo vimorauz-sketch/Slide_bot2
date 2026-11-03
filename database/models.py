@@ -147,3 +147,19 @@ class SystemSetting(Base):
 
     key = Column(String(100), primary_key=True)
     value = Column(Text, nullable=False)
+
+
+class CustomTemplate(Base):
+    """Templates made in the dashboard's AI studio: a slide template (a design-space spec) or a referat
+    template (layout + colours + fonts). Stored here because the server's disk is wiped on redeploy."""
+    __tablename__ = "custom_templates"
+
+    id = Column(String(64), primary_key=True)          # a401_xxx (slides) / r201 (referats)
+    kind = Column(String(16), nullable=False, index=True)  # slide / referat
+    code = Column(Integer, nullable=False)
+    name = Column(String(120), nullable=False)
+    data = Column(Text, nullable=False)                # JSON spec
+    prompt = Column(Text, nullable=True)               # what the admin asked the AI for
+    enabled = Column(Boolean, default=True, nullable=False)
+    created_by = Column(String(64), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)

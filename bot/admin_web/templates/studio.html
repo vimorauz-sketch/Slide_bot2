@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block title %}AI studiya{% endblock %}
+{% block head %}{% if tab == 'test' and jobs|selectattr('status', 'in', ['queued', 'running'])|list %}<meta http-equiv="refresh" content="4">{% endif %}
+<style>
+.studio-hero{background:linear-gradient(135deg,#1B2150 0%,#3B2A86 100%);border-radius:22px;color:#fff;padding:24px 26px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;position:relative;overflow:hidden}
+.studio-hero:after{content:"";position:absolute;right:-60px;top:-80px;width:260px;height:260px;border-radius:50%;background:rgba(167,139,250,.25)}
+.studio-hero h1{color:#fff}
+.studio-hero .sub{color:#C9CEF5}
+.ai-state{position:relative;z-index:1;margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border-radius:999px;padding:8px 14px;font-weight:700;font-size:13px}
+.ai-state i{width:8px;height:8px;border-radius:50%}
+.prompt-card{display:flex;flex-direction:column;gap:14px}
+.ex{display:flex;flex-wrap:wrap;gap:8px}
+.ex button{border:1px dashed #C9CEF5;background:#F7F8FF;color:#3240B8;border-radius:999px;padding:6px 12px;font:600 12.5px 'Plus Jakarta Sans',sans-serif;cursor:pointer}
+.ex button:hover{background:#EEF0FF}
+.drafts{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.draft{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(16,20,48,.05),0 8px 24px rgba(16,20,48,.05);display:flex;flex-direction:column}
+.draft .shots{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:4px;background:#E9EBF3;padding:4px}
+.draft .shots img{width:100%;height:100%;object-fit:cover;display:block;border-radius:6px;background:#DDE0EC;aspect-ratio:16/9}
+.draft .shots img:first-child{grid-row:1 / span 2;aspect-ratio:auto}
+.draft .shots.a4{grid-template-columns:1fr 1fr;grid-template-rows:auto}
+.draft .shots.a4 img{aspect-ratio:210/297}
+.draft .shots.a4 img:first-child{grid-row:auto}
+.draft .in{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tags span{background:#F1F2F8;border-radius:8px;padding:3px 8px;font-size:12px;font-weight:600;color:#3D4266}
+.sw-row{display:flex;gap:4px}.sw-row i{width:18px;height:18px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.job{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid #F0F1F6}
+.job a{font-weight:700;color:#12153A}
+.pics{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.pics img{width:100%;border-radius:8px;box-shadow:0 2px 10px rgba(16,20,48,.12);display:block;background:#fff}
+.txt{white-space:pre-wrap;background:#F7F8FC;border-radius:12px;padding:14px;font-size:14px;line-height:1.55;border:1px solid #ECEEF5}
+.busy{display:none;align-items:center;gap:10px;font-weight:700;color:#3240B8}
+form.loading .busy{display:flex}
+form.loading button[type=submit]{opacity:.5;pointer-events:none}
+.tabs label{padding:9px 14px;border-radius:9px;font:700 13px 'Plus Jakarta Sans',sans-serif;cursor:pointer;color:#5A6080;white-space:nowrap}
+.tabs label.on{background:var(--navy2);color:#fff}
+</style>{% endblock %}
+{% block content %}
+<section class="studio-hero">
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;gap:6px;max-width:640px">
+    <h1>✨ AI studiya</h1>
+    <span class="sub">Yangi slayd va referat shablonlarini so‘z bilan tasvirlang — AI dizayn qiladi, siz ko‘rib chiqib, yoqqanini bir bosishda botga qo‘shasiz. Shu yerda sinov taqdimoti yarating va xabar matnlarini yozdiring.</span>
+  </div>
+  <div class="ai-state"><i style="background:{{ '#34D399' if ai_on else '#FBBF24' }}"></i>{{ 'AI ulangan' if ai_on else 'Oddiy rejim (OpenAI kaliti yo‘q)' }}</div>
+</section>
+
+<nav class="tabs" aria-label="AI studiya bo‘limlari">
+  {% for key, label in tabs %}<a href="?tab={{ key }}" class="{{ 'on' if tab == key }}"{% if tab == key %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}
+</nav>
+
+{% if tab in ('slide', 'referat') %}
+{% set state = slide if tab == 'slide' else referat %}
+{% set drafts = slide_drafts if tab == 'slide' else referat_drafts %}
+<form class="card pad prompt-card" method="post" action="/admin/studio/generate/{{ tab }}" onsubmit="this.classList.add('loading')">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <h2>{{ 'Yangi slayd shabloni' if tab == 'slide' else 'Yangi referat shabloni' }}</h2>
+    <span class="hint">{{ 'AI 31 xil badiiy uslub, 12 xil muqova, 30 ta shrift juftligi, ranglar va o‘nlab bezaklar orasidan tanlaydi — har bir variant to‘g‘ri chiziladi va 10 xil rangda bo‘ladi.' if tab == 'slide' else 'AI 104 ta titul tuzilishi, 15 xil sarlavha, 12 xil sahifa bezagi, ranglar va 160 ta shrift orasidan tanlaydi.' }}</span>
+  </div>
+  <label class="sr" for="prompt">Shablon tavsifi</label>
+  <textarea id="prompt" name="prompt" class="inp" rows="3" maxlength="600" required placeholder="Qanday shablon kerak? Mavzu, kayfiyat, ranglar…">{{ state.prompt or '' }}</textarea>
+  <div class="ex">{% for e in (examples if tab == 'slide' else rexamples) %}<button type="button" onclick="document.getElementById('prompt').value=this.textContent">{{ e }}</button>{% endfor %}</div>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+    <label class="lbl" for="cnt">Variantlar</label>
+    <select id="cnt" name="count" class="inp" style="width:auto;min-height:44px">{% for n in (2, 3, 4) %}<option value="{{ n }}" {{ 'selected' if n == 3 }}>{{ n }} ta</option>{% endfor %}</select>
+    <button type="submit" class="btn btn-p">✨ Variantlar yaratish</button>
+    <span class="busy"><span class="spin"></span>AI dizayn qilmoqda… 10–40 soniya</span>
+  </div>
+</form>
+
+{% if drafts %}
+<section style="display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:center;gap:10px"><h2>Variantlar</h2><span class="chip {{ 'c-ai' if state.source == 'ai' else 'c-flat' }}">{{ 'AI tanladi' if state.source == 'ai' else 'kalit so‘zlar bo‘yicha' }}</span>
+    <span class="hint">Rasmlar birinchi ochilganda chiziladi (bir necha soniya).</span></div>
+  <div class="drafts">
+  {% for d in drafts %}
+    <article class="draft">
+      {% if tab == 'slide' %}
+      <div class="shots">
+        <img loading="lazy" src="/admin/studio/preview/{{ d.id }}/0.webp" alt="Muqova">
+        <img loading="lazy" src="/admin/studio/preview/{{ d.id }}/1.webp" alt="Slayd">
+        <img loading="lazy" src="/admin/studio/preview/{{ d.id }}/2.webp" alt="Slayd">
+      </div>
+      {% else %}
+      <div class="shots a4">
+        <img loading="lazy" src="/admin/studio/rpreview/{{ d.id }}_1.jpg" alt="Titul varag‘i">
+        <img loading="lazy" src="/admin/studio/rpreview/{{ d.id }}_4.jpg" alt="Ichki sahifa">
+      </div>
+      {% endif %}
+      <div class="in">
+        <div class="tags">
+          {% if tab == 'slide' %}{% set c = d.choice %}
+          <span>{{ {'light': '☀️ Yorug‘', 'cream': '📜 Qog‘oz', 'dark': '🌙 Qorong‘i', 'vivid': '🎨 To‘yingan'}[c.mode] }}</span><span>{{ c.art }}</span><span>muqova: {{ c.cover }}</span><span>{{ d.fonts.title }}</span>
+          {% else %}{% set c = d.choice %}
+          <span>{{ c.layout }}</span><span>sarlavha: {{ c.heading }}</span><span>sahifa: {{ c.page }}</span><span>{{ c.fonts.title }}</span>
+          {% endif %}
+        </div>
+        {% if tab == 'slide' %}<div class="sw-row" title="Ranglar">{% for col in d.colors[:10] %}<i style="background:{{ col.palette.primary }}"></i>{% endfor %}</div>
+        {% else %}<div class="sw-row">{% for k in ('accent', 'accent2', 'soft', 'ink') %}<i style="background:{{ d.palette[k] }}"></i>{% endfor %}</div>{% endif %}
+        <form method="post" action="/admin/studio/publish/{{ tab }}" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="draft" value="{{ d.id }}">
+          <div class="field" style="flex:1 1 160px"><label class="lbl" for="n{{ loop.index }}">Nomi</label><input id="n{{ loop.index }}" name="name" class="inp" maxlength="40" value="{{ d.name }}"></div>
+          <button class="btn btn-p">Saqlash va botga qo‘shish</button>
+        </form>
+        <a class="hint" style="font-weight:700" href="/admin/studio?tab=test&kind={{ 'deck' if tab == 'slide' else 'referat' }}&template={{ d.id }}">🧪 Haqiqiy matn bilan sinab ko‘rish →</a>
+      </div>
+    </article>
+  {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% set mine = custom|selectattr('kind', 'equalto', tab)|list %}
+<section class="card" style="overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 22px 8px;gap:10px;flex-wrap:wrap"><h2>AI yaratgan {{ 'slayd' if tab == 'slide' else 'referat' }} shablonlari</h2>
+    <a href="/admin/templates?k={{ tab }}&f=ai" style="font-weight:700;font-size:13px">Shablonlar sahifasida boshqarish →</a></div>
+  {% for r in mine[:8] %}
+  <div class="job"><span class="chip c-ai">№ {{ r.code }}</span><b style="flex:1">{{ r.name }}</b>
+    <span class="hint ell" style="max-width:340px">{{ r.prompt or '' }}</span>
+    <span class="chip {{ 'c-paid' if r.enabled else 'c-flat' }}">{{ 'Botda' if r.enabled else 'O‘chirilgan' }}</span></div>
+  {% else %}<div class="empty">Hali yo‘q — yuqorida tavsif yozib, birinchisini yarating.</div>{% endfor %}
+</section>
+{% endif %}
+
+{% if tab == 'test' %}
+{% set kind = request_kind or (job.kind if job else 'deck') %}
+<form class="card pad" method="post" action="/admin/studio/test" style="display:flex;flex-direction:column;gap:16px" id="testform">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <div style="display:flex;flex-direction:column;gap:4px"><h2>Sinov taqdimoti yoki referat</h2>
+    <span class="hint">Istalgan shablonni (AI yaratganlarini ham) haqiqiy matn bilan sinab ko‘ring: PDF, PPTX / Word fayllarini yuklab olasiz. Mijozlarga hech narsa yuborilmaydi va hisobga yozilmaydi.</span></div>
+  <div role="radiogroup" aria-label="Turi" class="tabs" style="align-self:flex-start">
+    <label><input type="radio" name="kind" value="deck" class="sr" {{ 'checked' if kind != 'referat' }} onchange="pick()"><span class="kb">🖥 Taqdimot</span></label>
+    <label><input type="radio" name="kind" value="referat" class="sr" {{ 'checked' if kind == 'referat' }} onchange="pick()"><span class="kb">📄 Referat</span></label>
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
+    <div class="field"><label class="lbl" for="tt">Mavzu</label><input id="tt" name="topic" class="inp" required maxlength="200" placeholder="Masalan: Quyosh tizimi sayyoralari"></div>
+    <div class="field"><label class="lbl" for="ts">Fan</label><input id="ts" name="subject" class="inp" maxlength="80" placeholder="Astronomiya"></div>
+    <div class="field k-deck"><label class="lbl" for="tpd">Slayd shabloni</label>
+      <select id="tpd" name="template" class="inp">{% if template_q and template_q.startswith('draft_') %}<option value="{{ template_q }}" selected>Qoralama · {{ template_q }}</option>{% endif %}
+        {% for v, l in slide_choices %}<option value="{{ v }}" {{ 'selected' if v == template_q }}>{{ l }}</option>{% endfor %}</select></div>
+    <div class="field k-deck"><label class="lbl" for="tn">Slaydlar soni</label><input id="tn" name="slides" class="inp" type="number" min="5" max="15" value="8"></div>
+    <div class="field k-ref"><label class="lbl" for="tpr">Referat shabloni</label>
+      <select id="tpr" name="template" class="inp" disabled>{% if template_q and template_q.startswith('rd') %}<option value="{{ template_q }}" selected>Qoralama · {{ template_q }}</option>{% endif %}
+        {% for v, l in referat_choices %}<option value="{{ v }}" {{ 'selected' if v == template_q }}>{{ l }}</option>{% endfor %}</select></div>
+    <div class="field k-ref"><label class="lbl" for="tz">Hajmi</label>
+      <select id="tz" name="size" class="inp" disabled>{% for v, l in sizes %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select></div>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center"><button type="submit" class="btn btn-p">🧪 Yaratish</button><span class="hint">1–3 daqiqa davom etadi; sahifa o‘zi yangilanadi.</span></div>
+</form>
+<script>
+function pick() {
+  var ref = document.querySelector('input[name=kind][value=referat]').checked;
+  document.querySelectorAll('.k-deck').forEach(function (e) { e.hidden = ref; e.querySelectorAll('select,input').forEach(function (i) { i.disabled = ref; }); });
+  document.querySelectorAll('.k-ref').forEach(function (e) { e.hidden = !ref; e.querySelectorAll('select,input').forEach(function (i) { i.disabled = !ref; }); });
+  document.querySelectorAll('#testform .kb').forEach(function (k) { k.parentNode.classList.toggle('on', k.previousElementSibling.checked); });
+}
+pick();
+</script>
+
+{% if job %}
+<section class="card pad" style="display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+    <h2>{{ job.params.topic }}</h2>
+    {% if job.status == 'done' %}<span class="chip c-paid">Tayyor · {{ job.seconds }} s</span>
+    {% elif job.status == 'failed' %}<span class="chip c-ref">Xato</span>
+    {% else %}<span class="chip c-prev"><span class="spin" style="width:12px;height:12px"></span>{{ job.stage_label }}</span>{% endif %}
+    <span style="margin-left:auto;display:flex;gap:8px">{% for k in ('pdf', 'pptx', 'docx') %}{% if job.files.get(k) %}<a class="btn btn-sm btn-dark" href="/admin/studio/job/{{ job.id }}/{{ k }}">⬇ {{ {'pdf': 'PDF', 'pptx': 'PowerPoint', 'docx': 'Word'}[k] }}</a>{% endif %}{% endfor %}</span>
+  </div>
+  {% if job.error %}<div class="flash flash-err">{{ job.error }}</div>{% endif %}
+  {% if job.pictures %}<div class="pics">{% for p in job.pictures %}<a href="/admin/studio/job/{{ job.id }}/{{ loop.index0 }}" target="_blank" rel="noopener"><img loading="lazy" src="/admin/studio/job/{{ job.id }}/{{ loop.index0 }}" alt="{{ loop.index }}"></a>{% endfor %}</div>{% endif %}
+</section>
+{% endif %}
+
+<section class="card" style="overflow:hidden">
+  <div style="padding:20px 22px 8px"><h2>Oxirgi sinovlar</h2></div>
+  {% for j in jobs %}
+  <div class="job"><span class="chip {{ 'c-kind-r' if j.kind == 'referat' else 'c-kind-p' }}">{{ 'Referat' if j.kind == 'referat' else 'Taqdimot' }}</span>
+    <a href="?tab=test&job={{ j.id }}" style="flex:1" class="ell">{{ j.params.topic }}</a>
+    <span class="hint">{{ j.params.template }}</span>
+    {% if j.status == 'done' %}<span class="chip c-paid">Tayyor</span>{% elif j.status == 'failed' %}<span class="chip c-ref">Xato</span>{% else %}<span class="chip c-prev"><span class="spin" style="width:12px;height:12px"></span>{{ j.stage_label }}</span>{% endif %}</div>
+  {% else %}<div class="empty">Hali sinov yo‘q</div>{% endfor %}
+</section>
+{% endif %}
+
+{% if tab == 'text' %}
+<form class="card pad prompt-card" method="post" action="/admin/studio/text" onsubmit="this.classList.add('loading')">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <div style="display:flex;flex-direction:column;gap:4px"><h2>Xabar matni</h2><span class="hint">Nima haqida xabar kerakligini yozing — AI 3 xil variant tayyorlaydi. Yoqqanini xabar tarqatish sahifasiga o‘tkazasiz.</span></div>
+  <label class="sr" for="brief">Xabar mavzusi</label>
+  <textarea id="brief" name="brief" class="inp" rows="3" maxlength="800" required placeholder="Masalan: 100 ta yangi referat shabloni qo‘shildi, birinchi taqdimot bepul">{{ text.brief or '' }}</textarea>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+    <label class="lbl" for="tone">Ohang</label>
+    <select id="tone" name="tone" class="inp" style="width:auto;min-height:44px">{% for v, l in [('friendly', 'Samimiy'), ('formal', 'Rasmiy'), ('fun', 'Quvnoq')] %}<option value="{{ v }}" {{ 'selected' if text.tone == v }}>{{ l }}</option>{% endfor %}</select>
+    <button type="submit" class="btn btn-p">✍️ Matn yozish</button>
+    <span class="busy"><span class="spin"></span>Yozilmoqda…</span>
+  </div>
+</form>
+{% if text.texts %}
+<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+  {% for t in text.texts %}
+  <article class="card pad" style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;gap:8px"><b>{{ loop.index }}-variant</b><span class="chip {{ 'c-ai' if text.source == 'ai' else 'c-flat' }}" style="margin-left:auto">{{ 'AI' if text.source == 'ai' else 'andoza' }}</span></div>
+    <div class="txt" id="t{{ loop.index }}">{{ t }}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn btn-p btn-sm" href="/admin/broadcast?text={{ t|urlencode }}">📣 Xabar tarqatishga o‘tkazish</a>
+      <button type="button" class="btn btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('t{{ loop.index }}').textContent).then(()=>{this.textContent='✓ Nusxa olindi'})">Nusxa olish</button>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}

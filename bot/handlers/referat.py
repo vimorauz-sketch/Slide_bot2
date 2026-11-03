@@ -184,7 +184,7 @@ async def template_button(callback: CallbackQuery, state: FSMContext):
 @router.message(ReferatForm.template, F.text)
 async def template_number(message: Message, state: FSMContext):
     text = message.text.strip().lstrip("#№ ").strip()
-    if text.isdigit() and 1 <= int(text) <= len(designs.TEMPLATES):
+    if text.isdigit() and designs.has_number(int(text)):
         await apply_template_choice(message.bot, message.chat.id, state, designs.by_number(int(text))["id"])
         return
     await message.answer(f"⚠️ Iltimos, <b>1 dan {len(designs.TEMPLATES)} gacha</b> shablon raqamini yuboring yoki "

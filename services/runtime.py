@@ -44,6 +44,8 @@ def defaults() -> Dict[str, str]:
         "free_max_slides": "15",        # the free (trial / bonus) presentation covers up to this many slides
         "referral_bonus": "1",          # free presentations the inviter gets per friend
         "referral_trigger": "paid",     # paid: when the friend pays for the first time / first: first presentation
+        "hidden_slide_templates": "",   # comma-separated template ids hidden from the galleries
+        "hidden_referat_templates": "",
     }
 
 
@@ -95,6 +97,11 @@ async def load() -> None:
             blocked_users.update(int(i) for i in ids)
     except Exception:  # noqa: BLE001 - the bot still works with the defaults
         logger.exception("runtime settings could not be loaded")
+    try:  # templates made in the dashboard's AI studio
+        from services import custom_templates
+        await custom_templates.load()
+    except Exception:  # noqa: BLE001
+        logger.exception("custom templates could not be loaded")
 
 
 async def set_many(values: Dict[str, str]) -> None:
@@ -104,6 +111,11 @@ async def set_many(values: Dict[str, str]) -> None:
         for k, v in values.items():
             await repository.set_setting(session, k, str(v))
     _values.update({k: str(v) for k, v in values.items()})
+
+
+def hidden_templates(kind: str) -> Set[str]:
+    """Templates the admin hid from users (kind: slide / referat); they still work when chosen by number."""
+    return {x for x in get(f"hidden_{kind}_templates").split(",") if x}
 
 
 def set_blocked(user_ids: Iterable[int], blocked: bool) -> None:

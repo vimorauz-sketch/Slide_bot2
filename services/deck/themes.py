@@ -70,9 +70,36 @@ def _data() -> Dict[str, Any]:
         return json.load(f)
 
 
+# Templates made in the dashboard's AI studio (services/custom_templates.py): published ones are
+# listed like the others; drafts can be rendered for a preview but are not offered to users.
+_CUSTOM: Dict[str, Dict[str, Any]] = {}
+_DRAFTS: Dict[str, Dict[str, Any]] = {}
+
+
 @lru_cache(maxsize=1)
 def _generated() -> Dict[str, Dict[str, Any]]:
-    return {t["id"]: t for t in _data()["templates"]}
+    out = {t["id"]: t for t in _data()["templates"]}
+    out.update(_CUSTOM)
+    out.update(_DRAFTS)
+    return out
+
+
+def set_custom(specs: List[Dict[str, Any]]) -> None:
+    """Replaces the published AI-studio templates (called after loading or changing them)."""
+    _CUSTOM.clear()
+    _CUSTOM.update({t["id"]: t for t in specs})
+    clear_cache()
+
+
+def add_draft(spec: Dict[str, Any]) -> None:
+    _DRAFTS[spec["id"]] = spec
+    while len(_DRAFTS) > 60:                 # keep memory bounded
+        _DRAFTS.pop(next(iter(_DRAFTS)))
+    clear_cache()
+
+
+def is_custom(theme_id: str) -> bool:
+    return theme_id in _CUSTOM or theme_id in _DRAFTS
 
 
 def list_family_ids() -> List[str]:
@@ -80,8 +107,8 @@ def list_family_ids() -> List[str]:
 
 
 def list_theme_ids() -> List[str]:
-    """All 200 templates ordered by number (colour sets are not separate entries)."""
-    return list_family_ids() + list(_generated())
+    """All templates ordered by number (colour sets are not separate entries); drafts are not listed."""
+    return list_family_ids() + [k for k in _generated() if k not in _DRAFTS]
 
 
 # ------------------------------------------------------------------ building themes
@@ -158,7 +185,7 @@ def _load(theme_key: str) -> Dict[str, Any]:
 
 def _build_aliases() -> Dict[str, str]:
     if not _ALIASES:
-        for tid in list_theme_ids():
+        for tid in list_family_ids() + list(_generated()):  # drafts too: they can be previewed
             t = _load_base(tid)
             code = str(int(t["code"]))
             for k in (tid, code, f"{int(code):02d}", f"{int(code):03d}", f"tpl_{tid}", f"tpl_{code}"):

@@ -939,6 +939,7 @@ async def broadcast_page(request: web.Request) -> web.Response:
         except Exception:  # noqa: BLE001
             pass
     return await render(request, "broadcast.html", "broadcast", segments=segments, history=history,
+                        prefill=request.query.get("text", "")[:3500],
                         any_running=bool(running), bot_username=bot_username)
 
 
@@ -1242,6 +1243,8 @@ def setup_admin(app: web.Application) -> None:
     r.add_get("/admin/settings", settings_page)
     r.add_post("/admin/settings", settings_post)
     r.add_get("/admin/system", system_page)
+    from bot.admin_web import studio
+    studio.setup(app)
     r.add_get("/admin/security", security_page)
     r.add_post("/admin/security", security_post)
     r.add_post(r"/admin/security/unban/{uid:\d+}", security_unban)

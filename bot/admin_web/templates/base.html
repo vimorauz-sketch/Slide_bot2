@@ -78,6 +78,7 @@ label.lbl{font-size:13px;font-weight:700;color:#3D4266}
 .bar{height:6px;border-radius:3px;background:#EEF0F6}.bar i{display:block;height:6px;border-radius:3px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .empty{padding:40px 20px;text-align:center;color:var(--muted)}
+[hidden]{display:none!important}
 .thumb-a4{width:22px;height:30px;margin:0 14px}
 .c-kind-p{background:#EEF0FF;color:#3240B8}.c-kind-r{background:#FEF6E4;color:#92400E}
 .mini-h{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-top:4px}
@@ -91,15 +92,42 @@ label.lbl{font-size:13px;font-weight:700;color:#3D4266}
 .hours{display:flex;align-items:flex-end;gap:3px;height:150px;padding-top:6px}
 .h-col{flex:1;height:100%;display:flex;align-items:flex-end}.h-col i{display:block;width:100%;border-radius:4px 4px 2px 2px;min-height:2px}
 .h-axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted2);font-weight:600;margin-top:-6px}
+.notice{display:flex;align-items:center;gap:10px;background:#FFF8E6;border:1px solid #FDE7B0;color:#7A4B00;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:600}
+.notice a{margin-left:auto;color:#7A4B00;font-weight:800;white-space:nowrap}
+.notice-dot{width:8px;height:8px;border-radius:50%;background:#F59E0B;flex:none}
+.page-head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;justify-content:space-between}
+.page-head .t{display:flex;flex-direction:column;gap:4px}
+.tabs{display:flex;gap:4px;background:#fff;padding:4px;border-radius:12px;box-shadow:0 1px 2px rgba(16,20,48,.06);overflow-x:auto;scrollbar-width:none;max-width:100%}
+.tabs a,.tabs button{border:0;background:none;padding:9px 14px;border-radius:9px;font:700 13px 'Plus Jakarta Sans',sans-serif;color:#5A6080;white-space:nowrap;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.tabs a:hover,.tabs button:hover{color:var(--ink)}
+.tabs .on{background:var(--navy2);color:#fff}
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}
+.tpl{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(16,20,48,.06);display:flex;flex-direction:column}
+.tpl .pic{position:relative;background:#EEF0F6;aspect-ratio:16/9}
+.tpl .pic.a4{aspect-ratio:210/297}
+.tpl .pic img{width:100%;height:100%;object-fit:cover;display:block}
+.tpl .code{position:absolute;left:8px;top:8px;background:rgba(16,20,48,.78);color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:2px 7px}
+.tpl .flag{position:absolute;right:8px;top:8px}
+.tpl .body{padding:12px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.tpl .nm{font-weight:800;font-size:14px}
+.tpl .meta{font-size:12px;color:var(--muted)}
+.tpl .acts{display:flex;gap:6px;margin-top:auto;padding-top:6px;flex-wrap:wrap}
+.tpl.off{opacity:.55}
+.c-ai{background:#F3EEFF;color:#6D28D9}
+.spin{width:16px;height:16px;border-radius:50%;border:2.5px solid #C9CEF5;border-top-color:var(--indigo);animation:sp 1s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
 .pill-lim{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;background:#FDECEC;color:#B91C1C}
-/* phones: the menu becomes a compact bar with scrollable buttons */
+.nav-btn{display:none}
+/* phones: a top bar with a «Menyu» button that opens the full menu */
 @media(max-width:899px){
-  .side{flex:1 1 100%;flex-direction:row;align-items:center;gap:6px;padding:12px 12px;overflow-x:auto;position:sticky;top:0;z-index:5}
-  .brand{padding:0 6px 0 2px}.brand span+span{display:none}
-  .sec,.side-foot div,.side-foot span{display:none}
-  .nav-a{flex:none;padding:9px 12px;white-space:nowrap;font-size:13px}
-  .side-foot{margin:0;background:none;padding:0;flex:none}
-  .side-foot form{margin:0!important}.side-foot .btn{width:auto!important;white-space:nowrap}
+  .side{flex:1 1 100%;flex-direction:row;flex-wrap:wrap;align-items:center;gap:4px;padding:10px 12px;position:sticky;top:0;z-index:5}
+  .brand{padding:0 6px 0 2px;flex:1}.brand span+span{display:none}
+  .nav-btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:9px 14px;background:rgba(255,255,255,.1);color:#fff;font-weight:700;font-size:13px;cursor:pointer}
+  .sec,.nav-a,.side-foot{display:none}
+  #nt:checked ~ .sec{display:block;flex:1 1 100%;padding:12px 6px 4px}
+  #nt:checked ~ .nav-a{display:flex;flex:1 1 100%;padding:11px 12px}
+  #nt:checked ~ .side-foot{display:flex;flex:1 1 100%;margin-top:8px}
+  #nt:focus-visible + .nav-btn{outline:2px solid #fff;outline-offset:2px}
 }
 </style>
 {% block head %}{% endblock %}
@@ -111,16 +139,20 @@ label.lbl{font-size:13px;font-weight:700;color:#3D4266}
     <div class="logo"><i style="left:0;top:6px;width:30px;height:24px;background:#F59E0B;transform:rotate(-10deg)"></i><i style="left:7px;top:4px;width:30px;height:24px;background:#6E7BFF;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;font-style:normal">S</i></div>
     <div style="display:flex;flex-direction:column"><span style="font-weight:800;font-size:17px;color:#fff">SlideLab</span><span style="font-size:12px;color:#8D95BE">Admin panel</span></div>
   </div>
+  <input type="checkbox" id="nt" class="sr" aria-label="Menyuni ochish"><label for="nt" class="nav-btn" aria-hidden="true">☰ Menyu</label>
   <span class="sec" style="padding-top:0">ASOSIY</span>
-  <a class="nav-a {{ 'nav-on' if active=='home' }}" href="/admin"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/></svg>Bosh sahifa</a>
-  <a class="nav-a {{ 'nav-on' if active=='orders' }}" href="/admin/orders"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></svg>Buyurtmalar{% if nav_waiting %}<span class="badge">{{ nav_waiting }}</span>{% endif %}</a>
-  <a class="nav-a {{ 'nav-on' if active=='users' }}" href="/admin/users"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M17 11a3 3 0 1 0 0-6M22 21c0-3-2-5-5-5.5"/></svg>Foydalanuvchilar</a>
-  <a class="nav-a {{ 'nav-on' if active=='payments' }}" href="/admin/payments"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg>To‘lovlar</a>
-  <span class="sec">BOSHQARUV</span>
-  <a class="nav-a {{ 'nav-on' if active=='broadcast' }}" href="/admin/broadcast"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11v2l13 5V6zM16 8a4 4 0 0 1 0 8M7 13v5h3"/></svg>Xabar tarqatish</a>
-  <a class="nav-a {{ 'nav-on' if active=='security' }}" href="/admin/security"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>Xavfsizlik{% if nav_banned %}<span class="badge" style="background:#F87171;color:#fff">{{ nav_banned }}</span>{% endif %}</a>
-  <a class="nav-a {{ 'nav-on' if active=='settings' }}" href="/admin/settings"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Sozlamalar</a>
-  <a class="nav-a {{ 'nav-on' if active=='system' }}" href="/admin/system"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Tizim holati</a>
+  <a class="nav-a {{ 'nav-on' if active=='home' }}" href="/admin"{% if active=='home' %} aria-current="page"{% endif %}><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/></svg>Bosh sahifa</a>
+  <a class="nav-a {{ 'nav-on' if active=='orders' }}" href="/admin/orders"{% if active=='orders' %} aria-current="page"{% endif %}><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 2h9l5 5v15H6zM14 2v6h6M9 13h8M9 17h6"/></svg>Buyurtmalar{% if nav_waiting %}<span class="badge">{{ nav_waiting }}</span>{% endif %}</a>
+  <a class="nav-a {{ 'nav-on' if active=='users' }}" href="/admin/users"{% if active=='users' %} aria-current="page"{% endif %}><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21c0-4 3-6 7-6s7 2 7 6M17 11a3 3 0 1 0 0-6M22 21c0-3-2-5-5-5.5"/></svg>Foydalanuvchilar</a>
+  <a class="nav-a {{ 'nav-on' if active=='payments' }}" href="/admin/payments"{% if active=='payments' %} aria-current="page"{% endif %}><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 5h20v14H2zM2 10h20M6 15h4"/></svg>To‘lovlar</a>
+  <span class="sec">KONTENT</span>
+  <a class="nav-a {{ 'nav-on' if active=='studio' }}" href="/admin/studio"{% if active=='studio' %} aria-current="page"{% endif %}><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9zM19 16l.9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9z"/></svg>AI studiya<span class="badge" style="background:#8B5CF6;color:#fff">AI</span></a>
+  <a class="nav-a {{ 'nav-on' if active=='templates' }}" href="/admin/templates"{% if active=='templates' %} aria-current="page"{% endif %}><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg>Shablonlar</a>
+  <a class="nav-a {{ 'nav-on' if active=='broadcast' }}" href="/admin/broadcast"{% if active=='broadcast' %} aria-current="page"{% endif %}><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11v2l13 5V6zM16 8a4 4 0 0 1 0 8M7 13v5h3"/></svg>Xabar tarqatish</a>
+  <span class="sec">TIZIM</span>
+  <a class="nav-a {{ 'nav-on' if active=='security' }}" href="/admin/security"{% if active=='security' %} aria-current="page"{% endif %}><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM9 12l2 2 4-4"/></svg>Xavfsizlik{% if nav_banned %}<span class="badge" style="background:#F87171;color:#fff">{{ nav_banned }}</span>{% endif %}</a>
+  <a class="nav-a {{ 'nav-on' if active=='settings' }}" href="/admin/settings"{% if active=='settings' %} aria-current="page"{% endif %}><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Sozlamalar</a>
+  <a class="nav-a {{ 'nav-on' if active=='system' }}" href="/admin/system"{% if active=='system' %} aria-current="page"{% endif %}><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Tizim holati</a>
   <div class="side-foot">
     {% if maintenance %}
     <div style="display:flex;align-items:center;gap:8px;color:#fff;font-weight:700;font-size:13px"><span style="width:8px;height:8px;border-radius:50%;background:#F97316;box-shadow:0 0 0 4px rgba(249,115,22,.25)"></span>Texnik ishlar rejimi</div>
@@ -128,12 +160,13 @@ label.lbl{font-size:13px;font-weight:700;color:#3D4266}
     {% else %}
     <div style="display:flex;align-items:center;gap:8px;color:#fff;font-weight:700;font-size:13px"><span style="width:8px;height:8px;border-radius:50%;background:#34D399;box-shadow:0 0 0 4px rgba(52,211,153,.2)"></span>Bot ishlayapti</div>
     <span>{{ uptime }} · {{ building }} ta buyurtma tayyorlanmoqda</span>
+    {% if pay_banner %}<span style="color:#FCD34D">● To‘lov tizimi ulanmagan</span>{% endif %}
     {% endif %}
     <form method="post" action="/admin/logout" style="margin:6px 0 0"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn-sm" style="width:100%;background:rgba(255,255,255,.08);color:#DDE1FA">Chiqish · {{ admin_label }}</button></form>
   </div>
 </nav>
 <main>
-{% if pay_banner %}<div class="flash flash-err" role="alert">⚠️ {{ pay_banner }} <a href="/admin/settings" style="color:inherit;text-decoration:underline">Sozlamalar</a></div>{% endif %}
+{% if pay_banner and active in ('home', 'payments', 'settings') %}<div class="notice" role="status"><span class="notice-dot"></span><span>{{ pay_banner }}</span><a href="/admin/settings#tolov">Batafsil →</a></div>{% endif %}
 {% if flash %}<div class="flash {{ 'flash-err' if flash_err else 'flash-ok' }}" role="status">{{ flash }}</div>{% endif %}
 {% block content %}{% endblock %}
 </main>
