@@ -14,6 +14,7 @@ It also serves the template gallery Mini App (webapp/) at /webapp/ and its selec
 """
 import mimetypes
 import json
+from typing import Any, Dict
 import logging
 import os
 from aiohttp import web
@@ -245,16 +246,41 @@ async def styled_cover_handler(request: web.Request) -> web.StreamResponse:
     return web.FileResponse(path, headers={"Cache-Control": "public, max-age=604800", "Content-Type": "image/jpeg"})
 
 
+_CATALOG_CACHE: Dict[str, Any] = {}
+
+
+async def webapp_catalog_handler(request: web.Request) -> web.Response:
+    """The template gallery's catalogue: the built file, plus templates made in the dashboard's AI studio,
+    minus templates the admin hid."""
+    from services import runtime
+    from services.deck import themes
+    path = os.path.join(WEBAPP_DIR, "catalog.json")
+    mtime = os.path.getmtime(path) if os.path.exists(path) else 0
+    if _CATALOG_CACHE.get("mtime") != mtime:
+        with open(path, encoding="utf-8") as f:
+            _CATALOG_CACHE.update(mtime=mtime, data=json.load(f))
+    base = _CATALOG_CACHE.get("data") or {"categories": [], "themes": []}
+    hidden = runtime.hidden_templates("slide")
+    known = {t["id"] for t in base["themes"]}
+    from services import gallery
+    extra = [dict(t, live=True, ai=True, previews=len(gallery.PREVIEW_SLIDES) + 1)
+             for t in themes.catalog() if t["id"] not in known and themes.is_custom(t["id"])]
+    out = {"categories": base["categories"], "themes": [t for t in base["themes"] + extra if t["id"] not in hidden]}
+    return web.json_response(out, headers={"Cache-Control": "no-cache"})
+
+
 async def referat_index_handler(request: web.Request) -> web.StreamResponse:
     """The referat templates Mini App; the template list is put into the page."""
     if not request.path.endswith("/"):
         raise web.HTTPFound(request.path + "/")
+    from services import runtime
     from services.deck import fonts
     from services.referat import designs
     catalog = [{"id": t["id"], "n": t["code"], "name": t["name"], "cover": designs.GROUP_OF[t["cover"]], "layout": designs.COVERS[t["cover"]],
                 "heading": designs.HEADINGS[t["heading"]], "palette": t["palette"]["name"],
                 "colors": [t["palette"]["accent"], t["palette"]["accent2"]],
-                "fonts": fonts.family_name(t["fonts"]["title"])} for t in designs.TEMPLATES]
+                "fonts": fonts.family_name(t["fonts"]["title"])} for t in designs.TEMPLATES
+               if t["id"] not in runtime.hidden_templates("referat")]
     with open(os.path.join(WEBAPP_DIR, "referat", "index.html"), encoding="utf-8") as f:
         html = f.read().replace("__CATALOG__", json.dumps(catalog, ensure_ascii=False).replace("</", "<\\/"))
     return web.Response(text=html, content_type="text/html", headers={"Cache-Control": "no-cache"})
@@ -357,6 +383,7 @@ def create_webhook_app(bot=None, dp=None) -> web.Application:
         app.router.add_get(r"/webapp/referat/page/{tid:r\d{2,3}}_{n:\d}.jpg", referat_page_handler)
         app.router.add_get(r"/webapp/referat/styled/{tid:r\d{2,3}}.jpg", referat_styled_handler)
         app.router.add_get("/webapp/referat/api/accents", referat_accents_handler)
+        app.router.add_get("/webapp/catalog.json", webapp_catalog_handler)
         app.router.add_static("/webapp/", WEBAPP_DIR, show_index=False)
     app.router.add_get("/health", health_handler)
     app.router.add_get("/", health_handler)

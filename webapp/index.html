@@ -233,7 +233,7 @@ body.web .choose { display: block; }
     $("grid").innerHTML = list.map(function (t) {
       var dots = t.colors.slice(0, 5).map(function (c) { return '<i style="background:' + esc(c.swatch[1]) + '"></i>'; }).join("");
       return '<button class="card" data-id="' + esc(t.id) + '"><div class="thumb"><img loading="lazy" decoding="async" src="' + thumb(t.id) + '" alt="">' +
-        '<span class="code">№ ' + t.code + '</span>' + (t.live ? '<span class="live">📷 Real foto</span>' : '') + '</div><div class="meta"><div class="name">' + esc(t.name) +
+        '<span class="code">№ ' + t.code + '</span>' + (t.ai ? '<span class="live">✨ AI</span>' : t.live ? '<span class="live">📷 Real foto</span>' : '') + '</div><div class="meta"><div class="name">' + esc(t.name) +
         '</div><div class="row"><span class="tag">' + esc((t.category || "").split("•")[0]) + '</span><span class="dots">' + dots + "<span>+" + (t.colors.length - 5) + "</span></span></div></div></button>";
     }).join("");
   }

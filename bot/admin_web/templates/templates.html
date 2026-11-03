@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Shablonlar{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div class="t"><h1>Shablonlar</h1><span class="sub">Barcha slayd va referat shablonlari: qaysi biri ko‘p tanlanmoqda, qaysilarini yashirish kerak</span></div>
+  <a class="btn btn-p" href="/admin/studio?tab={{ kind }}">✨ AI bilan yangi shablon</a>
+</header>
+
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+  <nav class="tabs" aria-label="Turi">
+    <a href="?k=slide" class="{{ 'on' if kind == 'slide' }}">🖥 Slayd shablonlari</a>
+    <a href="?k=referat" class="{{ 'on' if kind == 'referat' }}">📄 Referat shablonlari</a>
+  </nav>
+  <form method="get" action="/admin/templates" class="search" style="margin-left:auto">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A80A3" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input type="hidden" name="k" value="{{ kind }}"><input type="hidden" name="f" value="{{ f }}">
+    <label for="q" class="sr">Qidiruv</label><input id="q" name="q" type="search" value="{{ q }}" placeholder="Nomi yoki raqami">
+  </form>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:-8px">
+  {% for key, label in [('all', 'Hammasi'), ('top', 'Ommabop (30 kun)'), ('ai', '✨ AI yaratgan'), ('hidden', 'Yashirilgan')] %}
+  <a class="flt {{ 'flt-on' if f == key }}" href="?k={{ kind }}&f={{ key }}{% if q %}&q={{ q|urlencode }}{% endif %}">{{ label }}<span class="cnt">{{ counts[key] }}</span></a>
+  {% endfor %}
+</div>
+
+{% if items %}
+<section class="tpl-grid">
+  {% for t in items %}
+  <article class="tpl {{ 'off' if t.hidden or not t.enabled }}">
+    <div class="pic {{ 'a4' if kind == 'referat' }}">
+      {% if t.pic %}<img loading="lazy" src="{{ t.pic }}" alt="">{% endif %}
+      <span class="code">№ {{ t.code }}</span>
+      <span class="flag">{% if t.ai %}<span class="chip c-ai">✨ AI</span>{% endif %}{% if t.hidden %} <span class="chip c-flat">Yashirin</span>{% endif %}{% if not t.enabled %} <span class="chip c-ref">O‘chiq</span>{% endif %}</span>
+    </div>
+    <div class="body">
+      <span class="nm ell">{{ t.name }}</span>
+      <span class="meta ell">{{ t.sub }}</span>
+      <span class="meta">{% if t.used %}🔥 30 kunda <b style="color:#12153A">{{ t.used }}</b> ta buyurtma{% else %}30 kunda buyurtma yo‘q{% endif %}</span>
+      <div class="acts">
+        {% if t.enabled %}
+        <form method="post" action="/admin/templates/{{ kind }}/{{ t.id }}/{{ 'show' if t.hidden else 'hide' }}"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="back" value="{{ back }}">
+          <button class="btn btn-sm">{{ 'Ko‘rsatish' if t.hidden else 'Yashirish' }}</button></form>
+        <a class="btn btn-sm" href="/admin/studio?tab=test&kind={{ 'referat' if kind == 'referat' else 'deck' }}&template={{ t.id }}" title="Sinov taqdimoti">🧪</a>
+        {% endif %}
+        {% if t.ai %}
+        <form method="post" action="/admin/templates/{{ kind }}/{{ t.id }}/{{ 'disable' if t.enabled else 'enable' }}"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="back" value="{{ back }}">
+          <button class="btn btn-sm">{{ 'O‘chirish' if t.enabled else 'Yoqish' }}</button></form>
+        <form method="post" action="/admin/templates/{{ kind }}/{{ t.id }}/delete" onsubmit="return confirm('AI shablon butunlay o‘chiriladi. Davom etasizmi?')"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="back" value="{{ back }}">
+          <button class="btn btn-sm btn-d" title="Butunlay o‘chirish">🗑</button></form>
+        {% endif %}
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#6B7194;flex-wrap:wrap;gap:10px">
+  <span>{{ total }} ta shablon</span>
+  <div style="display:flex;gap:6px">
+    {% if page > 1 %}<a class="btn btn-sm" href="?{{ qs }}&page={{ page - 1 }}" aria-label="Oldingi sahifa">←</a>{% endif %}
+    <span class="btn btn-sm btn-dark">{{ page }} / {{ pages }}</span>
+    {% if page < pages %}<a class="btn btn-sm" href="?{{ qs }}&page={{ page + 1 }}" aria-label="Keyingi sahifa">→</a>{% endif %}
+  </div>
+</div>
+{% else %}
+<div class="card empty">{% if f == 'ai' %}Hali AI yaratgan shablon yo‘q. <a href="/admin/studio?tab={{ kind }}">AI studiyada yarating →</a>{% else %}Hech narsa topilmadi.{% endif %}</div>
+{% endif %}
+<p class="hint">«Yashirish» — shablon Mini App va ro‘yxatlarda ko‘rinmaydi, lekin oldin tanlaganlar uchun ishlayveradi. AI shablonni «O‘chirish» uni botdan olib qo‘yadi, «🗑» esa butunlay o‘chiradi.</p>
+{% endblock %}

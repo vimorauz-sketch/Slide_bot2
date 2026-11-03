@@ -95,12 +95,18 @@ async def page_path(template_id: str, n: int) -> Optional[str]:
     return path(template_id, n)
 
 
+def _visible() -> List[dict]:
+    from services import runtime
+    hidden = runtime.hidden_templates("referat")
+    return [t for t in designs.TEMPLATES if t["id"] not in hidden]
+
+
 def pages() -> int:
-    return (len(designs.TEMPLATES) + PAGE_SIZE - 1) // PAGE_SIZE
+    return (len(_visible()) + PAGE_SIZE - 1) // PAGE_SIZE
 
 
 def page_ids(page: int) -> List[str]:
-    return [t["id"] for t in designs.TEMPLATES[page * PAGE_SIZE:(page + 1) * PAGE_SIZE]]
+    return [t["id"] for t in _visible()[page * PAGE_SIZE:(page + 1) * PAGE_SIZE]]
 
 
 async def sheet(page: int) -> Optional[str]:
@@ -108,7 +114,9 @@ async def sheet(page: int) -> Optional[str]:
     ids = page_ids(page)
     if not ids:
         return None
-    out = os.path.join(CACHE, f"sheet_{page}.jpg")
+    import hashlib
+    tag = hashlib.sha1(",".join(ids).encode()).hexdigest()[:8]  # AI-studio templates change the last page
+    out = os.path.join(CACHE, f"sheet_{page}_{tag}.jpg")
     if os.path.exists(out):
         return out
     for tid in ids:
