@@ -19,8 +19,7 @@ def trial_on():
 
 @pytest.fixture
 def payments_off(monkeypatch):
-    monkeypatch.setattr("config.settings.ALLOW_DEMO_PAYMENTS", False)
-    monkeypatch.setattr("config.settings.PAYMENT_ENV", "DEMO")
+    __import__("services.runtime").runtime._values["orders_mode"] = "auto"  # payments off: closed
     monkeypatch.setattr("config.settings.TEZCHECK_API_KEY", "")
     assert orders.payment_mode() == "off"
 

@@ -240,7 +240,7 @@ async def test_gate_blocks_users_and_maintenance(env):
 async def test_every_page_renders_when_payments_are_off(env, monkeypatch):
     """Production before TezCheck is connected: no demo payments, creation closed, a warning on every page."""
     client, *_ = env
-    monkeypatch.setattr("config.settings.ALLOW_DEMO_PAYMENTS", False)
+    __import__("services.runtime").runtime._values["orders_mode"] = "auto"  # payments off: closed
     await _login(client)
     for path in ("/admin", "/admin/orders", "/admin/users", "/admin/payments", "/admin/broadcast", "/admin/settings",
                  "/admin/system"):

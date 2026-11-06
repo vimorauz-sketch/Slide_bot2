@@ -264,8 +264,7 @@ async def _orders(db, user_id, n, status="PREVIEW_READY"):
 @pytest.mark.asyncio
 async def test_without_payments_creation_is_closed_and_demo_button_gives_nothing(env, monkeypatch, patched_handlers_db):
     *_, ctx = env
-    monkeypatch.setattr("config.settings.ALLOW_DEMO_PAYMENTS", False)   # production default
-    monkeypatch.setattr("config.settings.PAYMENT_ENV", "DEMO")
+    __import__("services.runtime").runtime._values["orders_mode"] = "auto"  # payments off: closed
     monkeypatch.setattr("config.settings.TEZCHECK_API_KEY", "")
     texts = await _feed(env, _msg("🎨 Presentation yaratish"))
     assert any("vaqtincha to‘xtatilgan" in t for t in texts)
@@ -294,7 +293,7 @@ async def test_unpaid_previews_must_be_paid_before_a_new_one(env, monkeypatch, p
 async def test_admin_can_open_creation_and_admins_are_never_limited(env, monkeypatch, patched_handlers_db):
     *_, ctx = env
     from services import guard, runtime
-    monkeypatch.setattr("config.settings.ALLOW_DEMO_PAYMENTS", False)
+    __import__("services.runtime").runtime._values["orders_mode"] = "auto"  # payments off: closed
     monkeypatch.setattr("config.settings.TEZCHECK_API_KEY", "")
     assert not guard.creation_open()
     runtime._values["orders_mode"] = "open"
@@ -327,9 +326,8 @@ async def test_admin_can_test_the_whole_flow_while_payments_are_off(env, monkeyp
     """Payments not connected: an admin still gets the test button and it marks the order paid
     (without money, so revenue stays 0); for everybody else it gives nothing."""
     *_, ctx = env
-    monkeypatch.setattr("config.settings.ALLOW_DEMO_PAYMENTS", False)
+    __import__("services.runtime").runtime._values["orders_mode"] = "auto"  # payments off: closed
     monkeypatch.setattr("config.settings.TEZCHECK_API_KEY", "")
-    monkeypatch.setattr("config.settings.PAYMENT_ENV", "DEMO")
     from database import repository
     from database.models import PresentationOrder
     async with patched_handlers_db() as s:

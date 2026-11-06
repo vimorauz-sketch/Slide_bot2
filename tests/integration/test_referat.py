@@ -156,8 +156,7 @@ async def test_wizard_then_paid_order_is_delivered_as_word_and_pdf(patched_handl
 @pytest.mark.asyncio
 async def test_first_referat_is_free_while_payments_are_off(patched_handlers_db, monkeypatch):
     runtime._values["free_trial"] = "1"
-    monkeypatch.setattr("config.settings.ALLOW_DEMO_PAYMENTS", False)
-    monkeypatch.setattr("config.settings.PAYMENT_ENV", "DEMO")
+    __import__("services.runtime").runtime._values["orders_mode"] = "auto"  # payments off: closed
     monkeypatch.setattr("config.settings.TEZCHECK_API_KEY", "")
     state = FakeFSMContext()
     await rf.apply_template_choice(FakeMessage().bot, 82, state, "r01")
@@ -172,8 +171,7 @@ async def test_first_referat_is_free_while_payments_are_off(patched_handlers_db,
 
 @pytest.mark.asyncio
 async def test_referat_closed_when_payments_off_and_nothing_free(patched_handlers_db, monkeypatch):
-    monkeypatch.setattr("config.settings.ALLOW_DEMO_PAYMENTS", False)
-    monkeypatch.setattr("config.settings.PAYMENT_ENV", "DEMO")
+    __import__("services.runtime").runtime._values["orders_mode"] = "auto"  # payments off: closed
     monkeypatch.setattr("config.settings.TEZCHECK_API_KEY", "")
     msg = FakeMessage(text="📄 Referat yaratish", from_user=FakeUser(id=83))
     state = FakeFSMContext()
