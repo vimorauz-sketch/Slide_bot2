@@ -248,8 +248,6 @@ def _pay_banner() -> str:
         return ("To‘lov tizimi ulanmagan (TEZCHECK_* o‘zgaruvchilari yo‘q) — " +
                 ("yangi taqdimot yaratish YOPIQ." if not guard.creation_open() else
                  "lekin taqdimot yaratish OCHIQ: AI pul sarflaydi, to‘lov olinmaydi!"))
-    if mode == "demo":
-        return "DEMO rejim yoqilgan (ALLOW_DEMO_PAYMENTS): «To‘lovni tasdiqlash» pulsiz tasdiqlaydi — faqat sinov uchun!"
     return ""
 
 
@@ -828,8 +826,7 @@ async def tezcheck_summary(force: bool = False) -> Dict[str, Any]:
             "webhook_secret": bool(settings.TEZCHECK_WEBHOOK_SECRET), "accept_test": settings.TEZCHECK_ACCEPT_TEST,
             "key_hint": (settings.TEZCHECK_API_KEY[:10] + "…") if settings.TEZCHECK_API_KEY else "",
             "ok": False, "desk": "", "error": "", "status": "Ulanmagan", "mode_label": {
-                "tezcheck": "TezCheck ulangan", "legacy": "Eski Click/Payme rejimi", "demo": "DEMO rejim — to‘lovsiz!",
-                "off": "To‘lov tizimi ulanmagan"}.get(payment_mode(), payment_mode())}
+                "tezcheck": "TezCheck ulangan", "off": "To‘lov tizimi ulanmagan"}.get(payment_mode(), payment_mode())}
     if not info["configured"]:
         return info
     if not force and _tc_cache["data"] and time.time() - _tc_cache["at"] < 60:
@@ -1116,7 +1113,8 @@ async def system_page(request: web.Request) -> web.Response:
         ("Ishlash vaqti", _uptime(), None),
         ("Ma’lumotlar bazasi", "PostgreSQL" if IS_POSTGRES else "SQLite (deploy’da o‘chadi!)", IS_POSTGRES),
         ("TezCheck API", "ishlayapti" if tc_ok else ("javob bermayapti" if tc_ok is False else "ulanmagan"), tc_ok),
-        ("Vebhuk imzo kaliti", "kiritilgan" if settings.TEZCHECK_WEBHOOK_SECRET else "yo‘q", bool(settings.TEZCHECK_WEBHOOK_SECRET)),
+        ("Vebhuk imzo kaliti", "kiritilgan" if settings.TEZCHECK_WEBHOOK_SECRET else
+         "yo‘q (shart emas: to‘lovlar TezCheck’dan so‘rab tekshiriladi)", True if settings.TEZCHECK_WEBHOOK_SECRET else None),
         ("AI", "kalit bor" if ai_service.get_openai_client() else "kalit yo‘q (namuna matn)", bool(ai_service.get_openai_client())),
         ("AI modeli", (runtime.get("ai_fast_model") or settings.OPENAI_MODEL) + (" → asosiy modelga o‘tilgan" if ai_service._fast_failed else ""), not ai_service._fast_failed),
         ("Foto manbalar", ", ".join(enabled_providers()) or "yo‘q (rasmli chizmalar)", bool(enabled_providers())),

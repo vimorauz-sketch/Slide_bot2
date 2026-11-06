@@ -6,7 +6,9 @@ reconciliation loop):
                                                      \\-> CANCELLED / REFUNDED
 
 mark_paid() is atomic (only one caller can move an order to PAID), so a webhook, the
-"✅ Tekshirish" button and the reconciliation loop arriving together deliver the files once.
+"✅ Tekshirish" button, a bill watcher and the reconciliation loop arriving together deliver the
+files once. The webhook is optional: without TEZCHECK_WEBHOOK_SECRET an opened payment page is
+watched (watch_bill: every 5 s while the customer pays) and the reconciliation loop runs every 30 s.
 """
 from __future__ import annotations
 
@@ -15,7 +17,7 @@ import json
 import logging
 import os
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Awaitable, Callable, Dict, Optional, Tuple
 
 from sqlalchemy import select, update
 
@@ -29,27 +31,35 @@ logger = logging.getLogger(__name__)
 
 OPEN_STATES = ("PREVIEW_READY", "WAITING_PAYMENT", "CREATED")
 RECONCILE_EVERY = 90          # seconds between checks of unpaid bills (in case a webhook is lost)
+RECONCILE_EVERY_NO_WEBHOOK = 30  # without a webhook this loop is the safety net for every payment
 RECONCILE_WINDOW = timedelta(days=3)
+# Without a webhook each opened payment page is watched: checked often while the customer is paying.
+WATCH_FAST = 5                # seconds between checks during the first WATCH_FAST_FOR seconds
+WATCH_FAST_FOR = 15 * 60
+WATCH_SLOW = 30               # then every WATCH_SLOW seconds until WATCH_FOR
+WATCH_FOR = 60 * 60
+WATCH_MAX = 200               # bills watched at once (the reconciliation loop covers the rest)
+_watching: Dict[str, "asyncio.Future"] = {}
+
+
+MIN_BILL = 1000               # so'm: TezCheck does not accept smaller bills
+CLOSED_STATES = ("CANCELLED", "REFUNDED")
+REDELIVER_AFTER = timedelta(minutes=2)   # a paid order still without files is sent again after this
+REDELIVER_TRIES = 3
+_redelivered: Dict[str, int] = {}
+_bill_locks: Dict[str, asyncio.Lock] = {}
 
 
 def payment_mode() -> str:
-    """"tezcheck" when TezCheck is configured, "legacy" for the old Click/Payme code, "demo" only
-    when ALLOW_DEMO_PAYMENTS is on (testing), otherwise "off": nobody gets files without paying."""
-    if tezcheck.is_configured():
-        return "tezcheck"
-    if (settings.PAYMENT_ENV or "").upper() == "PRODUCTION":
-        return "legacy"
-    return "demo" if settings.ALLOW_DEMO_PAYMENTS else "off"
+    """TezCheck is the only payment system: "tezcheck" when it is configured, otherwise "off"
+    (nobody gets files without paying, except free presentations and the admin dashboard)."""
+    return "tezcheck" if tezcheck.is_configured() else "off"
 
 
-def test_payment_allowed(user_id: int) -> bool:
-    """The "To'lovni tasdiqlash" button may mark an order paid without money: in DEMO mode, or for
-    an admin (ADMIN_IDS / dashboard admins) while no payment system is connected — for testing."""
-    mode = payment_mode()
-    if mode == "demo":
-        return True
-    from services import runtime
-    return mode == "off" and runtime.is_admin(user_id)
+def webhook_enabled() -> bool:
+    """TezCheck webhooks are accepted only with TEZCHECK_WEBHOOK_SECRET; without it payments are
+    found by asking TezCheck (watch_bill + the reconciliation loop)."""
+    return bool((settings.TEZCHECK_WEBHOOK_SECRET or "").strip())
 
 
 def _parse_time(value: Any) -> Optional[datetime]:
@@ -65,19 +75,40 @@ def _parse_time(value: Any) -> Optional[datetime]:
 # ---------------------------------------------------------------------- bills
 async def get_payment_link(order_id: str, user_id: int, bot_username: str = "") -> Tuple[Optional[str], str]:
     """Payment page for an order (an existing active bill is reused).
-    Returns (url, "") or (None, reason) where reason is "paid", "not_found", "denied" or "error"."""
+    Returns (url, "") or (None, reason) where reason is "paid", "not_found", "denied", "closed"
+    (cancelled / refunded order), "off" (TezCheck not configured), "amount" (below MIN_BILL) or "error"."""
+    if payment_mode() != "tezcheck":
+        return None, "off"
+    # one bill at a time per order: two quick presses must not both create one
+    lock = _bill_locks.setdefault(order_id, asyncio.Lock())
+    async with lock:
+        return await _payment_link(order_id, user_id, bot_username)
+
+
+async def _payment_link(order_id: str, user_id: int, bot_username: str) -> Tuple[Optional[str], str]:
     async with AsyncSessionLocal() as session:
         order = await repository.get_presentation_order(session, order_id)
-        if not order:
-            return None, "not_found"
-        if order.user_id != user_id:
-            return None, "denied"
-        if order.status == "PAID":
+    if not order:
+        return None, "not_found"
+    if order.user_id != user_id:
+        return None, "denied"
+    if order.status == "PAID":
+        return None, "paid"
+    if order.status in CLOSED_STATES:
+        return None, "closed"
+    if (order.total_price or 0) < MIN_BILL:
+        logger.error("order %s: price %s is below TezCheck's minimum %s", order_id, order.total_price, MIN_BILL)
+        return None, "amount"
+    if order.bill_id and order.payment_url and (order.bill_expires_at is None or order.bill_expires_at > datetime.utcnow()):
+        return order.payment_url, ""
+    if order.bill_id:
+        # the old bill expired: it may have been paid just before that, so never bill twice
+        result, st = await check_bill(order_id)
+        if result in ("paid", "already"):
             return None, "paid"
-        now = datetime.utcnow()
-        if order.bill_id and order.payment_url and (order.bill_expires_at is None or order.bill_expires_at > now) \
-                and order.status != "CANCELLED":
-            return order.payment_url, ""
+        if result in ("unknown", "error") or (st is not None and st.payment_state == "processing"):
+            return None, "pending" if result != "error" else "error"
+    async with AsyncSessionLocal() as session:
         attempts = len([t for t in (await session.execute(select(PaymentTransaction).where(
             PaymentTransaction.order_id == order_id, PaymentTransaction.provider == "TEZCHECK"))).scalars().all()])
         amount, topic = order.total_price, order.topic
@@ -156,6 +187,57 @@ async def check_bill(order_id: str) -> Tuple[str, Optional[tezcheck.BillStatus]]
     if st.payment_state in ("failed", "canceled", "expired"):
         return "failed", st
     return "waiting", st
+
+
+# ---------------------------------------------------------------------- watching a bill
+def watch_bill(order_id: str, deliver: Callable[[str], Awaitable[Any]],
+               notify: Optional[Callable[[str], Awaitable[Any]]] = None) -> bool:
+    """Starts asking TezCheck about one order's bill in the background until it is paid (then
+    deliver(order_id)), cancelled/expired or WATCH_FOR runs out. notify(text) tells the customer
+    about a failed payment (once). False when the bill is already watched or too many are."""
+    if payment_mode() != "tezcheck":
+        return False
+    task = _watching.get(order_id)
+    if task is not None and not task.done():
+        return False
+    if len(_watching) >= WATCH_MAX:
+        return False
+    task = asyncio.ensure_future(_watch(order_id, deliver, notify))
+    _watching[order_id] = task
+    task.add_done_callback(lambda t: _watching.pop(order_id, None) if _watching.get(order_id) is t else None)
+    return True
+
+
+async def _watch(order_id: str, deliver, notify) -> None:
+    started = asyncio.get_running_loop().time()
+    told_failed = False
+    while True:
+        elapsed = asyncio.get_running_loop().time() - started
+        if elapsed >= WATCH_FOR:
+            return
+        await asyncio.sleep(WATCH_FAST if elapsed < WATCH_FAST_FOR else WATCH_SLOW)
+        try:
+            result, st = await check_bill(order_id)
+        except Exception:  # noqa: BLE001
+            logger.exception("watching the bill of %s failed", order_id)
+            continue
+        if result == "paid":
+            try:
+                await deliver(order_id)
+            except Exception:  # noqa: BLE001
+                logger.exception("delivery of %s failed", order_id)
+            return
+        if result == "already":  # paid and delivered by the button / reconciliation
+            return
+        if st is not None and st.state in ("canceled", "cancelled", "expired"):
+            return
+        if result == "failed" and not told_failed and notify is not None:
+            told_failed = True  # the customer may try again on the same page: keep watching
+            try:
+                await notify("❌ To‘lov o‘tmadi" + (f" ({st.problem})" if st and st.problem else "") +
+                             ". To‘lov sahifasida qaytadan urinib ko‘ring.")
+            except Exception:  # noqa: BLE001
+                pass
 
 
 # ---------------------------------------------------------------------- webhooks
@@ -279,16 +361,27 @@ def content_for_db(content: Dict[str, Any], theme_key: Any) -> str:
 
 # ---------------------------------------------------------------------- reconciliation
 async def reconcile_once(deliver) -> int:
-    """Checks unpaid bills of the last days (a lost webhook must not lose a sale)."""
+    """Checks unpaid bills of the last days (a lost webhook or a restart must not lose a sale) and
+    sends the files again for paid orders whose delivery failed. Bills that expired long ago (they
+    can no longer be paid) and bills a watcher is already asking about are skipped."""
     if payment_mode() != "tezcheck":
         return 0
-    since = datetime.utcnow() - RECONCILE_WINDOW
+    now = datetime.utcnow()
+    since = now - RECONCILE_WINDOW
     async with AsyncSessionLocal() as session:
         ids = (await session.execute(select(PresentationOrder.id).where(
             PresentationOrder.status == "WAITING_PAYMENT", PresentationOrder.bill_id.isnot(None),
-            PresentationOrder.created_at >= since).order_by(PresentationOrder.created_at.desc()).limit(40))).scalars().all()
+            PresentationOrder.created_at >= since,
+            (PresentationOrder.bill_expires_at.is_(None)) | (PresentationOrder.bill_expires_at >= now - timedelta(minutes=10)))
+            .order_by(PresentationOrder.created_at.desc()).limit(100))).scalars().all()
+        undelivered = (await session.execute(select(PresentationOrder.id).where(
+            PresentationOrder.status == "PAID", PresentationOrder.paid_by == "TEZCHECK",
+            PresentationOrder.delivered_at.is_(None), PresentationOrder.paid_at >= since,
+            PresentationOrder.paid_at <= now - REDELIVER_AFTER).limit(20))).scalars().all()
     paid = 0
     for oid in ids:
+        if oid in _watching:
+            continue
         result, _ = await check_bill(oid)
         if result == "paid":
             paid += 1
@@ -296,7 +389,16 @@ async def reconcile_once(deliver) -> int:
                 await deliver(oid)
             except Exception:  # noqa: BLE001
                 logger.exception("delivery of %s failed", oid)
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.2)
+    for oid in undelivered:
+        if _redelivered.get(oid, 0) >= REDELIVER_TRIES:
+            continue
+        _redelivered[oid] = _redelivered.get(oid, 0) + 1
+        logger.warning("order %s is paid but its files were not delivered: try %d", oid, _redelivered[oid])
+        try:
+            await deliver(oid)
+        except Exception:  # noqa: BLE001
+            logger.exception("delivery of %s failed", oid)
     return paid
 
 
@@ -309,4 +411,4 @@ async def reconcile_loop(deliver) -> None:
                 logger.info("reconciliation: %d payment(s) found without a webhook", n)
         except Exception:  # noqa: BLE001
             logger.exception("reconciliation failed")
-        await asyncio.sleep(RECONCILE_EVERY)
+        await asyncio.sleep(RECONCILE_EVERY if webhook_enabled() else RECONCILE_EVERY_NO_WEBHOOK)

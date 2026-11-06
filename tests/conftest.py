@@ -42,15 +42,14 @@ async def patched_handlers_db(db, monkeypatch):
     """
     import database.connection as dbc
     from bot.handlers import create_pres, ocr_task, payment, admin, start, referat
-    from services.payment import click_webhook, payme_webhook, orders
+    from services.payment import orders
     from services import broadcast, guard, credits, custom_templates
     from bot import delivery
     import bot.admin_web as admin_web
     from bot.admin_web import stats as admin_stats
 
     monkeypatch.setattr(dbc, "AsyncSessionLocal", db)
-    for module in (create_pres, ocr_task, payment, admin, start, referat, click_webhook, payme_webhook,
-                   orders, broadcast, delivery, admin_web, admin_stats, guard, credits, custom_templates):
+    for module in (create_pres, ocr_task, payment, admin, start, referat, orders, broadcast, delivery, admin_web, admin_stats, guard, credits, custom_templates):
         monkeypatch.setattr(module, "AsyncSessionLocal", db)
     return db
 
@@ -125,6 +124,29 @@ def fresh_runtime_settings():
 
 
 @pytest.fixture(autouse=True)
-def demo_payments_in_tests(monkeypatch):
-    """The suite exercises the DEMO payment flow; production has it off (ALLOW_DEMO_PAYMENTS=false)."""
-    monkeypatch.setattr("config.settings.ALLOW_DEMO_PAYMENTS", True)
+def no_real_tezcheck(monkeypatch):
+    """Never reach the real TezCheck API: payments are off unless a test starts the fake TezCheck
+    (tests/fixtures/fake_tezcheck.py, see the `tezcheck_on` fixture)."""
+    monkeypatch.setattr("config.settings.TEZCHECK_API_KEY", "")
+    monkeypatch.setattr("config.settings.TEZCHECK_CASH_DESK_CODE", "")
+    monkeypatch.setattr("config.settings.TEZCHECK_WEBHOOK_SECRET", "")
+    monkeypatch.setattr("config.settings.TEZCHECK_API_URL", "http://127.0.0.1:9/never")
+
+
+@pytest.fixture
+async def tezcheck_on(monkeypatch):
+    """TezCheck connected — to an in-process imitation of its API."""
+    from aiohttp.test_utils import TestServer
+    from tests.fixtures.fake_tezcheck import API_KEY, DESK, FakeTezCheck
+    fake = FakeTezCheck()
+    server = TestServer(fake.app())
+    await server.start_server()
+    monkeypatch.setattr("config.settings.TEZCHECK_API_URL", str(server.make_url("/api/merchant/v1")))
+    monkeypatch.setattr("config.settings.TEZCHECK_API_KEY", API_KEY)
+    monkeypatch.setattr("config.settings.TEZCHECK_CASH_DESK_CODE", DESK)
+    monkeypatch.setattr("config.settings.TEZCHECK_ACCEPT_TEST", False)
+    yield fake
+    from services.payment import orders
+    for t in list(orders._watching.values()):
+        t.cancel()
+    await server.close()

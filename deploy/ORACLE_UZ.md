@@ -77,8 +77,9 @@ to‘xtating yoki o‘chiring**.
 
 ## 8. TezCheck ulash
 
-1. TezCheck kabinetida vebhuk manzili: `https://slidelab.duckdns.org/payments/tezcheck/webhook`.
-2. Serverda: `nano ~/slidelab/deploy/.env` → `TEZCHECK_API_KEY`, `TEZCHECK_CASH_DESK_CODE`, `TEZCHECK_WEBHOOK_SECRET` ni to‘ldiring.
+1. Serverda: `nano ~/slidelab/deploy/.env` → `TEZCHECK_API_KEY`, `TEZCHECK_CASH_DESK_CODE` ni to‘ldiring.
+   Vebhuk shart emas — bot to‘lovni TezCheck’dan o‘zi so‘rab tekshiradi (har 5 soniyada).
+2. Ixtiyoriy: TezCheck kabinetida vebhuk `https://slidelab.duckdns.org/payments/tezcheck/webhook`, kaliti → `TEZCHECK_WEBHOOK_SECRET`.
 3. `cd ~/slidelab/deploy && sudo docker compose up -d` — bot yangi sozlamalar bilan qayta ishga tushadi.
 
 ## 9. Yangilash

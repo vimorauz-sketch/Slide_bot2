@@ -9,7 +9,6 @@ class Settings(BaseSettings):
     BOT_TOKEN: str = "7548392011:AAExampleTokenForSlideLabBotString"
     ADMIN_IDS: str = "123456789"
     DATABASE_URL: str = "sqlite+aiosqlite:///slidelab.db"
-    PAYMENT_ENV: str = "DEMO"  # "DEMO" (MockPaymentProvider) or "PRODUCTION" (Click/Payme)
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-5.6-sol"
     OPENAI_VISION_MODEL: str = "gpt-5.6-sol"
@@ -40,7 +39,7 @@ class Settings(BaseSettings):
     # When the API key and cash desk code are set, all payments go through TezCheck.
     TEZCHECK_API_KEY: str = ""            # cabinet -> API: "aps_..." (Authorization: Bearer)
     TEZCHECK_CASH_DESK_CODE: str = ""     # cabinet -> cash desk code "cdk_..." (X-Cash-Desk-Code)
-    TEZCHECK_WEBHOOK_SECRET: str = ""     # shown once when the webhook endpoint is added ("wbs_...")
+    TEZCHECK_WEBHOOK_SECRET: str = ""     # optional ("wbs_..."); empty = payments are found by polling the API
     TEZCHECK_API_URL: str = "https://api.tezcheck.uz/api/merchant/v1"
     TEZCHECK_SIGN_REQUESTS: bool = False  # also sign every request with HMAC (cabinet: "only signed requests")
     TEZCHECK_ACCEPT_TEST: bool = False    # accept payments made with TezCheck's "Test provider" (testing only!)
@@ -51,18 +50,8 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = ""              # empty = password login is off (only the bot link works)
     ADMIN_SECRET: str = ""                # signs dashboard sessions; empty = derived from BOT_TOKEN
 
-    # Click Shop API (https://docs.click.uz) -- required only for PAYMENT_ENV=PRODUCTION
-    CLICK_SERVICE_ID: str = ""
-    CLICK_MERCHANT_ID: str = ""
-    CLICK_SECRET_KEY: str = ""
-
-    # Payme Merchant API (https://developer.help.paycom.uz) -- required only for PAYMENT_ENV=PRODUCTION
-    PAYME_MERCHANT_ID: str = ""
-    PAYME_SECRET_KEY: str = ""
-
-    # Local bind address for the payment webhook HTTP server (bot/webhook_app.py).
-    # Put a reverse proxy (nginx + TLS) in front of this in production -- Click and
-    # Payme both require HTTPS callback URLs.
+    # Local bind address for the HTTP server (bot/webhook_app.py: Mini App, admin dashboard and the
+    # optional TezCheck webhook). Put an HTTPS reverse proxy in front of it in production.
     WEBHOOK_HOST: str = "0.0.0.0"
     WEBHOOK_PORT: int = 8080
 
@@ -79,8 +68,6 @@ class Settings(BaseSettings):
     # previews one user may create per day (each one costs AI requests). Admins are not limited.
     MAX_PARALLEL_BUILDS: int = 2
     MAX_PREVIEWS_PER_DAY: int = 3
-    # DEMO payments ("To'lovni tasdiqlash" marks an order paid without money): testing only!
-    ALLOW_DEMO_PAYMENTS: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",

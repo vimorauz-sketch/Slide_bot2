@@ -9,8 +9,8 @@
 {% if not tc.configured %}
 <div class="card pad" style="display:flex;flex-direction:column;gap:10px;border:2px solid #FDE68A">
   <h2>TezCheck ulanmagan</h2>
-  <p class="sub" style="margin:0;line-height:1.6">Railway → Variables bo‘limiga <b>TEZCHECK_API_KEY</b>, <b>TEZCHECK_CASH_DESK_CODE</b> va <b>TEZCHECK_WEBHOOK_SECRET</b> qo‘shing.
-  TezCheck kabinetida vebhuk manzili: <code style="background:#F1F2F8;padding:2px 6px;border-radius:6px">{{ tc.webhook_url }}</code></p>
+  <p class="sub" style="margin:0;line-height:1.6">Railway → Variables bo‘limiga <b>TEZCHECK_API_KEY</b> va <b>TEZCHECK_CASH_DESK_CODE</b> qo‘shing — shuning o‘zi yetarli: bot to‘lovlarni TezCheck’dan o‘zi so‘rab tekshiradi.
+  Vebhuk ixtiyoriy (tezroq javob uchun): manzil <code style="background:#F1F2F8;padding:2px 6px;border-radius:6px">{{ tc.webhook_url }}</code>, kalit — <b>TEZCHECK_WEBHOOK_SECRET</b>.</p>
 </div>
 {% endif %}
 

@@ -1,13 +1,11 @@
 """
-aiohttp web app exposing the Click and Payme payment webhook endpoints.
+aiohttp web app: the TezCheck payment webhook (optional), the template gallery Mini App and the
+admin dashboard.
 
-Runs alongside the aiogram Telegram polling loop (see main.py) inside the same
-asyncio event loop -- this is a second, independent server, not part of Telegram's
-own webhook mechanism. In production, put this behind an HTTPS reverse proxy
-(nginx + certbot) and register the public HTTPS URLs with Click/Payme:
-  https://<your-domain>/payments/click/prepare
-  https://<your-domain>/payments/click/complete
-  https://<your-domain>/payments/payme
+Runs alongside the aiogram Telegram polling loop (see main.py) inside the same asyncio event loop
+-- this is a second, independent server, not part of Telegram's own webhook mechanism. TezCheck is
+the only payment system; its webhook https://<your-domain>/payments/tezcheck/webhook is optional
+(without it payments are found by asking the TezCheck API, see services/payment/orders.py).
 
 It also serves the template gallery Mini App (webapp/) at /webapp/ and its selection endpoint
 /webapp/api/select. Set WEBAPP_URL=https://<your-domain>/webapp/ to enable it in the bot.
@@ -19,58 +17,7 @@ import logging
 import os
 from aiohttp import web
 
-from services.payment import click_webhook, payme_webhook
-
 logger = logging.getLogger(__name__)
-
-
-async def _parse_click_params(request: web.Request) -> dict:
-    # Click's Shop API posts application/x-www-form-urlencoded data.
-    data = await request.post()
-    if data:
-        return dict(data)
-    # Tolerate a JSON body too, in case Click or a test client sends one.
-    try:
-        return await request.json()
-    except Exception:
-        return {}
-
-
-async def click_prepare_handler(request: web.Request) -> web.Response:
-    params = await _parse_click_params(request)
-    result = await click_webhook.handle_prepare(params)
-    return web.json_response(result)
-
-
-async def click_complete_handler(request: web.Request) -> web.Response:
-    params = await _parse_click_params(request)
-    result = await click_webhook.handle_complete(params)
-    return web.json_response(result)
-
-
-async def payme_handler(request: web.Request) -> web.Response:
-    auth_header = request.headers.get("Authorization")
-    if not payme_webhook.verify_auth_header(auth_header):
-        return web.json_response(
-            {"jsonrpc": "2.0", "id": None, "error": {
-                "code": payme_webhook.ERR_ACCESS_DENIED,
-                "message": {"ru": "Access denied", "uz": "Ruxsat yo'q", "en": "Access denied"}
-            }},
-            status=200  # Payme expects HTTP 200 even for RPC-level errors.
-        )
-
-    try:
-        body = await request.json()
-    except Exception:
-        return web.json_response(
-            {"jsonrpc": "2.0", "id": None, "error": {
-                "code": payme_webhook.ERR_PARSE_ERROR,
-                "message": {"ru": "Parse error", "uz": "Xatolik", "en": "Parse error"}
-            }}
-        )
-
-    result = await payme_webhook.dispatch(body)
-    return web.json_response(result)
 
 
 async def health_handler(request: web.Request) -> web.Response:
@@ -388,9 +335,6 @@ def create_webhook_app(bot=None, dp=None) -> web.Application:
     app.router.add_get("/health", health_handler)
     app.router.add_get("/", health_handler)
     app.router.add_get("/diag", diag_handler)
-    app.router.add_post("/payments/click/prepare", click_prepare_handler)
-    app.router.add_post("/payments/click/complete", click_complete_handler)
-    app.router.add_post("/payments/payme", payme_handler)
     app.router.add_post("/payments/tezcheck/webhook", tezcheck_webhook_handler)
     from bot.admin_web import setup_admin
     setup_admin(app)
@@ -414,14 +358,16 @@ async def run_webhook_app(host: str, port: int, bot=None, dp=None):
                        settings.WEBAPP_URL)
     if bot is not None:
         import asyncio
-        from services.payment.orders import reconcile_loop, payment_mode
+        from services.payment.orders import reconcile_loop, payment_mode, webhook_enabled as orders_webhook_enabled
         from bot.delivery import deliver_order
         if payment_mode() == "tezcheck":
-            logger.info("To'lovlar: TezCheck (webhook: /payments/tezcheck/webhook)")
+            if orders_webhook_enabled():
+                logger.info("To'lovlar: TezCheck (webhook: /payments/tezcheck/webhook + tekshiruv)")
+            else:
+                logger.info("To'lovlar: TezCheck, webhooksiz — to'lovlar API orqali so'rab tekshiriladi")
             _background.append(asyncio.ensure_future(reconcile_loop(lambda oid: deliver_order(bot, oid))))
         else:
-            logger.warning("To'lovlar: %s rejimi — TEZCHECK_API_KEY va TEZCHECK_CASH_DESK_CODE kiritilmagan",
-                           payment_mode().upper())
+            logger.warning("To'lovlar O'CHIQ: TEZCHECK_API_KEY va TEZCHECK_CASH_DESK_CODE kiritilmagan")
     if os.getenv("GALLERY_WARMUP", "1") != "0":
         import asyncio
         from services.gallery import warm_up

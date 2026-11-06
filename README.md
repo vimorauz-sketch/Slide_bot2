@@ -201,22 +201,24 @@ tests/
 - `slidelab.db` is a single SQLite file; back it up on a schedule appropriate for your traffic,
   and be aware SQLite serializes writes (fine for small/medium bot traffic, a real bottleneck
   under heavy concurrent write load).
-- Set `PAYMENT_ENV=PRODUCTION` only once a real Click/Payme payment-verification integration
-  replaces the stub in `services/payment/providers.py` / the `TODO` in
-  `bot/handlers/payment.py`'s `process_check_payment`.
 
 ## Payments: TezCheck
 
 Customers pay on TezCheck's page with Click or Payme; the files are sent automatically.
 
 1. TezCheck cabinet: copy the API key (`aps_…`) and the cash desk code (`cdk_…`).
-2. Add a webhook endpoint `https://<your-domain>/payments/tezcheck/webhook` and copy its secret (`wbs_…`, shown once).
-3. Railway → Variables: `TEZCHECK_API_KEY`, `TEZCHECK_CASH_DESK_CODE`, `TEZCHECK_WEBHOOK_SECRET`.
+2. Railway → Variables: `TEZCHECK_API_KEY`, `TEZCHECK_CASH_DESK_CODE`. That is enough.
+3. Optional: add a webhook endpoint `https://<your-domain>/payments/tezcheck/webhook` and set its
+   secret (`wbs_…`, shown once) as `TEZCHECK_WEBHOOK_SECRET`.
 
-Every webhook is checked (HMAC-SHA256, 5-minute window) and processed once; an order is paid only
-when TezCheck reports `paid` with real money (`environment: live`) for at least the order's price.
-Unpaid bills are re-checked every 90 seconds, so a lost webhook never loses a sale. Without the
-TezCheck variables the bot runs in DEMO mode (no real payment).
+No webhook is needed: once a customer opens the payment page the bot asks TezCheck about that bill
+every 5 seconds (15 minutes, then every 30 seconds up to an hour) and sends the files as soon as it is
+paid; all unpaid bills of the last 3 days are also re-checked every 30 seconds (90 with a webhook),
+so a restart never loses a sale. Webhooks, if set up, are checked (HMAC-SHA256, 5-minute window) and
+processed once. An order is paid only when TezCheck reports `paid` with real money
+(`environment: live`) for at least the order's price. TezCheck is the only payment system: without
+its variables nobody can pay (no buttons are shown; free presentations and the admin dashboard still
+work), and new paid presentations are closed automatically.
 
 ## Referats
 

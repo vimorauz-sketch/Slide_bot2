@@ -128,7 +128,7 @@
   <div class="kv">
     <span>Kassa</span><span style="font-weight:600">{{ tc.desk or '—' }}</span>
     <span>API kaliti</span><span style="font-weight:600">{{ tc.key_hint or 'kiritilmagan' }}</span>
-    <span>Vebhuk imzo kaliti</span><span style="font-weight:600">{{ 'kiritilgan' if tc.webhook_secret else 'kiritilmagan — vebhuklar rad etiladi' }}</span>
+    <span>Vebhuk imzo kaliti</span><span style="font-weight:600">{{ 'kiritilgan' if tc.webhook_secret else 'kiritilmagan — shart emas, to‘lovlar har 5 soniyada so‘rab tekshiriladi' }}</span>
     <span>Vebhuk manzili</span><span><code style="background:#F1F2F8;padding:3px 8px;border-radius:6px;font-size:12px;word-break:break-all">{{ tc.webhook_url }}</code></span>
     <span>Test to‘lovlar</span><span style="font-weight:600">{{ 'qabul qilinadi (TEZCHECK_ACCEPT_TEST)' if tc.accept_test else 'qabul qilinmaydi' }}</span>
   </div>

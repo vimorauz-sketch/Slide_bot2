@@ -65,32 +65,6 @@ def get_outline_inline_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
 
-def get_payment_inline_keyboard(order_id: str, amount: int) -> InlineKeyboardMarkup:
-    formatted_amount = f"{amount:,}".replace(",", " ")
-    kb = [
-        [InlineKeyboardButton(text=f"💳 To'lov qilish ({formatted_amount} UZS)", callback_data=f"pay_checkout_{order_id}")],
-        [InlineKeyboardButton(text="✅ To'lovni tasdiqlash", callback_data=f"check_pay_{order_id}")]
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=kb)
-
-def get_payment_link_inline_keyboard(order_id: str, checkout_url: str) -> InlineKeyboardMarkup:
-    kb = [
-        [InlineKeyboardButton(text="🔗 To'lov sahifasiga o'tish", url=checkout_url)],
-        [InlineKeyboardButton(text="✅ To'lovni tasdiqlash", callback_data=f"check_pay_{order_id}")]
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=kb)
-
-def get_production_payment_inline_keyboard(order_id: str, amount: int) -> InlineKeyboardMarkup:
-    """Used when PAYMENT_ENV=PRODUCTION: lets the user pick Click or Payme,
-    each generating its own real checkout link (see bot/handlers/payment.py)."""
-    formatted_amount = f"{amount:,}".replace(",", " ")
-    kb = [
-        [InlineKeyboardButton(text=f"💳 Click orqali to'lash ({formatted_amount} UZS)", callback_data=f"pay_click_{order_id}")],
-        [InlineKeyboardButton(text=f"💳 Payme orqali to'lash ({formatted_amount} UZS)", callback_data=f"pay_payme_{order_id}")],
-        [InlineKeyboardButton(text="✅ To'lovni tasdiqlash", callback_data=f"check_pay_{order_id}")]
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=kb)
-
 def get_download_format_inline_keyboard(order_id: str) -> InlineKeyboardMarkup:
     kb = [
         [InlineKeyboardButton(text="📊 PowerPoint (.pptx)", callback_data=f"dl_pptx_{order_id}")],

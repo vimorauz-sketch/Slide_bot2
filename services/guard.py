@@ -38,7 +38,7 @@ class Block:
 
 def payments_work() -> bool:
     from services.payment.orders import payment_mode
-    return payment_mode() in ("tezcheck", "legacy", "demo")
+    return payment_mode() == "tezcheck"
 
 
 def creation_open() -> bool:

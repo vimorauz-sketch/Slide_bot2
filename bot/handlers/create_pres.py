@@ -14,7 +14,7 @@ from bot.states.forms import PresentationForm
 from bot.utils import escape_html
 from bot.keyboards.inline import (
     get_template_selection_inline_keyboard, get_confirmation_inline_keyboard,
-    get_payment_inline_keyboard, get_production_payment_inline_keyboard, get_outline_inline_keyboard,
+    get_outline_inline_keyboard,
     get_gallery_categories_keyboard, get_gallery_list_keyboard, get_gallery_colors_keyboard,
     get_tezcheck_pay_keyboard
 )
@@ -942,23 +942,11 @@ async def _build_and_send_now(message: Message, user_id: int, state: FSMContext,
 
 
 def _payment_keyboard(user_id: int, order_id: str, total_price: int):
-    """(payment buttons, extra text) for an order's preview message, by payment mode."""
-    mode = payment_mode()
-    markup = (
-        get_tezcheck_pay_keyboard(order_id, total_price) if mode == "tezcheck"
-        else get_production_payment_inline_keyboard(order_id, total_price) if mode == "legacy"
-        else get_payment_inline_keyboard(order_id, total_price) if mode == "demo"
-        # no payment system: only an admin gets the test button (to try the whole flow)
-        else get_payment_inline_keyboard(order_id, total_price) if runtime.is_admin(user_id)
-        else None  # everybody else: never a button that could give the files away
-    )
-    note = ""
-    if mode == "off" and markup is not None:
-        note = ("\n\n🧪 <b>Admin sinovi:</b> to‘lov tizimi ulanmagan — «To‘lovni tasdiqlash» faqat siz uchun "
-                "pulsiz ishlaydi (daromadga qo‘shilmaydi).")
-    if markup is None:
-        note = "\n\n🛠 <i>To‘lov tizimi tez orada ulanadi — shu buyurtmani o‘shanda to‘laysiz.</i>"
-    return markup, note
+    """(payment buttons, extra text) for an order's preview message. TezCheck is the only payment
+    system; without it there is no button at all (nothing may give the files away)."""
+    if payment_mode() == "tezcheck":
+        return get_tezcheck_pay_keyboard(order_id, total_price), ""
+    return None, "\n\n🛠 <i>To‘lov tizimi tez orada ulanadi — shu buyurtmani o‘shanda to‘laysiz.</i>"
 
 
 async def _deliver_free(message: Message, user_id: int, order_id: str, data: dict, slide_count: int,
