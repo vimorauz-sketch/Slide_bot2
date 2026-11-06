@@ -36,6 +36,14 @@ async def main():
         logger.error("👉 @BotFather bergan to'g'ri token shakli: 123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ")
         return
 
+    # every emoji with a known id is sent as its Telegram Premium version (services/custom_emoji.py)
+    from services import custom_emoji
+    bot.session.middleware(custom_emoji.CustomEmojiMiddleware())
+    try:
+        await custom_emoji.load(bot)
+    except Exception:  # noqa: BLE001 - ordinary emoji then
+        logger.exception("custom emoji could not be loaded")
+
     logger.info("Starting SlideLab Telegram Bot...")
     from services import credits
     credits.set_bot(bot)  # referral bonus messages

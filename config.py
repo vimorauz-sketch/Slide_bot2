@@ -45,6 +45,12 @@ class Settings(BaseSettings):
     TEZCHECK_ACCEPT_TEST: bool = False    # accept payments made with TezCheck's "Test provider" (testing only!)
     TEZCHECK_PROVIDERS: str = ""          # e.g. "click,payme"; empty = every method enabled on the cash desk
 
+    # Telegram Premium custom emoji in the bot's messages and inline buttons (services/custom_emoji.py).
+    # Works only if the bot's owner has Telegram Premium; otherwise ordinary emoji are sent.
+    CUSTOM_EMOJI_ENABLED: bool = True
+    CUSTOM_EMOJI_PACKS: str = ""          # "name1,name2": the <name> of t.me/addemoji/<name>
+    CUSTOM_EMOJI_FILE: str = "custom_emoji.json"   # {"🔥": "5404674261681232568"} (wins over packs)
+
     # Admin dashboard (https://<domain>/admin): one-time link from /admin in the bot, or login + password.
     ADMIN_LOGIN: str = "admin"
     ADMIN_PASSWORD: str = ""              # empty = password login is off (only the bot link works)
