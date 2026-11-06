@@ -322,9 +322,9 @@ async def test_background_writing_only_for_customers_who_paid(env, patched_handl
 
 
 @pytest.mark.asyncio
-async def test_admin_can_test_the_whole_flow_while_payments_are_off(env, monkeypatch, patched_handlers_db):
-    """Payments not connected: an admin still gets the test button and it marks the order paid
-    (without money, so revenue stays 0); for everybody else it gives nothing."""
+async def test_without_tezcheck_nobody_gets_files_for_free_not_even_an_admin(env, monkeypatch, patched_handlers_db):
+    """TezCheck is the only payment system: the old "To'lovni tasdiqlash" button never marks an
+    order paid (admins give presentations away from the dashboard instead)."""
     *_, ctx = env
     __import__("services.runtime").runtime._values["orders_mode"] = "auto"  # payments off: closed
     monkeypatch.setattr("config.settings.TEZCHECK_API_KEY", "")
@@ -335,13 +335,8 @@ async def test_admin_can_test_the_whole_flow_while_payments_are_off(env, monkeyp
     monkeypatch.setattr("config.settings.ADMIN_IDS", "7")
     texts = await _feed(env, _msg("🎨 Presentation yaratish"))
     assert not any("to‘xtatilgan" in t for t in texts)          # creation is open for the admin
-    await _feed(env, _cb(f"check_pay_{mine.id}"))
+    for data in (f"check_pay_{mine.id}", f"pay_checkout_{mine.id}", f"pay_click_{mine.id}", f"tc_pay_{mine.id}"):
+        await _feed(env, _cb(data))
     async with patched_handlers_db() as s:
         o = await s.get(PresentationOrder, mine.id)
-    assert o.status == "PAID" and o.paid_by == "TEST" and o.paid_amount == 0
-    monkeypatch.setattr("config.settings.ADMIN_IDS", "999")
-    async with patched_handlers_db() as s:
-        other = await repository.create_presentation_order(s, 7, "T", "S", 5, "05_nature_organic", 1750)
-    await _feed(env, _cb(f"check_pay_{other.id}"))
-    async with patched_handlers_db() as s:
-        assert (await s.get(PresentationOrder, other.id)).status != "PAID"
+    assert o.status != "PAID" and o.bill_id is None
