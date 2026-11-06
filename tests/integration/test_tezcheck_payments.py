@@ -285,3 +285,82 @@ async def test_files_are_rebuilt_from_the_database_after_a_redeploy(patched_hand
             content_json=content_for_db(content, "05_nature_organic"))
     pdf, pptx = await order_files(o)
     assert pdf and pptx and os.path.getsize(pdf) > 1000 and os.path.getsize(pptx) > 1000
+
+
+# ---------------------------------------------------------------------- protection against mistakes
+async def _set(db, oid, **values):
+    from sqlalchemy import update
+    from database.models import PresentationOrder
+    async with db() as s:
+        await s.execute(update(PresentationOrder).where(PresentationOrder.id == oid).values(**values))
+        await s.commit()
+
+
+async def test_two_quick_presses_make_one_bill(tc, patched_handlers_db, tmp_path):
+    oid = await _order(patched_handlers_db, tmp_path)
+    urls = await asyncio.gather(*(orders.get_payment_link(oid, 111) for _ in range(5)))
+    assert len({u for u, _ in urls}) == 1 and len(tc.bills) == 1
+
+
+async def test_an_expired_bill_paid_in_time_is_not_billed_again(tc, patched_handlers_db, tmp_path):
+    from datetime import datetime, timedelta
+    oid = await _order(patched_handlers_db, tmp_path)
+    await orders.get_payment_link(oid, 111)
+    tc.pay((await _status(patched_handlers_db, oid)).bill_id)
+    await _set(patched_handlers_db, oid, bill_expires_at=datetime.utcnow() - timedelta(minutes=1))
+    url, reason = await orders.get_payment_link(oid, 111)
+    assert url is None and reason == "paid" and len(tc.bills) == 1
+    assert (await _status(patched_handlers_db, oid)).status == "PAID"
+
+
+async def test_an_expired_unpaid_bill_gets_a_new_one(tc, patched_handlers_db, tmp_path):
+    from datetime import datetime, timedelta
+    oid = await _order(patched_handlers_db, tmp_path)
+    first, _ = await orders.get_payment_link(oid, 111)
+    await _set(patched_handlers_db, oid, bill_expires_at=datetime.utcnow() - timedelta(minutes=1))
+    second, reason = await orders.get_payment_link(oid, 111)
+    assert reason == "" and second != first and len(tc.bills) == 2
+
+
+async def test_cancelled_orders_and_tiny_prices_are_never_billed(tc, patched_handlers_db, tmp_path):
+    oid = await _order(patched_handlers_db, tmp_path)
+    await _set(patched_handlers_db, oid, status="CANCELLED")
+    assert await orders.get_payment_link(oid, 111) == (None, "closed")
+    cheap = await _order(patched_handlers_db, tmp_path, user_id=112, price=500)
+    assert await orders.get_payment_link(cheap, 112) == (None, "amount")
+    assert tc.bills == {}
+
+
+async def test_tezcheck_down_gives_a_friendly_answer(tc, patched_handlers_db, tmp_path, monkeypatch):
+    monkeypatch.setattr("config.settings.TEZCHECK_API_URL", "http://127.0.0.1:9/api")  # nothing listens
+    oid = await _order(patched_handlers_db, tmp_path)
+    cb = FakeCallbackQuery(data=f"tc_pay_{oid}", from_user=FakeUser(id=111))
+    cb.bot = cb.message.bot = DeliveryBot()
+    await payment_handlers.tezcheck_pay(cb)
+    assert "ulanib bo‘lmadi" in cb.message.calls_for("answer")[-1]["text"]
+    assert await orders.check_bill(oid) == ("no_bill", None)
+
+
+async def test_paid_but_undelivered_orders_are_sent_again_a_few_times(tc, patched_handlers_db, tmp_path):
+    from datetime import datetime, timedelta
+    oid = await _order(patched_handlers_db, tmp_path)
+    await orders.mark_paid(oid, by="TEZCHECK", amount=3500)
+    await _set(patched_handlers_db, oid, paid_at=datetime.utcnow() - timedelta(minutes=5))
+    orders._redelivered.clear()
+    tries = []
+
+    async def deliver(o):
+        tries.append(o)
+    for _ in range(5):
+        await orders.reconcile_once(deliver)
+    assert tries == [oid] * orders.REDELIVER_TRIES
+
+
+async def test_reconciliation_skips_bills_that_expired_long_ago(tc, patched_handlers_db, tmp_path):
+    from datetime import datetime, timedelta
+    oid = await _order(patched_handlers_db, tmp_path)
+    await orders.get_payment_link(oid, 111)
+    await _set(patched_handlers_db, oid, bill_expires_at=datetime.utcnow() - timedelta(hours=1))
+    before = len(tc.requests)
+    await orders.reconcile_once(lambda o: asyncio.sleep(0))
+    assert len(tc.requests) == before

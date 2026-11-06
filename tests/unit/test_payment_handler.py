@@ -25,125 +25,61 @@ def _callback(data, user_id=111):
 
 
 # ---------------------------------------------------------------------------
-# process_pay_checkout
+# Buttons of old messages: TezCheck is the only payment system
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_pay_checkout_denies_unknown_order(patched_handlers_db):
-    cb = _callback("pay_checkout_does-not-exist")
-    await payment_module.process_pay_checkout(cb)
-    assert cb.calls_for("answer")[0]["text"].startswith("⚠️ Buyurtma topilmadi")
-
-
-@pytest.mark.asyncio
-async def test_pay_checkout_denies_other_users_order(patched_handlers_db):
+@pytest.mark.parametrize("prefix", ["pay_checkout_", "pay_click_", "pay_payme_", "check_pay_", "tc_pay_", "tc_chk_"])
+async def test_without_tezcheck_no_button_marks_an_order_paid(patched_handlers_db, prefix):
     order_id = await _make_order(patched_handlers_db, user_id=111)
-    cb = _callback(f"pay_checkout_{order_id}", user_id=999)
-
-    await payment_module.process_pay_checkout(cb)
-
-    assert "Access Denied" in cb.calls_for("answer")[0]["text"]
-    assert cb.message.calls_for("edit_text") == []
-
-
-@pytest.mark.asyncio
-async def test_pay_checkout_shows_a_clickable_payment_link(patched_handlers_db):
-    order_id = await _make_order(patched_handlers_db, user_id=111)
-    cb = _callback(f"pay_checkout_{order_id}", user_id=111)
-
-    await payment_module.process_pay_checkout(cb)
-
-    edit_call = cb.message.calls_for("edit_text")[0]
-    keyboard = edit_call["reply_markup"]
-    url_buttons = [btn.url for row in keyboard.inline_keyboard for btn in row if btn.url]
-    # Regression guard: the generated checkout URL must actually reach the user,
-    # not just be computed and discarded.
-    assert any(order_id in url or "checkout" in url.lower() or "t.me" in url for url in url_buttons)
-
-
-@pytest.mark.asyncio
-async def test_pay_checkout_records_a_payment_transaction(patched_handlers_db):
-    order_id = await _make_order(patched_handlers_db, user_id=111)
-    cb = _callback(f"pay_checkout_{order_id}", user_id=111)
-
-    await payment_module.process_pay_checkout(cb)
-
-    async with patched_handlers_db() as session:
-        result = await session.execute(select(PaymentTransaction).where(PaymentTransaction.order_id == order_id))
-        transactions = result.scalars().all()
-        assert len(transactions) == 1
-        assert transactions[0].status == "WAITING_PAYMENT"
-
-
-# ---------------------------------------------------------------------------
-# process_check_payment
-# ---------------------------------------------------------------------------
-
-@pytest.mark.asyncio
-async def test_check_payment_denies_unknown_order(patched_handlers_db):
-    cb = _callback("check_pay_does-not-exist")
-    await payment_module.process_check_payment(cb)
-    assert cb.calls_for("answer")[0]["text"].startswith("⚠️ Buyurtma topilmadi")
-
-
-@pytest.mark.asyncio
-async def test_check_payment_denies_other_users_order(patched_handlers_db):
-    order_id = await _make_order(patched_handlers_db, user_id=111)
-    cb = _callback(f"check_pay_{order_id}", user_id=999)
-
-    await payment_module.process_check_payment(cb)
-
-    assert "Access Denied" in cb.calls_for("answer")[0]["text"]
+    cb = _callback(f"{prefix}{order_id}", user_id=111)
+    handler = {"pay_checkout_": payment_module.process_old_pay_button, "pay_click_": payment_module.process_old_pay_button,
+               "pay_payme_": payment_module.process_old_pay_button, "check_pay_": payment_module.process_check_payment,
+               "tc_pay_": payment_module.tezcheck_pay, "tc_chk_": payment_module.tezcheck_check}[prefix]
+    await handler(cb)
+    assert "To‘lov tizimi hozircha ishlamayapti" in cb.calls_for("answer")[-1]["text"]
     async with patched_handlers_db() as session:
         order = await repository.get_presentation_order(session, order_id)
-        assert order.status != "PAID"
+        txs = (await session.execute(select(PaymentTransaction))).scalars().all()
+    assert order.status != "PAID" and txs == []
 
 
 @pytest.mark.asyncio
-async def test_check_payment_in_demo_mode_marks_order_paid_and_offers_format_choice(patched_handlers_db, monkeypatch):
-    monkeypatch.setattr("config.settings.PAYMENT_ENV", "DEMO")
+@pytest.mark.parametrize("prefix", ["pay_checkout_", "pay_click_", "pay_payme_"])
+async def test_old_pay_buttons_open_the_tezcheck_page(patched_handlers_db, tezcheck_on, prefix):
     order_id = await _make_order(patched_handlers_db, user_id=111)
-    cb = _callback(f"check_pay_{order_id}", user_id=111)
+    cb = _callback(f"{prefix}{order_id}", user_id=111)
+    await payment_module.process_old_pay_button(cb)
+    markup = cb.message.calls_for("edit_reply_markup")[0]["reply_markup"]
+    assert markup.inline_keyboard[0][0].url.startswith("https://pay.tezcheck.uz/")
+    async with patched_handlers_db() as session:
+        tx = (await session.execute(select(PaymentTransaction))).scalars().one()
+    assert tx.provider == "TEZCHECK"
 
+
+@pytest.mark.asyncio
+async def test_old_check_button_never_confirms_without_money(patched_handlers_db, tezcheck_on):
+    order_id = await _make_order(patched_handlers_db, user_id=111)
+    await payment_module.process_old_pay_button(_callback(f"pay_checkout_{order_id}"))
+    cb = _callback(f"check_pay_{order_id}")
     await payment_module.process_check_payment(cb)
-
+    assert "hali kelmadi" in cb.message.calls_for("answer")[-1]["text"]
     async with patched_handlers_db() as session:
-        order = await repository.get_presentation_order(session, order_id)
-        assert order.status == "PAID"
-
-    answer_call = cb.message.calls_for("answer")[0]
-    assert "formatda" in answer_call["text"]
-    callback_datas = [btn.callback_data for row in answer_call["reply_markup"].inline_keyboard for btn in row]
-    assert f"dl_pdf_{order_id}" in callback_datas
-    assert f"dl_pptx_{order_id}" in callback_datas
-    assert f"dl_both_{order_id}" in callback_datas
+        assert (await repository.get_presentation_order(session, order_id)).status != "PAID"
 
 
 @pytest.mark.asyncio
-async def test_check_payment_in_production_mode_blocks_unverified_payment(patched_handlers_db, monkeypatch):
-    monkeypatch.setattr("config.settings.PAYMENT_ENV", "PRODUCTION")
+@pytest.mark.parametrize("prefix", ["pay_checkout_", "check_pay_", "tc_pay_", "tc_chk_"])
+async def test_buttons_deny_unknown_and_other_users_orders(patched_handlers_db, tezcheck_on, prefix):
     order_id = await _make_order(patched_handlers_db, user_id=111)
-    cb = _callback(f"check_pay_{order_id}", user_id=111)
-
-    await payment_module.process_check_payment(cb)
-
-    async with patched_handlers_db() as session:
-        order = await repository.get_presentation_order(session, order_id)
-        assert order.status != "PAID"
-    assert "Production Mode" in cb.calls_for("answer")[0]["text"]
-
-
-@pytest.mark.asyncio
-async def test_check_payment_called_twice_does_not_corrupt_order_status(patched_handlers_db, monkeypatch):
-    monkeypatch.setattr("config.settings.PAYMENT_ENV", "DEMO")
-    order_id = await _make_order(patched_handlers_db, user_id=111)
-
-    await payment_module.process_check_payment(_callback(f"check_pay_{order_id}", user_id=111))
-    await payment_module.process_check_payment(_callback(f"check_pay_{order_id}", user_id=111))
-
-    async with patched_handlers_db() as session:
-        order = await repository.get_presentation_order(session, order_id)
-        assert order.status == "PAID"  # idempotent, not corrupted by a repeated confirm tap
+    handler = {"pay_checkout_": payment_module.process_old_pay_button, "check_pay_": payment_module.process_check_payment,
+               "tc_pay_": payment_module.tezcheck_pay, "tc_chk_": payment_module.tezcheck_check}[prefix]
+    for oid, uid in (("does-not-exist", 111), (order_id, 999)):
+        cb = _callback(f"{prefix}{oid}", user_id=uid)
+        await handler(cb)
+        said = [c["text"] for c in cb.calls_for("answer")] + [c["text"] for c in cb.message.calls_for("answer")]
+        assert any("topilmadi" in t or "sizniki emas" in t for t in said), said
+    assert tezcheck_on.bills == {}
 
 
 # ---------------------------------------------------------------------------
@@ -242,67 +178,6 @@ async def test_dl_pdf_regenerates_pdf_when_file_missing_from_disk(patched_handle
 
     docs = cb.message.calls_for("answer_document")
     assert len(docs) == 1  # fell back to on-the-fly regeneration instead of failing
-
-
-# ---------------------------------------------------------------------------
-# Click / Payme checkout initiation (PRODUCTION mode)
-# ---------------------------------------------------------------------------
-
-@pytest.mark.asyncio
-async def test_pay_click_generates_a_real_click_checkout_link(patched_handlers_db, monkeypatch):
-    monkeypatch.setattr("config.settings.CLICK_SERVICE_ID", "20000")
-    monkeypatch.setattr("config.settings.CLICK_MERCHANT_ID", "12345")
-    order_id = await _make_order(patched_handlers_db, user_id=111)
-    cb = _callback(f"pay_click_{order_id}", user_id=111)
-
-    await payment_module.process_pay_checkout_click(cb)
-
-    edit_call = cb.message.calls_for("edit_text")[0]
-    keyboard = edit_call["reply_markup"]
-    url = keyboard.inline_keyboard[0][0].url
-    assert "my.click.uz" in url
-    assert "service_id=20000" in url
-    assert "merchant_id=12345" in url
-    assert order_id in url
-
-
-@pytest.mark.asyncio
-async def test_pay_payme_generates_a_real_payme_checkout_link(patched_handlers_db, monkeypatch):
-    monkeypatch.setattr("config.settings.PAYME_MERCHANT_ID", "abc123")
-    order_id = await _make_order(patched_handlers_db, user_id=111)
-    cb = _callback(f"pay_payme_{order_id}", user_id=111)
-
-    await payment_module.process_pay_checkout_payme(cb)
-
-    edit_call = cb.message.calls_for("edit_text")[0]
-    keyboard = edit_call["reply_markup"]
-    url = keyboard.inline_keyboard[0][0].url
-    assert "checkout.paycom.uz/abc123" in url
-    assert order_id in url
-
-
-@pytest.mark.asyncio
-async def test_pay_click_denies_other_users_order(patched_handlers_db):
-    order_id = await _make_order(patched_handlers_db, user_id=111)
-    cb = _callback(f"pay_click_{order_id}", user_id=999)
-
-    await payment_module.process_pay_checkout_click(cb)
-
-    assert "Access Denied" in cb.calls_for("answer")[0]["text"]
-    assert cb.message.calls_for("edit_text") == []
-
-
-@pytest.mark.asyncio
-async def test_pay_click_records_a_payment_transaction_with_click_provider_label(patched_handlers_db):
-    order_id = await _make_order(patched_handlers_db, user_id=111)
-    cb = _callback(f"pay_click_{order_id}", user_id=111)
-
-    await payment_module.process_pay_checkout_click(cb)
-
-    async with patched_handlers_db() as session:
-        result = await session.execute(select(PaymentTransaction).where(PaymentTransaction.order_id == order_id))
-        tx = result.scalars().one()
-    assert tx.provider == "CLICK"
 
 
 def test_download_file_names_are_safe():
