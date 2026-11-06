@@ -113,11 +113,14 @@ def isolated_image_cache(tmp_path, monkeypatch):
 def fresh_runtime_settings():
     """Dashboard settings are cached in memory: every test starts from the defaults — except the
     free first presentation, which is off so the older tests see the paid flow (tests of the free
-    presentation turn it on with runtime._values["free_trial"] = "1")."""
+    presentation turn it on with runtime._values["free_trial"] = "1"), and new orders are open."""
     from services import runtime
     runtime._values.clear()
     runtime.blocked_users.clear()
     runtime._values["free_trial"] = "0"
+    # payments are off in tests (no TezCheck): creation is opened as an admin would; tests of the
+    # closed state set runtime._values["orders_mode"] = "auto"
+    runtime._values["orders_mode"] = "open"
     yield
     runtime._values.clear()
     runtime.blocked_users.clear()
