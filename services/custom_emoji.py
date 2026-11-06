@@ -62,9 +62,9 @@ def set_ids(mapping: Dict[str, Any]) -> int:
         if k and ID_RE.match(cid) and len(k) <= 16:
             _ids[k] = cid
     if _ids:
-        # longest first, so "👨‍💻" wins over "👨"; an optional U+FE0F after every emoji
+        # longest first, so "👨‍💻" wins over "👨"; U+FE0F may follow any character ("1️⃣", "⚠️")
         alts = sorted(_ids, key=len, reverse=True)
-        _pattern = re.compile("(" + "|".join(re.escape(a) for a in alts) + ")" + VS16 + "?")
+        _pattern = re.compile("(?:" + "|".join("".join(re.escape(c) + VS16 + "?" for c in a) for a in alts) + ")")
     else:
         _pattern = None
     return len(_ids)
@@ -82,7 +82,7 @@ def _replace_plain(segment: str) -> str:
     """One piece of HTML text outside tags: every known emoji -> <tg-emoji>."""
     if _pattern is None:
         return segment
-    return _pattern.sub(lambda m: f'<tg-emoji emoji-id="{_ids[m.group(1)]}">{m.group(0)}</tg-emoji>', segment)
+    return _pattern.sub(lambda m: f'<tg-emoji emoji-id="{_ids[_key(m.group(0))]}">{m.group(0)}</tg-emoji>', segment)
 
 
 def to_html(text: str, parse_mode: Optional[str]) -> Optional[str]:
@@ -116,7 +116,7 @@ def _leading_emoji(text: str):
     if not m:
         return None
     rest = text[m.end():].lstrip()
-    return (m.group(1), rest) if rest else None
+    return (_key(m.group(0)), rest) if rest else None
 
 
 def decorate_markup(markup: Any) -> Any:
@@ -238,6 +238,25 @@ async def _read_packs(bot, names: Iterable[str]) -> Dict[str, str]:
     return found
 
 
+async def _only_existing(bot, mapping: Dict[str, Any]) -> Dict[str, Any]:
+    """Drops ids Telegram does not know (a wrong id in the file would make it refuse messages).
+    If Telegram cannot be asked now, the table is kept: the middleware still falls back safely."""
+    ids = list({str(v).strip() for v in mapping.values() if ID_RE.match(str(v).strip())})
+    known = set()
+    try:
+        for i in range(0, len(ids), 200):  # Bot API limit per call
+            for st in await bot.get_custom_emoji_stickers(custom_emoji_ids=ids[i:i + 200]):
+                if st.custom_emoji_id:
+                    known.add(st.custom_emoji_id)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("custom emoji ids could not be checked: %s", e)
+        return mapping
+    dropped = [k for k, v in mapping.items() if str(v).strip() not in known]
+    if dropped:
+        logger.warning("custom emoji: %d unknown id(s) skipped: %s", len(dropped), " ".join(dropped[:30]))
+    return {k: v for k, v in mapping.items() if str(v).strip() in known}
+
+
 def file_path() -> str:
     path = settings.CUSTOM_EMOJI_FILE or "custom_emoji.json"
     return path if os.path.isabs(path) else os.path.join(ROOT, path)
@@ -253,6 +272,8 @@ async def load(bot=None) -> int:
     if bot is not None and packs:
         mapping.update(await _read_packs(bot, packs))
     mapping.update({_key(k): v for k, v in _read_file(file_path()).items() if v})
+    if bot is not None and mapping:
+        mapping = await _only_existing(bot, mapping)
     n = set_ids(mapping)
     state.update(enabled=True, buttons=True, reason="")
     if n:

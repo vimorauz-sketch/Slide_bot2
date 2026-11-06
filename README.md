@@ -220,6 +220,18 @@ processed once. An order is paid only when TezCheck reports `paid` with real mon
 its variables nobody can pay (no buttons are shown; free presentations and the admin dashboard still
 work), and new paid presentations are closed automatically.
 
+## Premium (custom) emoji
+
+Every emoji in the bot's messages can be sent as its animated Telegram Premium version, and inline
+buttons get it as their icon (`services/custom_emoji.py`). Fill in `custom_emoji.json` — it already
+lists every emoji the bot uses (`python scripts/collect_emoji.py` adds new ones) — with ids copied
+from [tg-emoji-hub](https://github.com/TGlimmer/tg-emoji-hub) (its JSON export list is accepted too),
+or set `CUSTOM_EMOJI_PACKS` to custom emoji pack names and the bot reads their ids itself. Telegram
+allows this only if the bot's owner has Telegram Premium (or the bot has a Fragment username); if it
+refuses, the message is sent again with ordinary emoji and custom emoji are switched off until the
+next restart, so no message is ever lost. Reply-keyboard buttons keep ordinary emoji (the handlers
+match their text).
+
 ## Referats
 
 «📄 Referat yaratish» opens 50 templates (`services/referat/designs.py`: title-page layout × heading
