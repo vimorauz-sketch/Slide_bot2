@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.utils.token import TokenValidationError
@@ -9,7 +10,9 @@ from database.connection import init_db
 from bot.handlers import start, create_pres, ocr_task, payment, admin
 from bot.webhook_app import run_webhook_app
 
+# stdout, not stderr: Railway marks every stderr line as "error", so INFO lines looked like errors.
 logging.basicConfig(
+    stream=sys.stdout,
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
@@ -22,6 +25,14 @@ async def main():
     await init_db()
     from services import runtime
     await runtime.load()
+    from services.payment import tezcheck
+    if tezcheck.is_configured():
+        logger.info("Payments: TezCheck connected (webhook secret %s, test payments %s)",
+                    "set" if (settings.TEZCHECK_WEBHOOK_SECRET or "").strip() else "NOT set",
+                    "accepted" if settings.TEZCHECK_ACCEPT_TEST else "refused")
+    else:
+        missing = [n for n in ("TEZCHECK_API_KEY", "TEZCHECK_CASH_DESK_CODE") if not (getattr(settings, n, "") or "").strip()]
+        logger.warning("Payments: OFF - missing variables: %s (new paid orders are closed)", ", ".join(missing))
 
     token = settings.BOT_TOKEN.strip()
     if not token or "YOUR_TELEGRAM_BOT_TOKEN" in token or "ExampleToken" in token:
