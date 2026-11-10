@@ -194,7 +194,7 @@ async def test_mini_app_page_and_selection(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_mini_app_send_data_starts_the_referat_wizard():
+async def test_mini_app_send_data_starts_the_referat_wizard(patched_handlers_db):
     from types import SimpleNamespace
     from bot.handlers import create_pres
     state = FakeFSMContext()
@@ -206,7 +206,7 @@ async def test_mini_app_send_data_starts_the_referat_wizard():
 
 
 @pytest.mark.asyncio
-async def test_mini_app_sends_the_users_fonts_and_colour():
+async def test_mini_app_sends_the_users_fonts_and_colour(patched_handlers_db):
     from types import SimpleNamespace
     from bot.handlers import create_pres
     state = FakeFSMContext()

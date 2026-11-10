@@ -490,7 +490,7 @@ async def _build_and_send_now(message: Message, user_id: int, state: FSMContext)
     except Exception:  # noqa: BLE001
         pass
 
-    price = int(data.get("total_price") or (await _price_per_page()) * size["pages"])
+    price = (await _price_per_page()) * size["pages"]   # the current price, not the one from the start of the wizard
     async with AsyncSessionLocal() as session:
         order = await repository.create_presentation_order(
             session=session, user_id=user_id, topic=data.get("topic", ""), subject=data.get("subject", ""),

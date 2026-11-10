@@ -39,50 +39,58 @@ async def cmd_admin_panel(message: Message):
     await message.answer(text, parse_mode="HTML", reply_markup=markup, disable_web_page_preview=True)
 
 
-@router.message(Command("setprice"))
-async def cmd_set_price(message: Message):
+MIN_ORDER = 1000          # so'm: TezCheck does not accept a smaller bill (same rule as the dashboard)
+LIMITS = {"price_per_slide": (1, 1_000_000), "min_slides": (3, 60), "max_slides": (3, 60)}
+
+
+async def _current_limits():
+    from config import settings
+    async with AsyncSessionLocal() as session:
+        get = repository.get_setting
+        return {"price_per_slide": int(await get(session, "price_per_slide", str(settings.DEFAULT_PRICE_PER_SLIDE))),
+                "min_slides": int(await get(session, "min_slides", str(settings.MIN_SLIDES_PER_ORDER))),
+                "max_slides": int(await get(session, "max_slides", str(settings.MAX_SLIDES_PER_ORDER)))}
+
+
+async def _set_limit(message: Message, key: str, example: str, done: str) -> None:
+    """Checks a /setprice, /setminslides or /setmaxslides value exactly like the dashboard does."""
     if not is_admin(message.from_user.id):
         return
-
-    args = message.text.split()
+    args = (message.text or "").split()
     if len(args) < 2 or not args[1].isdigit():
-        await message.answer("⚠️ Ishlatish: <code>/setprice 350</code>", parse_mode="HTML")
+        await message.answer(f"⚠️ Ishlatish: <code>{example}</code>", parse_mode="HTML")
         return
+    value = int(args[1])
+    lo, hi = LIMITS[key]
+    if not lo <= value <= hi:
+        await message.answer(f"⚠️ Qiymat {lo} dan {hi} gacha bo‘lishi kerak.", parse_mode="HTML")
+        return
+    limits = await _current_limits()
+    limits[key] = value
+    if limits["min_slides"] > limits["max_slides"]:
+        await message.answer(f"⚠️ Minimum ({limits['min_slides']}) maksimumdan ({limits['max_slides']}) katta bo‘lishi mumkin emas.",
+                             parse_mode="HTML")
+        return
+    if limits["price_per_slide"] * limits["min_slides"] < MIN_ORDER:
+        await message.answer(f"⚠️ Eng kichik buyurtma {limits['price_per_slide']} × {limits['min_slides']} = "
+                             f"{limits['price_per_slide'] * limits['min_slides']} so‘m bo‘lib qoladi. "
+                             f"TezCheck {MIN_ORDER} so‘mdan kam to‘lovni qabul qilmaydi.", parse_mode="HTML")
+        return
+    from services import runtime
+    await runtime.set_many({key: str(value)})
+    await message.answer(done.format(value), parse_mode="HTML")
 
-    new_price = args[1]
-    async with AsyncSessionLocal() as session:
-        await repository.set_setting(session, "price_per_slide", new_price)
 
-    await message.answer(f"✅ 1 slayd narxi <b>{new_price} so'm</b> ga o'zgartirildi.", parse_mode="HTML")
+@router.message(Command("setprice"))
+async def cmd_set_price(message: Message):
+    await _set_limit(message, "price_per_slide", "/setprice 350", "✅ 1 slayd narxi <b>{} so'm</b> ga o'zgartirildi.")
+
 
 @router.message(Command("setminslides"))
 async def cmd_set_min_slides(message: Message):
-    if not is_admin(message.from_user.id):
-        return
+    await _set_limit(message, "min_slides", "/setminslides 5", "✅ Minimum slayd miqdori <b>{} ta</b> ga o'zgartirildi.")
 
-    args = message.text.split()
-    if len(args) < 2 or not args[1].isdigit():
-        await message.answer("⚠️ Ishlatish: <code>/setminslides 5</code>", parse_mode="HTML")
-        return
-
-    new_min = args[1]
-    async with AsyncSessionLocal() as session:
-        await repository.set_setting(session, "min_slides", new_min)
-
-    await message.answer(f"✅ Minimum slayd miqdori <b>{new_min} ta</b> ga o'zgartirildi.", parse_mode="HTML")
 
 @router.message(Command("setmaxslides"))
 async def cmd_set_max_slides(message: Message):
-    if not is_admin(message.from_user.id):
-        return
-
-    args = message.text.split()
-    if len(args) < 2 or not args[1].isdigit():
-        await message.answer("⚠️ Ishlatish: <code>/setmaxslides 30</code>", parse_mode="HTML")
-        return
-
-    new_max = args[1]
-    async with AsyncSessionLocal() as session:
-        await repository.set_setting(session, "max_slides", new_max)
-
-    await message.answer(f"✅ Maksimum slayd miqdori <b>{new_max} ta</b> ga o'zgartirildi.", parse_mode="HTML")
+    await _set_limit(message, "max_slides", "/setmaxslides 30", "✅ Maksimum slayd miqdori <b>{} ta</b> ga o'zgartirildi.")

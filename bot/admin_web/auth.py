@@ -3,9 +3,12 @@ Dashboard sign-in.
 
   * One-time link: /admin in the bot -> https://<domain>/admin/login/tg?t=<token> (10 minutes, once).
     Only the token's SHA-256 is stored, so a database leak does not leak working links.
-  * Login + password (ADMIN_LOGIN / ADMIN_PASSWORD), 5 wrong tries from one address -> 15 minutes locked.
+  * Login + password (ADMIN_LOGIN / ADMIN_PASSWORD), 5 wrong tries from one address -> 15 minutes locked;
+    more than GLOBAL_MAX_FAILS wrong tries from all addresses together in 15 minutes -> password sign-in
+    pauses for 15 minutes (someone is guessing from many addresses; the Telegram link still works).
 
-A session is a signed cookie (HMAC-SHA256 with ADMIN_SECRET, or a key derived from BOT_TOKEN):
+A session is a signed cookie (HMAC-SHA256 with ADMIN_SECRET; without it, with a random key the bot makes
+once and keeps in the database — never with BOT_TOKEN, so a leaked bot token does not open the dashboard):
 HttpOnly, SameSite=Lax, Secure on HTTPS, 12 hours. Every form carries a CSRF token derived from
 the session, and every POST is checked.
 """
@@ -31,13 +34,43 @@ TOKEN_MINUTES = 10
 MAX_FAILS = 5
 LOCK_SECONDS = 15 * 60
 
+GLOBAL_MAX_FAILS = 30
+MAX_TRACKED = 10000
+
 _fails: Dict[str, Tuple[int, float]] = {}
+_recent_fails: list = []          # times of wrong tries from every address (last LOCK_SECONDS)
+_global_lock_until = 0.0
+
+
+SECRET_KEY = "admin_session_secret"
+_generated_secret: bytes = b""
+
+
+async def init_secret() -> None:
+    """Called at start: loads (or makes once) the random session key used when ADMIN_SECRET is empty."""
+    global _generated_secret
+    if (settings.ADMIN_SECRET or "").strip():
+        return
+    from database.connection import AsyncSessionLocal
+    from database import repository
+    async with AsyncSessionLocal() as session:
+        value = await repository.get_setting(session, SECRET_KEY, "")
+        if len(value) < 32:
+            value = secrets.token_hex(32)
+            await repository.set_setting(session, SECRET_KEY, value)
+    _generated_secret = value.encode()
 
 
 def _secret() -> bytes:
     if (settings.ADMIN_SECRET or "").strip():
         return settings.ADMIN_SECRET.strip().encode()
-    return hashlib.sha256(("slidelab-admin:" + (settings.BOT_TOKEN or "")).encode()).digest()
+    if _generated_secret:
+        return _generated_secret
+    # before init_secret() ran (tests, tools): a per-process random key — sessions simply do not survive it
+    return _process_secret
+
+
+_process_secret = secrets.token_bytes(32)
 
 
 def _b64(data: bytes) -> str:
@@ -94,7 +127,10 @@ def set_cookie(request: web.Request, response: web.StreamResponse, value: str) -
 
 
 def client_ip(request: web.Request) -> str:
-    return (request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote or "?")
+    """The visitor's address as the hosting proxy saw it. Never the first X-Forwarded-For value: the
+    visitor writes that one himself (see services/netutil.py)."""
+    from services.netutil import client_ip as _ip
+    return _ip(request)
 
 
 # ---------------------------------------------------------------------- password
@@ -103,8 +139,30 @@ def password_enabled() -> bool:
 
 
 def locked_for(ip: str) -> int:
+    now = time.time()
     n, until = _fails.get(ip, (0, 0.0))
-    return max(0, int(until - time.time())) if n >= MAX_FAILS else 0
+    mine = max(0, int(until - now)) if n >= MAX_FAILS else 0
+    return max(mine, max(0, int(_global_lock_until - now)))
+
+
+def _note_failure(ip: str) -> None:
+    global _global_lock_until
+    now = time.time()
+    n, _ = _fails.get(ip, (0, 0.0))
+    n += 1
+    _fails[ip] = (n, now + LOCK_SECONDS if n >= MAX_FAILS else 0.0)
+    _recent_fails.append(now)
+    while _recent_fails and now - _recent_fails[0] > LOCK_SECONDS:
+        _recent_fails.pop(0)
+    if len(_recent_fails) > GLOBAL_MAX_FAILS:
+        _global_lock_until = now + LOCK_SECONDS
+        _recent_fails.clear()
+    if len(_fails) > MAX_TRACKED:
+        # forget only what no longer matters: addresses that are not locked right now. Locked
+        # addresses stay locked even when someone floods the table with new ones.
+        for key, (cnt, until) in list(_fails.items()):
+            if cnt < MAX_FAILS or until <= now:
+                _fails.pop(key, None)
 
 
 def check_password(ip: str, login: str, password: str) -> bool:
@@ -115,11 +173,7 @@ def check_password(ip: str, login: str, password: str) -> bool:
     if ok:
         _fails.pop(ip, None)
         return True
-    n, _ = _fails.get(ip, (0, 0.0))
-    n += 1
-    _fails[ip] = (n, time.time() + LOCK_SECONDS if n >= MAX_FAILS else 0.0)
-    if len(_fails) > 10000:
-        _fails.clear()
+    _note_failure(ip)
     return False
 
 

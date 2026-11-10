@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional
 from urllib.parse import parse_qsl
 
 
-def validate_init_data(init_data: str, bot_token: str, max_age: int = 24 * 3600) -> Optional[Dict[str, Any]]:
+def validate_init_data(init_data: str, bot_token: str, max_age: int = 2 * 3600) -> Optional[Dict[str, Any]]:
     """Returns the parsed initData (with "user" decoded) if the signature is valid, else None."""
     if not init_data or not bot_token:
         return None

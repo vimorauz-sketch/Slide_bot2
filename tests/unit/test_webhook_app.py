@@ -19,7 +19,7 @@ async def client():
 async def test_health_endpoint(client):
     resp = await client.get("/health")
     assert resp.status == 200
-    body = await resp.json()
+    assert (await resp.json())["status"] == "ok"
 
 
 @pytest.mark.asyncio
@@ -75,7 +75,7 @@ async def test_webapp_select_rejects_unsigned_requests():
         assert r.status == 403
 
 
-async def test_webapp_select_sets_the_users_theme(monkeypatch):
+async def test_webapp_select_sets_the_users_theme(monkeypatch, patched_handlers_db):
     from aiogram import Dispatcher
     from config import settings
     from tests.fixtures.telegram_fakes import FakeBot

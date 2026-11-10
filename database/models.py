@@ -163,3 +163,13 @@ class CustomTemplate(Base):
     enabled = Column(Boolean, default=True, nullable=False)
     created_by = Column(String(64), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class FsmState(Base):
+    """A user's wizard state (bot/fsm_storage.py), so a half-filled order survives a restart."""
+    __tablename__ = "fsm_states"
+
+    key = Column(String(255), primary_key=True)
+    state = Column(String(255), nullable=True)
+    data = Column(Text, nullable=False, default="{}")
+    updated_at = Column(DateTime, default=datetime.utcnow, index=True)
