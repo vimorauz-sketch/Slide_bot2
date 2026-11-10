@@ -9,3 +9,9 @@ __pycache__/
 venv/
 **/.env
 **/*.db
+htmlcov/
+.coverage
+tests/
+.ruff_cache/
+.mypy_cache/
+*.log
