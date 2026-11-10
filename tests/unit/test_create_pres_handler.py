@@ -66,7 +66,7 @@ async def test_template_selection_callback_routes_to_ocr_upload():
 
 
 @pytest.mark.asyncio
-async def test_template_selection_callback_with_a_real_template_sets_subject_state():
+async def test_template_selection_callback_with_a_real_template_sets_subject_state(patched_handlers_db):
     state = FakeFSMContext()
     cb = FakeCallbackQuery(data="tpl_05_nature_organic")
 
@@ -97,7 +97,7 @@ async def test_unknown_template_callback_alerts_and_keeps_state():
 
 
 @pytest.mark.asyncio
-async def test_webapp_data_selects_theme_and_starts_wizard():
+async def test_webapp_data_selects_theme_and_starts_wizard(patched_handlers_db):
     import json
     from types import SimpleNamespace
     state = FakeFSMContext()
@@ -149,7 +149,7 @@ async def test_inline_gallery_navigation():
 
 
 @pytest.mark.asyncio
-async def test_deep_link_payload_selects_template_and_colour():
+async def test_deep_link_payload_selects_template_and_colour(patched_handlers_db):
     state = FakeFSMContext()
     ok = await create_pres.apply_template_choice(_message("").bot, 1, state, "150_apollo--emerald")
     assert ok and (await state.get_data())["template_id"] == "150_apollo~emerald"
@@ -295,7 +295,7 @@ async def test_cancel_clears_state_and_confirms_to_user():
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_start_pres_wizard_resets_state_and_shows_template_selection():
+async def test_start_pres_wizard_resets_state_and_shows_template_selection(patched_handlers_db):
     state = FakeFSMContext()
     await state.update_data(leftover="from a previous attempt")
 
@@ -510,7 +510,7 @@ def test_webapp_url_only_accepts_public_https(monkeypatch, url, expected):
 
 
 @pytest.mark.asyncio
-async def test_picker_falls_back_when_telegram_rejects_the_webapp_url(monkeypatch):
+async def test_picker_falls_back_when_telegram_rejects_the_webapp_url(monkeypatch, patched_handlers_db):
     from aiogram.exceptions import TelegramBadRequest
     monkeypatch.setattr(create_pres.settings, "WEBAPP_URL", "https://bot.slidelab.uz/webapp/")
     monkeypatch.setattr(create_pres, "_webapp_disabled", False)

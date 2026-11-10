@@ -31,7 +31,7 @@ UNPAID = ("PREVIEW_READY", "WAITING_PAYMENT", "CREATED")
 
 @dataclass
 class Block:
-    reason: str                    # closed, unpaid, daily, cap
+    reason: str                    # closed, unpaid, daily, cap, error
     text: str
     pay_order_id: Optional[str] = None
 
@@ -73,9 +73,11 @@ async def check(user_id: int, slide_count: Optional[int] = None) -> Optional[Blo
             if cap > 0:
                 total_today = (await s.execute(select(func.count()).select_from(PresentationOrder)
                                                .where(PresentationOrder.created_at >= day))).scalar() or 0
-    except Exception:  # noqa: BLE001 - a database hiccup must not lock everybody out
+    except Exception:  # noqa: BLE001
+        # the limits could not be counted: refuse for now instead of letting every limit (and the AI
+        # budget cap) go silently. A database hiccup passes in seconds; an unlimited AI bill does not.
         logger.exception("limit check failed")
-        return None
+        return Block("error", "⚠️ <b>Hozir buyurtmani qabul qilib bo‘lmadi.</b>\n\nBir daqiqadan so‘ng qayta urinib ko‘ring.")
     unpaid = [r for r in mine if r[1] in UNPAID]
     max_unpaid = runtime.get_int("max_unpaid_open", 2)
     if max_unpaid > 0 and len(unpaid) >= max_unpaid and not free:

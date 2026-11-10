@@ -89,10 +89,11 @@
     <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
       <div class="field"><label for="f1" class="lbl">Bepul taqdimot, slayd</label><input id="f1" name="free_max_slides" class="inp" type="number" min="0" max="60" required value="{{ v.free_max_slides }}"></div>
       <div class="field"><label for="f2" class="lbl">1 do‘st uchun bonus</label><input id="f2" name="referral_bonus" class="inp" type="number" min="0" max="20" required value="{{ v.referral_bonus }}"></div>
+      <div class="field"><label for="f4" class="lbl">Kuniga bepul taqdimotlar (hammasi)</label><input id="f4" name="free_daily_cap" class="inp" type="number" min="0" max="100000" required value="{{ v.free_daily_cap }}"></div>
     </div>
     <div class="field"><label for="f3" class="lbl">Bonus qachon beriladi</label>
       <select id="f3" name="referral_trigger" class="inp">{% for code, name in referral_triggers %}<option value="{{ code }}" {{ 'selected' if v.referral_trigger == code }}>{{ name }}</option>{% endfor %}</select></div>
-    <span class="hint"><b>Bepul taqdimot, slayd</b> — bepul taqdimot necha slaydgacha (0 = cheklovsiz). <b>Bonus</b> — taklif qilgan odamga har bir do‘sti uchun beriladigan bepul taqdimotlar (0 = referal bonusi o‘chiq).</span>
+    <span class="hint"><b>Bepul taqdimot, slayd</b> — bepul taqdimot necha slaydgacha (0 = cheklovsiz). <b>Bonus</b> — taklif qilgan odamga har bir do‘sti uchun beriladigan bepul taqdimotlar (0 = referal bonusi o‘chiq). <b>Kuniga bepul taqdimotlar</b> — 24 soatda barcha foydalanuvchilarga jami nechta bepul taqdimot (0 = cheklovsiz). Ko‘p soxta akkaunt ochib bepul taqdimot olishning AI xarajatini cheklaydi; chegaradan keyin bepul taqdimot ertasi kunga qoladi.</span>
   </section>
 
 </div>

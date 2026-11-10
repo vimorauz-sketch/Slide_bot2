@@ -41,7 +41,8 @@ def defaults() -> Dict[str, str]:
         "extra_admins": "",
         "referat_price_per_page": "500",  # so‘m per page of a referat (the size the user picks)
         "free_trial": "1",              # every user's first presentation is free
-        "free_max_slides": "15",        # the free (trial / bonus) presentation covers up to this many slides
+        "free_max_slides": "15",
+        "free_daily_cap": "30",         # free presentations per 24 hours for all users together (0 = no cap)        # the free (trial / bonus) presentation covers up to this many slides
         "referral_bonus": "1",          # free presentations the inviter gets per friend
         "referral_trigger": "paid",     # paid: when the friend pays for the first time / first: first presentation
         "hidden_slide_templates": "",   # comma-separated template ids hidden from the galleries

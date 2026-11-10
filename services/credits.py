@@ -4,6 +4,9 @@ Free presentations and the referral programme.
   * Trial: every user's first presentation is free (once per Telegram account, dashboard: free_trial).
   * Bonus: extra free presentations — one per invited friend (referral_bonus) and admin gifts.
   * A free presentation covers up to free_max_slides slides; a bigger one is paid as usual.
+  * free_daily_cap: free presentations (trial + bonus, all users together) per 24 hours. New Telegram
+    accounts are easy to make, so this caps what free presentations can cost in AI requests; past it,
+    free presentations wait until the next day and paid ones work as usual.
 
 The friend's inviter gets the bonus once, when the friend pays for the first time
 (referral_trigger "paid", the default — fake accounts earn nothing) or makes the first
@@ -74,9 +77,41 @@ async def available(user_id: int) -> Credits:
     return Credits(trial=trial_enabled() and row[0] is None, bonus=int(row[1] or 0))
 
 
+_free_today_cache = [0.0, 0]   # [time counted, count]
+
+
+async def free_today() -> int:
+    """Free presentations made in the last 24 hours (counted at most once a minute)."""
+    import time
+    from datetime import timedelta
+    now = time.monotonic()
+    if now - _free_today_cache[0] < 60:
+        return _free_today_cache[1]
+    try:
+        async with AsyncSessionLocal() as s:
+            n = (await s.execute(select(func.count()).select_from(PresentationOrder).where(
+                PresentationOrder.paid_by.in_(FREE_KINDS),
+                PresentationOrder.created_at >= datetime.utcnow() - timedelta(days=1)))).scalar() or 0
+    except Exception:  # noqa: BLE001
+        logger.exception("free presentations could not be counted")
+        return 10 ** 9   # unknown: no free presentation rather than an unlimited number
+    _free_today_cache[0], _free_today_cache[1] = now, int(n)
+    return int(n)
+
+
+async def daily_cap_reached() -> bool:
+    cap = runtime.get_int("free_daily_cap", 30, lo=0, hi=100000)
+    return cap > 0 and await free_today() >= cap
+
+
 async def usable(user_id: int, slide_count: Optional[int] = None) -> bool:
     """A free presentation of this size can be made now."""
-    return covers(slide_count) and (await available(user_id)).total > 0
+    if not covers(slide_count) or (await available(user_id)).total <= 0:
+        return False
+    if await daily_cap_reached():
+        logger.warning("free presentation cap for today reached (user %s)", user_id)
+        return False
+    return True
 
 
 async def claim(user_id: int, slide_count: int) -> Optional[str]:

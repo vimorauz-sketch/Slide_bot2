@@ -25,6 +25,10 @@ async def main():
     await init_db()
     from services import runtime
     await runtime.load()
+    from bot.admin_web import auth as admin_auth
+    await admin_auth.init_secret()   # the dashboard's session key (never derived from BOT_TOKEN)
+    from bot.fsm_storage import DbStorage, cleanup_old
+    await cleanup_old()
     from services.payment import tezcheck
     if tezcheck.is_configured():
         logger.info("Payments: TezCheck connected (webhook secret %s, test payments %s)",
@@ -58,7 +62,8 @@ async def main():
     logger.info("Starting SlideLab Telegram Bot...")
     from services import credits
     credits.set_bot(bot)  # referral bonus messages
-    dp = Dispatcher()
+    # wizard state in the database: a restart or redeploy no longer loses half-filled orders
+    dp = Dispatcher(storage=DbStorage())
 
     @dp.errors()
     async def on_error(event: ErrorEvent):
@@ -107,7 +112,8 @@ async def main():
     webhook_runner = await run_webhook_app(settings.WEBHOOK_HOST, settings.WEBHOOK_PORT, bot, dp)
 
     try:
-        await bot.delete_webhook(drop_pending_updates=True)
+        # messages sent while the bot was restarting are answered, not thrown away
+        await bot.delete_webhook(drop_pending_updates=False)
         from bot.commands import setup_commands
         from services import runtime as _rt
         await setup_commands(bot, sorted(_rt.admin_ids()))  # the «Menu» button list

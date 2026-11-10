@@ -115,7 +115,7 @@ async def test_customer_gets_installable_fonts_with_the_files(tmp_path, monkeypa
 
 
 @pytest.mark.asyncio
-async def test_mini_app_send_data_carries_fonts_and_colour(monkeypatch):
+async def test_mini_app_send_data_carries_fonts_and_colour(monkeypatch, patched_handlers_db):
     import json as _json
     from types import SimpleNamespace
     from bot.handlers import create_pres

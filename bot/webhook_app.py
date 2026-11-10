@@ -40,7 +40,8 @@ def _check_rate(request: web.Request) -> None:
     if _ip_limiter is None:
         from bot.middlewares.throttling import ThrottlingMiddleware
         _ip_limiter = ThrottlingMiddleware(rate=5, burst=150, ban_seconds=120)
-    ip = (request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote or "?")
+    from services.netutil import client_ip
+    ip = client_ip(request)
     if _ip_limiter.allow(hash(ip)) is not None:
         raise web.HTTPTooManyRequests(text="Too many requests")
 
@@ -72,7 +73,7 @@ async def webapp_select_handler(request: web.Request) -> web.Response:
         body = await request.json()
     except (ValueError, json.JSONDecodeError):
         return web.json_response({"ok": False, "error": "bad_json"}, status=400)
-    data = validate_init_data(str(body.get("init_data", "")), settings.BOT_TOKEN)
+    data = validate_init_data(str(body.get("init_data", "")), settings.BOT_TOKEN, max_age=2 * 3600)
     if not data or not isinstance(data.get("user"), dict):
         return web.json_response({"ok": False, "error": "unauthorized"}, status=403)
     bot, dp = request.app.get(BOT_KEY), request.app.get(DP_KEY)
@@ -110,7 +111,10 @@ async def webapp_preview_handler(request: web.Request) -> web.StreamResponse:
 
 
 async def diag_handler(request: web.Request) -> web.Response:
-    """Mini App diagnostics: open https://<domain>/diag in a browser."""
+    """Mini App diagnostics, for admins only: https://<domain>/admin/diag (it shows the server's port,
+    domain and photo providers, which strangers do not need to know). /diag sends there."""
+    if request.path == "/diag":
+        raise web.HTTPFound("/admin/diag")
     from config import settings
     from bot.handlers.create_pres import webapp_url
 
@@ -335,6 +339,7 @@ def create_webhook_app(bot=None, dp=None) -> web.Application:
     app.router.add_get("/health", health_handler)
     app.router.add_get("/", health_handler)
     app.router.add_get("/diag", diag_handler)
+    app.router.add_get("/admin/diag", diag_handler)   # admin_guard: signed-in admins only
     app.router.add_post("/payments/tezcheck/webhook", tezcheck_webhook_handler)
     from bot.admin_web import setup_admin
     setup_admin(app)
@@ -352,7 +357,7 @@ async def run_webhook_app(host: str, port: int, bot=None, dp=None):
     from bot.handlers.create_pres import webapp_url
     url = webapp_url()
     if url:
-        logger.info(f"Mini App: {url}  (tekshirish: {url.split('/webapp')[0]}/diag)")
+        logger.info(f"Mini App: {url}  (tekshirish: {url.split('/webapp')[0]}/admin/diag)")
     else:
         logger.warning("Mini App O'CHIQ: WEBAPP_URL yo'q yoki noto'g'ri (%r). Railway: Settings -> Networking -> Generate Domain.",
                        settings.WEBAPP_URL)
@@ -368,6 +373,10 @@ async def run_webhook_app(host: str, port: int, bot=None, dp=None):
             _background.append(asyncio.ensure_future(reconcile_loop(lambda oid: deliver_order(bot, oid))))
         else:
             logger.warning("To'lovlar O'CHIQ: TEZCHECK_API_KEY va TEZCHECK_CASH_DESK_CODE kiritilmagan")
+    if bot is not None:
+        import asyncio
+        from services import storage_cleanup
+        _background.append(asyncio.ensure_future(storage_cleanup.loop()))   # old order folders: the disk never fills
     if os.getenv("GALLERY_WARMUP", "1") != "0":
         import asyncio
         from services.gallery import warm_up

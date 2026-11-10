@@ -71,7 +71,7 @@ to‘xtating yoki o‘chiring**.
 
 ## 7. Tekshirish
 
-- `https://slidelab.duckdns.org/diag` — server javob beryaptimi.
+- `https://slidelab.duckdns.org/health` — server javob beryaptimi (`{"status": "ok"}`); batafsil tekshiruv admin panelda: `/admin/diag`.
 - Botga `/start`, keyin `/admin` → admin panel havolasi.
 - Loglar: `cd ~/slidelab/deploy && sudo docker compose logs -f bot`
 

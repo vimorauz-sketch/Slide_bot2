@@ -878,6 +878,10 @@ async def _build_and_send_now(message: Message, user_id: int, state: FSMContext,
     start_files(storage_dir)  # PDF + PPTX are ready long before anyone pays
     await bar.finish()
 
+    # the price is taken now, from the current setting: a price the admin changed while the customer was
+    # filling in the wizard applies (the customer sees it below, before paying)
+    _, _, price_per_slide = await _limits()
+    total_price = slide_count * price_per_slide
     async with AsyncSessionLocal() as session:
         order = await repository.create_presentation_order(
             session=session,
@@ -886,7 +890,7 @@ async def _build_and_send_now(message: Message, user_id: int, state: FSMContext,
             subject=data.get("subject", ""),
             slide_count=slide_count,
             template_id=tpl_id if isinstance(tpl_id, str) else "custom_ai",
-            total_price=data.get("total_price", 3500),
+            total_price=total_price,
             pptx_path=result.pptx_path,
             pdf_path=result.pdf_path,
             # the deck itself is kept in the database: the files can be rebuilt after a redeploy
@@ -923,7 +927,6 @@ async def _build_and_send_now(message: Message, user_id: int, state: FSMContext,
     except Exception:  # noqa: BLE001 - the payment message must still arrive
         logger.exception("preview images could not be sent")
 
-    total_price = data.get("total_price", 3500)
     warning_text = (
         f"⚠️ <b>Preview haqida</b>\n\n"
         f"Yuqorida ikki namuna slayd va barcha {slide_count} ta slaydning kichik ko‘rinishi berildi. "

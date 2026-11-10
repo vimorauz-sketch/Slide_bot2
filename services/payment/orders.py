@@ -47,7 +47,7 @@ CLOSED_STATES = ("CANCELLED", "REFUNDED")
 REDELIVER_AFTER = timedelta(minutes=2)   # a paid order still without files is sent again after this
 REDELIVER_TRIES = 3
 _redelivered: Dict[str, int] = {}
-_bill_locks: Dict[str, asyncio.Lock] = {}
+_bill_locks: Dict[str, list] = {}      # order -> [lock, number of callers holding or waiting]
 
 
 def payment_mode() -> str:
@@ -80,9 +80,15 @@ async def get_payment_link(order_id: str, user_id: int, bot_username: str = "") 
     if payment_mode() != "tezcheck":
         return None, "off"
     # one bill at a time per order: two quick presses must not both create one
-    lock = _bill_locks.setdefault(order_id, asyncio.Lock())
-    async with lock:
-        return await _payment_link(order_id, user_id, bot_username)
+    entry = _bill_locks.setdefault(order_id, [asyncio.Lock(), 0])
+    entry[1] += 1
+    try:
+        async with entry[0]:
+            return await _payment_link(order_id, user_id, bot_username)
+    finally:
+        entry[1] -= 1
+        if entry[1] <= 0 and _bill_locks.get(order_id) is entry:
+            _bill_locks.pop(order_id, None)   # nobody holds or waits: the dict does not grow forever
 
 
 async def _payment_link(order_id: str, user_id: int, bot_username: str) -> Tuple[Optional[str], str]:
@@ -138,12 +144,15 @@ async def _payment_link(order_id: str, user_id: int, bot_username: str) -> Tuple
 
 
 async def mark_paid(order_id: str, *, by: str, amount: Optional[int] = None, fee: Optional[int] = None,
-                    provider: str = "", payment_id: str = "") -> bool:
-    """Moves an order to PAID once. True only for the call that actually did it."""
+                    provider: str = "", payment_id: str = "", reopen: bool = False) -> bool:
+    """Moves an order to PAID once. True only for the call that actually did it.
+    A cancelled or refunded order is never reopened by a payment event (a late or repeated event after
+    a refund must not hand out the files again); only an admin's explicit «mark paid» (reopen=True) can."""
+    blocked = ("PAID",) if reopen else ("PAID",) + CLOSED_STATES
     async with AsyncSessionLocal() as session:
         res = await session.execute(
             update(PresentationOrder)
-            .where(PresentationOrder.id == order_id, PresentationOrder.status != "PAID")
+            .where(PresentationOrder.id == order_id, PresentationOrder.status.notin_(blocked))
             .values(status="PAID", paid_at=datetime.utcnow(), paid_by=by, paid_amount=amount, fee_amount=fee,
                     payment_provider=provider or None))
         changed = (res.rowcount or 0) > 0
@@ -153,6 +162,13 @@ async def mark_paid(order_id: str, *, by: str, amount: Optional[int] = None, fee
                 .where(PaymentTransaction.order_id == order_id, PaymentTransaction.status == "WAITING_PAYMENT")
                 .values(status="PAID", state=2))
         await session.commit()
+    if not changed and not reopen:
+        async with AsyncSessionLocal() as session:
+            status = (await session.execute(select(PresentationOrder.status)
+                                            .where(PresentationOrder.id == order_id))).scalar_one_or_none()
+        if status in CLOSED_STATES:
+            logger.error("order %s is %s but a payment arrived (%s %s %s, %s so'm): check it in the "
+                         "dashboard and mark it paid or refund it", order_id, status, by, provider, payment_id, amount)
     if changed:
         logger.info("order %s paid (%s %s %s)", order_id, by, provider, payment_id)
         from services import credits
@@ -177,7 +193,11 @@ async def check_bill(order_id: str) -> Tuple[str, Optional[tezcheck.BillStatus]]
         logger.warning("TezCheck check for %s failed: %s", order_id, e)
         return "error", None
     if st.accepted:
-        if st.amount is not None and st.amount < order.total_price:
+        if st.amount is None:
+            # paid, but TezCheck did not say how much: hold the order (never deliver without a known sum)
+            logger.error("order %s: TezCheck reports it paid without an amount — held for a manual check", order_id)
+            return "unknown", st
+        if st.amount < order.total_price:
             logger.error("order %s: paid %s < price %s — not accepted", order_id, st.amount, order.total_price)
             return "failed", st
         ok = await mark_paid(order_id, by="TEZCHECK", amount=st.amount, fee=st.fee, provider=st.provider)
@@ -281,8 +301,8 @@ async def _process_event(etype: str, data: Dict[str, Any], event_id: str) -> Tup
             logger.info("test payment for order %s ignored (TEZCHECK_ACCEPT_TEST is off)", order.id)
             return "ignored", None
         amount = tezcheck.from_minor(data.get("amount_minor"))
-        if amount is not None and amount < order.total_price:
-            logger.error("order %s: webhook amount %s < price %s", order.id, amount, order.total_price)
+        if amount is None or amount < order.total_price:
+            logger.error("order %s: webhook amount %s (price %s) — not accepted", order.id, amount, order.total_price)
             return "ignored", None
         ok = await mark_paid(order.id, by="TEZCHECK", amount=amount, fee=tezcheck.from_minor(data.get("fee_minor")),
                              provider=str(data.get("provider_code") or ""), payment_id=str(data.get("payment_id") or ""))
@@ -390,6 +410,8 @@ async def reconcile_once(deliver) -> int:
             except Exception:  # noqa: BLE001
                 logger.exception("delivery of %s failed", oid)
         await asyncio.sleep(0.2)
+    for oid in [k for k in _redelivered if k not in undelivered]:
+        _redelivered.pop(oid, None)      # delivered or older than the window: the counter is not needed
     for oid in undelivered:
         if _redelivered.get(oid, 0) >= REDELIVER_TRIES:
             continue

@@ -606,7 +606,7 @@ async def order_action(request: web.Request) -> web.Response:
         raise redirect("/admin/orders", err="Buyurtma topilmadi")
     bot = _bot(request)
     if action == "mark-paid":
-        if await pay.mark_paid(oid, by="ADMIN", amount=o.total_price):
+        if await pay.mark_paid(oid, by="ADMIN", amount=o.total_price, reopen=True):
             await audit(request, "mark_paid", f"{oid} · {o.total_price} so‘m")
             sent = await deliver_order(bot, oid)
             raise redirect(back, ok="To‘langan deb belgilandi" + (" va fayllar yuborildi." if sent else ". Fayllarni yuborib bo‘lmadi."))
@@ -1004,12 +1004,12 @@ EFFORTS = [("low", "low — tez"), ("medium", "medium"), ("high", "high — seki
 INT_FIELDS = {"price_per_slide": (1, 1_000_000), "min_slides": (3, 60), "max_slides": (3, 60),
               "max_previews_per_day": (0, 1000), "max_parallel_builds": (1, 20), "throttle_burst": (3, 100),
               "throttle_ban_minutes": (1, 1440), "max_unpaid_open": (0, 50), "daily_preview_cap": (0, 100000),
-              "free_max_slides": (0, 60), "referral_bonus": (0, 20), "referat_price_per_page": (50, 1_000_000)}
+              "free_max_slides": (0, 60), "referral_bonus": (0, 20), "free_daily_cap": (0, 100000), "referat_price_per_page": (50, 1_000_000)}
 ORDER_MODES = [("auto", "Avtomatik", "to‘lov ishlamasa yopiq"), ("open", "Ochiq", "har doim"), ("closed", "Yopiq", "hech kimga")]
 PREFETCH_MODES = [("paid", "Faqat avval to‘laganlar uchun (tavsiya)"), ("all", "Hamma uchun — eng tez, lekin qimmat"),
                   ("off", "O‘chiq — eng arzon")]
 REFERRAL_TRIGGERS = [("paid", "Do‘sti birinchi marta to‘lov qilganda (tavsiya)"),
-                     ("first", "Do‘sti birinchi taqdimotini olganda (bepul ham)")]
+                     ("first", "Do‘sti birinchi taqdimotini olganda (bepul ham) — soxta akkauntlar bilan suiiste’mol qilinishi mumkin")]
 
 
 async def _admin_rows():
