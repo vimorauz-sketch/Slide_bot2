@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parents[2]
 CACHE_DIR = ROOT / "storage" / "image_cache"
-UA = "SlideLabBot/2.0 (Telegram presentation generator; contact via bot)"
+UA = "SlideLabBot/2.0 (+https://slidebot2-production.up.railway.app; Telegram presentation generator) aiohttp"
 TIMEOUT_S = 5          # photo search (a slow source is skipped instead of holding the deck up)
 DOWNLOAD_TIMEOUT_S = 8
 
