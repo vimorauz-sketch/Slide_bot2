@@ -19,7 +19,9 @@ import json
 import logging
 import os
 import re
+import time
 from pathlib import Path
+from urllib.parse import urlsplit
 from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
@@ -108,15 +110,50 @@ def _strip_html(s: str) -> str:
     return re.sub(r"<[^>]+>", "", s or "").strip()
 
 
+# A photo source that keeps refusing (HTTP 403 / 429 / 5xx) or timing out is skipped for a while instead
+# of being asked — and waited for — again on every slide of every deck (each try can cost TIMEOUT_S).
+FAIL_LIMIT = 3            # failures in a row before a source is skipped
+COOLDOWN_S = 10 * 60      # how long it is skipped
+_down: Dict[str, List[float]] = {}   # host -> [failures in a row, skipped until (monotonic)]
+
+
+def _host(url: str) -> str:
+    return urlsplit(url).netloc.lower()
+
+
+def source_down(url: str) -> bool:
+    entry = _down.get(_host(url))
+    return bool(entry) and entry[1] > time.monotonic()
+
+
+def _note(url: str, ok: bool) -> None:
+    host = _host(url)
+    if ok:
+        _down.pop(host, None)
+        return
+    entry = _down.setdefault(host, [0, 0.0])
+    entry[0] += 1
+    if entry[0] >= FAIL_LIMIT:
+        entry[0], entry[1] = 0, time.monotonic() + COOLDOWN_S
+        logger.warning("photo source %s keeps failing: skipped for %d minutes", host, COOLDOWN_S // 60)
+
+
 async def _get_json(session, url: str, headers: Dict[str, str], params: Dict[str, Any]) -> Optional[dict]:
+    if source_down(url):
+        return None
     try:
         async with session.get(url, headers=headers, params=params, timeout=TIMEOUT_S) as r:
             if r.status != 200:
                 logger.info("image search %s -> HTTP %s", url, r.status)
+                if r.status in (401, 403, 429) or r.status >= 500:
+                    _note(url, False)
                 return None
-            return await r.json(content_type=None)
+            data = await r.json(content_type=None)
+            _note(url, True)
+            return data
     except Exception as e:  # network errors are expected offline; fall through to art
         logger.info("image search failed (%s): %s", url, e)
+        _note(url, False)
         return None
 
 

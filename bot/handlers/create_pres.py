@@ -21,9 +21,9 @@ from bot.keyboards.inline import (
 from services.payment.orders import payment_mode
 from typing import Optional
 from bot.keyboards.reply import (
-    get_level_keyboard, get_course_keyboard, get_language_keyboard, get_cancel_keyboard, get_webapp_keyboard,
+    get_level_keyboard, get_course_keyboard, get_cancel_keyboard, get_webapp_keyboard,
     get_skip_keyboard, get_main_menu_keyboard, SKIP_TEXTS, get_subject_keyboard, get_slide_count_keyboard,
-    get_date_keyboard, get_yes_no_keyboard, class_options, YES_TEXT, NO_TEXT
+    get_date_keyboard, class_options, YES_TEXT, NO_TEXT
 )
 from services import ai_service
 from services.presentation import build_presentation, start_files
@@ -103,7 +103,8 @@ def _picker_caption(with_webapp: bool) -> str:
              "📷 <b>201–400: Real foto</b> — slaydlarga mavzuga mos haqiqiy fotosuratlar qo‘yiladi.\n"]
     if with_webapp:
         lines.append("🎨 <b>Dizayn laboratoriyasi</b>da shablonga kirib, slaydlarini va barcha ranglarini ko‘ring.\n")
-    lines.append(f"👉 Yoki <b>shablon raqamini</b> yuboring (<code>1</code> – <code>{n}</code>), yoki kategoriyalar bo‘yicha ko‘ring:")
+    lines.append(f"👉 Shablon raqamini yuboring (<code>1</code> – <code>{n}</code>), kategoriyalardan tanlang "
+                 "yoki <b>«⚡ Tavsiya etilgan shablon»</b>ni bosing — eng ko‘p tanlanadigani darhol qo‘yiladi.")
     return "\n".join(lines)
 
 
@@ -118,54 +119,37 @@ async def apply_template_choice(bot, chat_id: int, state: FSMContext, key, style
     current = await state.get_state()
     current = getattr(current, "state", current)
     label = f"№ {int(t.get('code') or 0)} · {escape_html(t.get('name', tid))} · {escape_html(t.get('color_name', ''))}"
+    out = _ChatOut(bot, chat_id)
     if current is None:
         from services import guard
         block = await guard.check(chat_id)
         if block is not None:
             await bot.send_message(chat_id, block.text, parse_mode="HTML")
             return True
+        await state.set_data({})
+    await state.update_data(template_id=tid)
+    if style:
+        from bot.handlers.style import clean_style
+        await state.update_data({"font_title": None, "font_body": None, "text_color": None, **clean_style(style, tid)})
     if current in (None, PresentationForm.template_selection.state, PresentationForm.custom_design_prompt.state,
-                   PresentationForm.style.state):
-        if current is None:
-            await state.set_data({})
-        await state.update_data(template_id=tid)
-        if style:
-            from bot.handlers.style import clean_style
-            await state.update_data({"font_title": None, "font_body": None, "text_color": None, **clean_style(style, tid)})
-        # next: fonts and text colour (the menu shows the cover in the chosen style)
-        await state.set_state(PresentationForm.style)
-        from bot.handlers.style import show_menu
-        await show_menu(bot, chat_id, state, note=f"✅ <b>{label}</b> tanlandi!")
+                   PresentationForm.style.state, PresentationForm.confirmation.state):
+        # the next missing answer (topic / slide count), or the summary when everything is there
+        await _next_step(out, state, chat_id, note=f"✅ <b>{label}</b> tanlandi!", remove_keyboard=True)
         return True
-    else:
-        await state.update_data(template_id=tid)
-        if style:
-            from bot.handlers.style import clean_style
-            await state.update_data({"font_title": None, "font_body": None, "text_color": None, **clean_style(style, tid)})
-        started = False
-        text = f"🎨 <b>Dizayn o‘zgartirildi:</b> {label}"
-    try:
-        thumb = await gallery.cover_path(tid)
-    except Exception:  # noqa: BLE001
-        thumb = None
-    if thumb and hasattr(bot, "send_photo"):
-        try:
-            await bot.send_photo(chat_id, FSInputFile(thumb), caption=text, parse_mode="HTML",
-                                 reply_markup=get_subject_keyboard() if started else None)
-            return True
-        except Exception:  # noqa: BLE001 - fall back to text
-            logger.exception("cover preview could not be sent")
-    await bot.send_message(chat_id, text, parse_mode="HTML",
-                           reply_markup=get_subject_keyboard() if started else None)
+    # in the middle of another answer: only the design changes, the open question stays
+    await bot.send_message(chat_id, f"🎨 <b>Dizayn o‘zgartirildi:</b> {label}", parse_mode="HTML")
     return True
 
 
-@router.message(F.text.in_([
-    "🎨 Presentation yaratish", "🎨 Создать презентацию", "🎨 Create Presentation",
-    "🖼 Shablonlar", "🖼 Шаблоны", "🖼 Templates",
-]))
+@router.message(F.text.in_(["🎨 Presentation yaratish", "🎨 Создать презентацию", "🎨 Create Presentation"]))
 async def start_pres_wizard(message: Message, state: FSMContext):
     await _open_wizard(message, message.from_user.id, state)
+
+
+@router.message(F.text.in_(["🖼 Shablonlar", "🖼 Шаблоны", "🖼 Templates"]))
+async def start_with_templates(message: Message, state: FSMContext):
+    """«🖼 Shablonlar»: the gallery first; the topic and slide count are asked after a template is chosen."""
+    await _open_wizard(message, message.from_user.id, state, templates_first=True)
 
 
 @router.callback_query(F.data == "new_pres")
@@ -179,38 +163,16 @@ async def start_pres_wizard_button(callback: CallbackQuery, state: FSMContext):
     await _open_wizard(callback.message, callback.from_user.id, state)
 
 
-async def _open_wizard(message: Message, user_id: int, state: FSMContext) -> None:
+async def _open_wizard(message: Message, user_id: int, state: FSMContext, templates_first: bool = False) -> None:
     prefetch.drop(user_id)
     await state.clear()
-    if await _blocked(message, user_id):  # say it now, not after 13 questions
+    if await _blocked(message, user_id):  # say it now, not after the questions
         return
-    await state.set_state(PresentationForm.template_selection)
-
-    global _webapp_disabled
-    overview_path = os.path.join(_ROOT, "themes", "overview.jpg")
-
-    async def send_picker(url: str) -> None:
-        markup = get_template_selection_inline_keyboard(url)
-        if os.path.exists(overview_path):
-            await message.answer_photo(photo=FSInputFile(overview_path), caption=_picker_caption(bool(url)),
-                                       reply_markup=markup, parse_mode="HTML")
-        else:
-            await message.answer(_picker_caption(bool(url)), reply_markup=markup, parse_mode="HTML")
-
-    url = await webapp_link(message.bot)
-    try:
-        await send_picker(url)
-    except TelegramBadRequest as e:
-        if not url or "web app" not in str(e).lower():
-            raise
-        # Telegram rejected the Mini App address: keep the bot usable with the inline gallery.
-        logger.error("Telegram WEBAPP_URL=%r ni qabul qilmadi (%s). Mini App tugmasi o‘chirildi; .env dagi WEBAPP_URL ni tuzating.", settings.WEBAPP_URL, e)
-        _webapp_disabled = True
-        await send_picker("")
+    if templates_first:
+        await state.set_state(PresentationForm.template_selection)
+        await _send_picker(message)
         return
-    if url:
-        await message.answer("👇 Galereyani pastdagi tugma orqali ham ochishingiz mumkin.",
-                             reply_markup=get_webapp_keyboard(url))
+    await _next_step(message, state, user_id)
 
 
 # ---------------------------------------------------------------- inline gallery (works without the Mini App)
@@ -337,6 +299,11 @@ async def process_template_selection(callback: CallbackQuery, state: FSMContext)
         await callback.answer()
         return
 
+    if tpl_code == "auto":
+        await _safe_answer(callback, "⚡ Tanlanmoqda…")
+        await apply_template_choice(callback.bot, callback.message.chat.id, state, await recommended_template())
+        return
+
     if tpl_code == "ocr_photo":
         await state.set_state(PresentationForm.ocr_photo_upload)
         await callback.message.answer("📸 <b>Topshiriq rasmini yuborish:</b>\n\nO'qituvchi bergan topshiriq yoki talablar yozilgan vedomost rasmini yuboring.", parse_mode="HTML")
@@ -348,6 +315,27 @@ async def process_template_selection(callback: CallbackQuery, state: FSMContext)
         return
     await _safe_answer(callback, "✅ Tanlandi")  # before the cover is rendered (it can take a few seconds)
     await apply_template_choice(callback.bot, callback.message.chat.id, state, tpl_code)
+
+
+async def recommended_template() -> str:
+    """The template customers picked most in the last 30 days (a safe default when there are none)."""
+    import datetime as _dt
+    from sqlalchemy import func, select
+    from database.models import PresentationOrder
+    hidden = runtime.hidden_templates("slide")
+    try:
+        async with AsyncSessionLocal() as session:
+            rows = (await session.execute(
+                select(PresentationOrder.template_id, func.count()).where(
+                    PresentationOrder.created_at >= _dt.datetime.utcnow() - _dt.timedelta(days=30),
+                    PresentationOrder.kind != "referat")
+                .group_by(PresentationOrder.template_id).order_by(func.count().desc()).limit(10))).all()
+    except Exception:  # noqa: BLE001
+        rows = []
+    for tid, _ in rows:
+        if tid and tid != "custom_ai" and themes.is_known_theme(tid) and themes.resolve_theme_id(tid) not in hidden:
+            return tid
+    return themes.DEFAULT_THEME
 
 
 @router.message(F.web_app_data)
@@ -383,14 +371,53 @@ async def process_custom_design_prompt(message: Message, state: FSMContext):
     prompt_text = _clean(message.text)
     design_spec = await ai_service.generate_custom_design_spec(prompt_text)
     await state.update_data(template_id="custom_ai", custom_design_spec=design_spec)
-    await state.set_state(PresentationForm.style)
-    from bot.handlers.style import show_menu
-    await show_menu(message.bot, message.chat.id, state, note="✅ <b>AI dizayn tayyor!</b>")
+    await _next_step(message, state, message.from_user.id, note="✅ <b>AI dizayn tayyor!</b>", remove_keyboard=True)
 
 
-# ---------------------------------------------------------------- wizard: buttons for every common answer,
-# typing works everywhere too. Order: subject → topic → slides → name → level → institution (optional)
-# → class/year → teacher (optional) → date → language → extra wishes (yes/no) → confirmation
+# ---------------------------------------------------------------- wizard
+# Fast path: topic → slide count → template → summary («✅ Yaratish»). Everything else — name, subject,
+# school, teacher, date, language, wishes, fonts — is optional, behind «⚙️ Qo‘shimcha sozlamalar» on the
+# summary; the AI plan is optional too («📋 Avval rejani ko‘rish»). Any step can come first (a template
+# picked in the Mini App or a deep link starts the wizard): _next_step asks only what is still missing.
+TOPIC_PROMPT = ("📌 <b>Taqdimot mavzusini yozing:</b>\n\n(Masalan: <i>Fotosintez jarayoni va uning ahamiyati</i>)\n\n"
+                "📸 <i>Yoki o‘qituvchi bergan topshiriq rasmini yuboring — mavzu va talablarni o‘zim o‘qib olaman.</i>")
+SUMMARY_NOTE_MAX = 160   # long wishes are shortened in the summary (a photo caption holds 1024 characters)
+DEFAULT_LANGUAGE = "uz"
+
+# optional fields of «⚙️ Qo‘shimcha sozlamalar»: key -> (button, question)
+EXTRA_FIELDS = {
+    "author_name": ("👤 Ism-familiya", "👤 <b>Ism va familiyangizni yozing:</b>\n\n(Masalan: <i>Doniyorbek Normurodov</i>)"),
+    "subject": ("📚 Fan", SUBJECT_PROMPT),
+    "level": ("🎓 Daraja va kurs", "🎓 <b>Ta’lim darajangizni tanlang:</b>"),
+    "institution": ("🏫 Muassasa", "🏫 <b>Ta’lim muassasangiz nomini yozing:</b>\n\n(Masalan: <i>Toshkent davlat iqtisodiyot universiteti</i>)"),
+    "teacher_name": ("👨‍🏫 O‘qituvchi", TEACHER_PROMPT),
+    "date": ("📅 Sana", "📅 <b>Titul slaydga qaysi sana yozilsin?</b>\n\n<i>Tugmani bosing yoki sanani yozing (masalan: 25.10.2026).</i>"),
+    "language": ("🌐 Til", ""),
+    "additional_notes": ("📝 Talablar", "✍️ <b>Qo‘shimcha talablaringizni yozing:</b>\n\n"
+                                         "<i>Masalan: «Rasmlar ko‘p bo‘lsin», «Matn qisqa va lo‘nda bo‘lsin».</i>"),
+    "topic": ("📌 Mavzu", TOPIC_PROMPT),
+    "slide_count": ("📑 Slaydlar soni", ""),
+}
+_FIELD_STATES = {"author_name": PresentationForm.author_name, "subject": PresentationForm.subject,
+                 "level": PresentationForm.level, "institution": PresentationForm.institution,
+                 "teacher_name": PresentationForm.teacher_name, "date": PresentationForm.date,
+                 "additional_notes": PresentationForm.additional_notes, "topic": PresentationForm.topic}
+
+
+class _ChatOut:
+    """Message-like sender for code that only has the bot and a chat id (Mini App choices, deep links)."""
+
+    def __init__(self, bot, chat_id: int):
+        self.bot, self.chat_id = bot, chat_id
+
+    async def answer(self, text, reply_markup=None, parse_mode=None, **kwargs):
+        return await self.bot.send_message(self.chat_id, text, reply_markup=reply_markup, parse_mode=parse_mode, **kwargs)
+
+    async def answer_photo(self, photo, caption=None, reply_markup=None, parse_mode=None, **kwargs):
+        return await self.bot.send_photo(self.chat_id, photo, caption=caption, reply_markup=reply_markup,
+                                         parse_mode=parse_mode, **kwargs)
+
+
 async def _limits():
     async with AsyncSessionLocal() as session:
         min_slides = int(await repository.get_setting(session, "min_slides", str(settings.MIN_SLIDES_PER_ORDER)))
@@ -411,33 +438,305 @@ def _today():
     return now.strftime("%d.%m.%Y"), str(now.year)
 
 
-@router.message(PresentationForm.subject, F.text)
-async def process_subject(message: Message, state: FSMContext):
-    await state.update_data(subject=_clean(message.text))
-    await state.set_state(PresentationForm.topic)
-    await message.answer("📌 <b>Prezentatsiya mavzusini kiriting:</b>\n\n(Masalan: <i>Fotosintez jarayoni va uning ahamiyati</i>)",
-                         parse_mode="HTML", reply_markup=get_cancel_keyboard())
+async def _prefetch(user_id: int, state: FSMContext) -> None:
+    """Starts (or restarts, if an answer changed) writing the text in the background, so «✅ Yaratish»
+    finds most of the work already done."""
+    try:
+        from services import guard
+        if await guard.may_prefetch(user_id):
+            prefetch.ensure(user_id, await state.get_data())
+    except Exception:  # noqa: BLE001 - the deck is simply written later
+        logger.exception("prefetch could not start")
 
-@router.message(PresentationForm.topic, F.text)
-async def process_topic(message: Message, state: FSMContext):
-    await state.update_data(topic=_clean(message.text))
+
+async def _next_step(out, state: FSMContext, user_id: int, note: str = "", remove_keyboard: bool = False) -> None:
+    """Asks the first thing still missing (topic, slide count, template), else shows the summary."""
+    data = await state.get_data()
+    head = f"{note}\n\n" if note else ""
+    if not data.get("topic"):
+        await state.set_state(PresentationForm.topic)
+        await out.answer(head + TOPIC_PROMPT, parse_mode="HTML", reply_markup=get_cancel_keyboard())
+    elif not data.get("slide_count"):
+        await _ask_slides(out, state, user_id, head)
+    elif not data.get("template_id"):
+        await state.set_state(PresentationForm.template_selection)
+        if note:
+            await out.answer(note, parse_mode="HTML")
+        await _send_picker(out, step=True)
+    else:
+        await _show_summary(out, state, user_id, note=note, remove_keyboard=remove_keyboard)
+
+
+async def _ask_slides(out, state: FSMContext, user_id: int, head: str = "") -> None:
     await state.set_state(PresentationForm.slide_count)
     min_slides, max_slides, price_per_slide = await _limits()
     free_line = ""
-    have = await credits.available(message.from_user.id)
+    have = await credits.available(user_id)
     if have.total > 0:
         free_max = credits.max_slides()
-        if await _free_only(message.from_user.id) and free_max > 0:
+        if await _free_only(user_id) and free_max > 0:
             max_slides = max(min_slides, min(max_slides, free_max))
-        free_line = texts.free_slide_hint(free_max, not await _free_only(message.from_user.id), trial=have.trial) + "\n\n"
-    await message.answer(
-        f"📑 <b>Nechta slayd bo‘lishini xohlaysiz?</b>\n\n"
+        free_line = texts.free_slide_hint(free_max, not await _free_only(user_id), trial=have.trial) + "\n\n"
+    await out.answer(
+        f"{head}📑 <b>Nechta slayd bo‘lishini xohlaysiz?</b>\n\n"
         f"Minimum: {min_slides}, maksimum: {max_slides} slayd\n"
         f"Narxi: 1 slayd = {texts.som(price_per_slide)}\n\n"
         f"{free_line}"
         f"<i>Tugmani bosing yoki sonini yozing (masalan: 10):</i>",
         parse_mode="HTML", reply_markup=get_slide_count_keyboard(min_slides, max_slides)
     )
+
+
+async def _send_picker(out, step: bool = False) -> None:
+    """The template picker: Mini App, categories, all templates, «⚡ Tavsiya etilgan». step=True: it is
+    the third question of the wizard (the slide count buttons are replaced by a cancel button)."""
+    global _webapp_disabled
+    overview_path = os.path.join(_ROOT, "themes", "overview.jpg")
+
+    async def send(url: str) -> None:
+        markup = get_template_selection_inline_keyboard(url)
+        if os.path.exists(overview_path):
+            await out.answer_photo(photo=FSInputFile(overview_path), caption=_picker_caption(bool(url)),
+                                   reply_markup=markup, parse_mode="HTML")
+        else:
+            await out.answer(_picker_caption(bool(url)), reply_markup=markup, parse_mode="HTML")
+
+    url = await webapp_link(out.bot)
+    try:
+        await send(url)
+    except TelegramBadRequest as e:
+        if not url or "web app" not in str(e).lower():
+            raise
+        # Telegram rejected the Mini App address: keep the bot usable with the inline gallery.
+        logger.error("Telegram WEBAPP_URL=%r ni qabul qilmadi (%s). Mini App tugmasi o‘chirildi; .env dagi WEBAPP_URL ni tuzating.", settings.WEBAPP_URL, e)
+        _webapp_disabled = True
+        url = ""
+        await send("")
+    if url:
+        await out.answer("👇 Galereyani pastdagi tugma orqali ham ochishingiz mumkin.", reply_markup=get_webapp_keyboard(url))
+    elif step:
+        await out.answer("👆 Shablonni tanlang yoki uning raqamini yozing.", reply_markup=get_cancel_keyboard())
+
+
+def _template_label(data: dict) -> str:
+    tpl = data.get("template_id")
+    if tpl == "custom_ai":
+        return "🤖 AI dizayn"
+    t = themes.get_theme(tpl)
+    return f"№ {int(t.get('code') or 0)} · {t.get('name', tpl)} · {t.get('color_name', '')}".strip(" ·")
+
+
+def _short(text: str, limit: int = SUMMARY_NOTE_MAX) -> str:
+    text = str(text or "")
+    return text if len(text) <= limit else text[:limit - 1].rstrip() + "…"
+
+
+async def _show_summary(out, state: FSMContext, user_id: int, note: str = "", remove_keyboard: bool = False) -> None:
+    """The order card: what will be made, the price, and the buttons (create / extras / design / plan)."""
+    data = await state.get_data()
+    if not data.get("language"):
+        await state.update_data(language=DEFAULT_LANGUAGE)
+        data["language"] = DEFAULT_LANGUAGE
+    _, _, price_per_slide = await _limits()
+    slide_count = int(data.get("slide_count", 10))
+    total_price = slide_count * price_per_slide
+    await state.update_data(total_price=total_price, _return=None)
+    rows = [("📌", "Mavzu", data.get("topic")), ("📑", "Slaydlar", f"{slide_count} ta"),
+            ("🖼", "Shablon", _template_label(data)),
+            ("🌐", "Til", LANG_NAMES.get(data.get("language"), data.get("language"))),
+            ("📚", "Fan", data.get("subject")), ("👤", "Muallif", data.get("author_name")),
+            ("🎓", "Daraja", " · ".join(x for x in (data.get("level"), data.get("course")) if x)),
+            ("🏫", "Muassasa", data.get("institution")), ("👨‍🏫", "O‘qituvchi", data.get("teacher_name")),
+            ("📅", "Sana", data.get("date")), ("📝", "Talablar", _short(data.get("additional_notes")))]
+    if data.get("font_title") or data.get("font_body") or data.get("text_color"):
+        from bot.handlers.style import _font_name, _color_name
+        rows.insert(3, ("🔤", "Shriftlar", f"{_font_name(data.get('font_title'))} / {_font_name(data.get('font_body'))}"))
+        if data.get("text_color"):
+            rows.insert(4, ("🎨", "Yozuv rangi", _color_name(data.get("text_color"))))
+    lines = "".join(f"{e} <b>{k}:</b> {escape_html(v)}\n" for e, k, v in rows if v)
+    price_line = f"💰 <b>Narxi:</b> {texts.som(total_price)}"
+    if await credits.usable(user_id, slide_count):
+        price_line = texts.free_price_line(total_price, trial=(await credits.available(user_id)).trial)
+    text = (f"📊 <b>TAQDIMOTINGIZ</b>\n\n{lines}\n{price_line}\n\n"
+            "👉 Hammasi to‘g‘ri bo‘lsa, <b>«✅ Yaratish»</b>ni bosing.\n"
+            "<i>Ism, fan, muassasa, til va boshqalar — «⚙️ Qo‘shimcha sozlamalar»da (ixtiyoriy).</i>")
+    await state.set_state(PresentationForm.confirmation)
+    if remove_keyboard:  # the wizard's reply buttons go away (a message cannot carry both kinds)
+        await out.answer(note or "👌 Qabul qilindi.", reply_markup=ReplyKeyboardRemove(), parse_mode="HTML")
+    elif note:
+        text = f"{note}\n\n{text}"
+    markup = get_confirmation_inline_keyboard("temp_order")
+    cover = None
+    if data.get("template_id") and data.get("template_id") != "custom_ai" and len(text) <= 1000:
+        try:
+            from bot.handlers.style import preview_path
+            cover = await preview_path(data)
+        except Exception:  # noqa: BLE001 - the card works without a picture
+            cover = None
+    sent = False
+    if cover:
+        try:
+            await out.answer_photo(FSInputFile(cover), caption=text, reply_markup=markup, parse_mode="HTML")
+            sent = True
+        except Exception:  # noqa: BLE001
+            logger.exception("summary cover not sent")
+    if not sent:
+        await out.answer(text, reply_markup=markup, parse_mode="HTML")
+    await _prefetch(user_id, state)
+
+
+def _extras_text(data: dict) -> str:
+    lines = []
+    for key, (label, _) in EXTRA_FIELDS.items():
+        if key in ("topic", "slide_count"):
+            continue
+        value = data.get(key)
+        if key == "level":
+            value = " · ".join(x for x in (data.get("level"), data.get("course")) if x)
+        if key == "language":
+            value = LANG_NAMES.get(data.get("language") or DEFAULT_LANGUAGE)
+        lines.append(f"{label}: <b>{escape_html(_short(value, 60)) if value else '—'}</b>")
+    return ("⚙️ <b>Qo‘shimcha sozlamalar</b> — hammasi ixtiyoriy.\n"
+            "Ism, muassasa, o‘qituvchi va sana titul slaydga yoziladi.\n\n" + "\n".join(lines) +
+            "\n\n👉 O‘zgartirmoqchi bo‘lganingizni bosing. Tugatgach — <b>«⬅️ Tayyor»</b>.")
+
+
+def _extras_keyboard(data: dict):
+    from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+    btns = []
+    for key, (label, _) in EXTRA_FIELDS.items():
+        filled = bool(data.get(key)) and key not in ("topic", "slide_count", "language")
+        btns.append(InlineKeyboardButton(text=("✅ " if filled else "") + label, callback_data=f"px_f:{key}"))
+    rows = [btns[i:i + 2] for i in range(0, len(btns), 2)]
+    rows.append([InlineKeyboardButton(text="⬅️ Tayyor", callback_data="px_done")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
+async def _show_extras(out, state: FSMContext, callback: Optional[CallbackQuery] = None, remove_keyboard: bool = False) -> None:
+    await state.set_state(PresentationForm.confirmation)
+    await state.update_data(_return=None)
+    data = await state.get_data()
+    text, markup = _extras_text(data), _extras_keyboard(data)
+    if callback is not None and callback.message is not None and not getattr(callback.message, "photo", None):
+        try:
+            await callback.message.edit_text(text, reply_markup=markup, parse_mode="HTML")
+            return
+        except Exception:  # noqa: BLE001 - not editable: send a new one
+            pass
+    if remove_keyboard:
+        await out.answer("✅ Saqlandi.", reply_markup=ReplyKeyboardRemove())
+    await out.answer(text, reply_markup=markup, parse_mode="HTML")
+
+
+async def _after_field(message: Message, state: FSMContext) -> None:
+    """After an answer: back to «⚙️ Qo‘shimcha sozlamalar» when the field was opened there, else the next step."""
+    data = await state.get_data()
+    if data.get("_return") == "more":
+        await _show_extras(message, state, remove_keyboard=True)
+    else:
+        await _next_step(message, state, message.from_user.id, remove_keyboard=True)
+
+
+def _in_wizard_state(cur) -> bool:
+    cur = getattr(cur, "state", cur)
+    return bool(cur) and str(cur).startswith("PresentationForm:") and cur not in (
+        PresentationForm.generating.state, PresentationForm.outline_wait.state)
+
+
+@router.callback_query(F.data == "px_more")
+async def extras_menu(callback: CallbackQuery, state: FSMContext):
+    if not _in_wizard_state(await state.get_state()):
+        await _safe_answer(callback, "Bu menyu eskirgan — «🎨 Presentation yaratish» orqali qaytadan boshlang.", show_alert=True)
+        return
+    await _safe_answer(callback)
+    await _show_extras(callback.message, state)
+
+
+@router.callback_query(F.data == "px_done")
+async def extras_done(callback: CallbackQuery, state: FSMContext):
+    if not _in_wizard_state(await state.get_state()):
+        await _safe_answer(callback, "Bu menyu eskirgan — «🎨 Presentation yaratish» orqali qaytadan boshlang.", show_alert=True)
+        return
+    await _safe_answer(callback, "✅ Saqlandi")
+    try:
+        await callback.message.delete()
+    except Exception:  # noqa: BLE001
+        pass
+    await _next_step(callback.message, state, callback.from_user.id)
+
+
+@router.callback_query(F.data == "px_tpl")
+async def change_template(callback: CallbackQuery, state: FSMContext):
+    if not _in_wizard_state(await state.get_state()):
+        await _safe_answer(callback, "Bu menyu eskirgan — «🎨 Presentation yaratish» orqali qaytadan boshlang.", show_alert=True)
+        return
+    await _safe_answer(callback)
+    await state.set_state(PresentationForm.template_selection)
+    await _send_picker(callback.message, step=True)
+
+
+@router.callback_query(F.data.startswith("px_f:"))
+async def extras_field(callback: CallbackQuery, state: FSMContext):
+    key = callback.data.split(":", 1)[1]
+    if key not in EXTRA_FIELDS or not _in_wizard_state(await state.get_state()):
+        await _safe_answer(callback, "Bu menyu eskirgan — «🎨 Presentation yaratish» orqali qaytadan boshlang.", show_alert=True)
+        return
+    await _safe_answer(callback)
+    await state.update_data(_return="more")
+    msg, uid = callback.message, callback.from_user.id
+    if key == "language":
+        from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+        markup = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text=name, callback_data=f"px_l:{code}") for code, name in LANG_NAMES.items()],
+            [InlineKeyboardButton(text="⬅️ Orqaga", callback_data="px_more")]])
+        try:
+            await msg.edit_text("🌐 <b>Taqdimot qaysi tilda bo‘lsin?</b>", reply_markup=markup, parse_mode="HTML")
+        except Exception:  # noqa: BLE001
+            await msg.answer("🌐 <b>Taqdimot qaysi tilda bo‘lsin?</b>", reply_markup=markup, parse_mode="HTML")
+        return
+    if key == "slide_count":
+        await _ask_slides(msg, state, uid)
+        return
+    await state.set_state(_FIELD_STATES[key])
+    prompt = EXTRA_FIELDS[key][1]
+    if key == "subject":
+        markup = get_subject_keyboard()
+    elif key == "level":
+        markup = get_level_keyboard()
+    elif key == "date":
+        today, year = _today()
+        markup = get_date_keyboard(today, year)
+    elif key == "topic":
+        markup = get_cancel_keyboard()
+    else:
+        markup = get_skip_keyboard()
+    if key not in ("topic", "subject") and "O‘tkazib" not in prompt:
+        prompt += "\n\n<i>«⏭ O‘tkazib yuborish» — bo‘sh qoladi.</i>"
+    await msg.answer(prompt, parse_mode="HTML", reply_markup=markup)
+
+
+@router.callback_query(F.data.startswith("px_l:"))
+async def extras_language(callback: CallbackQuery, state: FSMContext):
+    code = callback.data.split(":", 1)[1]
+    if code not in LANG_NAMES or not _in_wizard_state(await state.get_state()):
+        await _safe_answer(callback)
+        return
+    await _safe_answer(callback, f"✅ {LANG_NAMES[code]}")
+    await state.update_data(language=code)
+    await _prefetch(callback.from_user.id, state)  # the text is written in the new language
+    await _show_extras(callback.message, state, callback=callback)
+
+
+# ---------------------------------------------------------------- answers (typing works everywhere)
+@router.message(PresentationForm.topic, F.text)
+async def process_topic(message: Message, state: FSMContext):
+    topic = _clean(message.text)
+    if len(topic) < 3:
+        await message.answer("⚠️ Mavzuni to‘liqroq yozing (masalan: <i>Fotosintez jarayoni</i>).", parse_mode="HTML")
+        return
+    await state.update_data(topic=topic)
+    await _after_field(message, state)
+
 
 @router.message(PresentationForm.slide_count, F.text)
 async def process_slide_count(message: Message, state: FSMContext):
@@ -462,152 +761,94 @@ async def process_slide_count(message: Message, state: FSMContext):
         return
 
     await state.update_data(slide_count=slide_count)
-    await state.set_state(PresentationForm.author_name)
-    await message.answer("👤 <b>Ism va familiyangizni kiriting:</b>\n\n(Masalan: <i>Doniyorbek Normurodov</i>)",
-                         parse_mode="HTML", reply_markup=get_cancel_keyboard())
+    if not (await state.get_data()).get("language"):
+        await state.update_data(language=DEFAULT_LANGUAGE)
+    # topic + slide count are enough to start writing: the text is ready sooner, while the template is chosen
+    await _prefetch(message.from_user.id, state)
+    await _after_field(message, state)
+
+
+@router.message(PresentationForm.subject, F.text)
+async def process_subject(message: Message, state: FSMContext):
+    await state.update_data(subject="" if message.text.strip() in SKIP_TEXTS else _clean(message.text))
+    await _after_field(message, state)
+
 
 @router.message(PresentationForm.author_name, F.text)
 async def process_author_name(message: Message, state: FSMContext):
-    await state.update_data(author_name=_clean(message.text))
-    await state.set_state(PresentationForm.level)
-    await message.answer("🎓 <b>Ta’lim darajangizni tanlang:</b>", reply_markup=get_level_keyboard(), parse_mode="HTML")
+    await state.update_data(author_name="" if message.text.strip() in SKIP_TEXTS else _clean(message.text))
+    await _after_field(message, state)
 
-_INSTITUTION_EXAMPLES = {"maktab": "45-son umumta’lim maktabi", "litsey": "TDTU qoshidagi akademik litsey",
-                         "kollej": "Toshkent politexnika kolleji", "universitet": "Toshkent davlat iqtisodiyot universiteti"}
 
 @router.message(PresentationForm.level, F.text)
 async def process_level(message: Message, state: FSMContext):
-    level_text = _clean(message.text)
+    level_text = "" if message.text.strip() in SKIP_TEXTS else _clean(message.text)
     await state.update_data(level=level_text)
-    await state.set_state(PresentationForm.institution)
-    example = next((v for k, v in _INSTITUTION_EXAMPLES.items() if k in level_text.lower()), "Sizning o‘quv dargohingiz")
-    await message.answer(f"🏫 <b>Ta’lim muassasangiz nomi</b> (ixtiyoriy)\n\n(Masalan: <i>{escape_html(example)}</i>)\n\n"
-                         "<i>Kerak bo‘lmasa «⏭ O‘tkazib yuborish» tugmasini bosing.</i>",
-                         reply_markup=get_skip_keyboard(), parse_mode="HTML")
-
-async def _prefetch(message: Message, state: FSMContext) -> None:
-    """Starts (or restarts, if an answer changed) writing the text in the background."""
-    try:
-        from services import guard
-        if await guard.may_prefetch(message.from_user.id):
-            prefetch.ensure(message.from_user.id, await state.get_data())
-    except Exception:  # noqa: BLE001 - the deck is simply written later
-        logger.exception("prefetch could not start")
-
-
-async def _ask_teacher(message: Message, state: FSMContext) -> None:
-    await _prefetch(message, state)
-    await state.set_state(PresentationForm.teacher_name)
-    await message.answer(TEACHER_PROMPT, reply_markup=get_skip_keyboard(), parse_mode="HTML")
-
-@router.message(PresentationForm.institution, F.text)
-async def process_institution(message: Message, state: FSMContext):
-    await state.update_data(institution="" if message.text.strip() in SKIP_TEXTS else _clean(message.text))
-    level = (await state.get_data()).get("level", "")
-    if not class_options(level):
+    if not class_options(level_text):
         await state.update_data(course="")
-        await _ask_teacher(message, state)
+        await _after_field(message, state)
         return
     await state.set_state(PresentationForm.course)
-    school = "sinf" in class_options(level)[0]
+    school = "sinf" in class_options(level_text)[0]
     await message.answer("🎓 <b>Nechanchi sinfda o‘qiysiz?</b>" if school else "🎓 <b>Qaysi kursda o‘qiysiz?</b>",
-                         reply_markup=get_course_keyboard(level), parse_mode="HTML")
+                         reply_markup=get_course_keyboard(level_text), parse_mode="HTML")
+
 
 @router.message(PresentationForm.course, F.text)
 async def process_course(message: Message, state: FSMContext):
     await state.update_data(course="" if message.text.strip() in SKIP_TEXTS else _clean(message.text))
-    await _ask_teacher(message, state)
+    await _after_field(message, state)
+
+
+@router.message(PresentationForm.institution, F.text)
+async def process_institution(message: Message, state: FSMContext):
+    await state.update_data(institution="" if message.text.strip() in SKIP_TEXTS else _clean(message.text))
+    await _after_field(message, state)
+
 
 @router.message(PresentationForm.teacher_name, F.text)
 async def process_teacher_name(message: Message, state: FSMContext):
-    teacher = "" if message.text.strip() in SKIP_TEXTS else _clean(message.text)
-    await state.update_data(teacher_name=teacher)
-    await state.set_state(PresentationForm.date)
-    today, year = _today()
-    await message.answer("📅 <b>Titul slaydga qaysi sana yozilsin?</b>\n\n<i>Tugmani bosing yoki sanani yozing "
-                         "(masalan: 25.10.2026). Kerak bo‘lmasa «⏭ O‘tkazib yuborish».</i>",
-                         reply_markup=get_date_keyboard(today, year), parse_mode="HTML")
+    await state.update_data(teacher_name="" if message.text.strip() in SKIP_TEXTS else _clean(message.text))
+    await _after_field(message, state)
+
 
 @router.message(PresentationForm.date, F.text)
 async def process_date(message: Message, state: FSMContext):
     text = message.text.strip()
-    if text in SKIP_TEXTS:
-        date = ""
-    else:
-        date = text.replace("📅", "").replace("Bugun:", "").strip()[:40]
+    date = "" if text in SKIP_TEXTS else text.replace("📅", "").replace("Bugun:", "").strip()[:40]
     await state.update_data(date=date)
-    await state.set_state(PresentationForm.language)
-    await message.answer("🌐 <b>Prezentatsiya tilini tanlang:</b>", reply_markup=get_language_keyboard(), parse_mode="HTML")
+    await _after_field(message, state)
 
+
+@router.message(PresentationForm.additional_notes, F.text)
+async def process_additional_notes(message: Message, state: FSMContext):
+    data = await state.get_data()
+    notes = "" if message.text.strip() in SKIP_TEXTS else _clean(message.text)
+    ocr = data.get("ocr_notes", "")
+    if ocr and notes and ocr not in notes:
+        notes = f"{ocr}. {notes}"
+    await state.update_data(additional_notes=notes)
+    await _after_field(message, state)
+
+
+# states of the previous (longer) wizard: a user who was in the middle of it when the bot was updated
+# simply continues to the summary
 @router.message(PresentationForm.language, F.text)
 async def process_language(message: Message, state: FSMContext):
     t = message.text.lower()
     lang_code = "ru" if ("рус" in t or "rus" in t) else "en" if ("english" in t or "ingliz" in t) else "uz"
     await state.update_data(language=lang_code)
-    await _prefetch(message, state)  # restarts only if the language differs from the guess
-    await state.set_state(PresentationForm.notes_choice)
-    await message.answer("📝 <b>Qo‘shimcha talablaringiz bormi?</b>\n\n"
-                         "<i>Masalan: «Rasmlar ko‘p bo‘lsin», «Matn qisqa va lo‘nda bo‘lsin».</i>",
-                         parse_mode="HTML", reply_markup=get_yes_no_keyboard())
+    await _after_field(message, state)
+
 
 @router.message(PresentationForm.notes_choice, F.text)
 async def process_notes_choice(message: Message, state: FSMContext):
     text = message.text.strip()
-    if text == YES_TEXT or text.lower() in ("ha", "xa", "да", "yes", "bor"):
-        await state.set_state(PresentationForm.additional_notes)
-        await message.answer("✍️ <b>Talablaringizni yozing:</b>", parse_mode="HTML", reply_markup=get_cancel_keyboard())
-        return
-    if text == NO_TEXT or text in SKIP_TEXTS or text.lower() in ("yo'q", "yoq", "yo‘q", "нет", "no"):
-        data = await state.get_data()
-        await _finish_notes(message, state, data.get("ocr_notes", ""))
-        return
-    await _finish_notes(message, state, _clean(message.text))  # wishes typed straight away
+    if text not in (YES_TEXT, NO_TEXT) and text not in SKIP_TEXTS and text.lower() not in (
+            "ha", "xa", "да", "yes", "bor", "yo'q", "yoq", "yo‘q", "нет", "no"):
+        await state.update_data(additional_notes=_clean(message.text))
+    await _after_field(message, state)
 
-@router.message(PresentationForm.additional_notes, F.text)
-async def process_additional_notes(message: Message, state: FSMContext):
-    notes = "" if message.text.strip() in SKIP_TEXTS else _clean(message.text)
-    await _finish_notes(message, state, notes)
-
-async def _finish_notes(message: Message, state: FSMContext, notes: str) -> None:
-    data = await state.get_data()
-    ocr = data.get("ocr_notes", "")
-    if ocr and notes and ocr not in notes:
-        notes = f"{ocr}. {notes}"
-    await state.update_data(additional_notes=notes)
-    await _prefetch(message, state)  # extra wishes change the text: start over with them
-    data = await state.get_data()
-    _, _, price_per_slide = await _limits()
-
-    slide_count = int(data.get("slide_count", 10))
-    total_price = slide_count * price_per_slide
-    await state.update_data(total_price=total_price)
-
-    rows = [("📚", "Fan", data.get("subject")), ("📌", "Mavzu", data.get("topic")),
-            ("📑", "Slaydlar soni", f"{slide_count} ta"), ("👤", "Muallif", data.get("author_name")),
-            ("🎓", "Daraja", " · ".join(x for x in (data.get("level"), data.get("course")) if x)),
-            ("🏫", "Muassasa", data.get("institution")), ("👨‍🏫", "O‘qituvchi", data.get("teacher_name")),
-            ("📅", "Sana", data.get("date")),
-            ("🌐", "Til", LANG_NAMES.get(data.get("language"), data.get("language"))),
-            ("📝", "Talablar", notes)]
-    if data.get("font_title") or data.get("font_body") or data.get("text_color"):
-        from bot.handlers.style import _font_name, _color_name
-        rows.insert(1, ("🔤", "Shriftlar", f"{_font_name(data.get('font_title'))} / {_font_name(data.get('font_body'))}"))
-        if data.get("text_color"):
-            rows.insert(2, ("🎨", "Yozuv rangi", _color_name(data.get("text_color"))))
-    lines = "".join(f"{e} <b>{k}:</b> {escape_html(v)}\n" for e, k, v in rows if v)
-    price_line = f"💰 <b>Jami narx:</b> {texts.som(total_price)}"
-    if await credits.usable(message.from_user.id, slide_count):
-        price_line = texts.free_price_line(total_price, trial=(await credits.available(message.from_user.id)).trial)
-    summary_text = (
-        f"📊 <b>BUYURTMA TASDIQLASH:</b>\n\n{lines}"
-        f"{price_line}\n\n"
-        f"Prezentatsiyani generatsiya qilishni tasdiqlaysizmi?"
-    )
-
-    await state.set_state(PresentationForm.confirmation)
-    # removes the yes/no keyboard (a message cannot carry both a reply keyboard and inline buttons)
-    await message.answer("👌 Ma’lumotlar qabul qilindi.", reply_markup=ReplyKeyboardRemove())
-    await message.answer(summary_text, reply_markup=get_confirmation_inline_keyboard("temp_order"), parse_mode="HTML")
 
 # ---------------------------------------------------------------- limits for expensive work
 _build_sem = None

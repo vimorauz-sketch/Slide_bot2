@@ -75,17 +75,16 @@ async def test_ocr_escapes_dangerous_text_from_vision_model(monkeypatch, patched
 
 
 @pytest.mark.asyncio
-async def test_ocr_uses_a_valid_registered_template_id(monkeypatch, patched_handlers_db):
-    # Regression guard: must not fall back to the dead "01_minimal_blue" key.
+async def test_ocr_without_a_template_asks_for_one(monkeypatch, patched_handlers_db):
+    # the topic and slide count come from the photo; the design is the user's choice, never a silent default
     message, state = await _run(monkeypatch, {
         "subject": "Fizika", "topic": "Kvant", "slide_count": 10,
         "language": "uz", "requirements": ""
     }, patched_handlers_db)
 
-    from services.template_service import template_manager
     data = await state.get_data()
-    ds = template_manager.get_template_design_system(data["template_id"])
-    assert ds["id"] == data["template_id"]  # resolves to itself, not a silent fallback
+    assert "template_id" not in data
+    assert await state.get_state() == PresentationForm.template_selection
 
 
 @pytest.mark.asyncio
@@ -95,16 +94,16 @@ async def test_ocr_advances_state_and_deletes_the_waiting_message(monkeypatch, p
         "language": "uz", "requirements": ""
     }, patched_handlers_db)
 
-    assert await state.get_state() == PresentationForm.author_name
+    assert await state.get_state() == PresentationForm.template_selection   # topic and slides are known
     waiting_message = message.calls_for("answer")[0]["returned"]
     assert waiting_message.deleted is True
 
 
 @pytest.mark.asyncio
-async def test_ocr_failure_asks_for_the_subject_instead_of_inventing_a_topic(monkeypatch, patched_handlers_db):
+async def test_ocr_failure_asks_for_the_topic_instead_of_inventing_one(monkeypatch, patched_handlers_db):
     message, state = await _run(monkeypatch, {"ok": False, "subject": "Biologiya", "topic": "Fotosintez"},
                                 patched_handlers_db)
-    assert await state.get_state() == PresentationForm.subject
+    assert await state.get_state() == PresentationForm.topic
     assert "topic" not in await state.get_data()
     assert "o‘qib bo‘lmadi" in message.calls_for("answer")[-1]["text"]
 

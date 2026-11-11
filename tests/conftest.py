@@ -72,6 +72,8 @@ def no_network_images(monkeypatch):
     monkeypatch.setattr("config.settings.OPENVERSE_ENABLED", False)
     monkeypatch.setattr("config.settings.LOCAL_PHOTO_DIR", "")
     monkeypatch.setattr("config.settings.AI_IMAGES_ENABLED", False)
+    from services.deck import images as _images
+    _images._down.clear()   # photo sources skipped after failures: every test starts with none skipped
     # never call the real OpenAI API from tests (tests that need it patch get_openai_client)
     monkeypatch.setattr("config.settings.OPENAI_API_KEY", "")
     return None

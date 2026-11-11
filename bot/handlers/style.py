@@ -2,7 +2,7 @@
 Design step after a template is chosen: the title font, the body text font (from a library of
 160 fonts) and the text colour. Every change shows the cover of the presentation in the new style.
 
-    template chosen -> [style menu] -> fonts / colour pickers -> «➡️ Davom etish» -> subject question
+    order summary -> «🔤 Shrift va rang» -> [style menu] -> fonts / colour pickers -> «✅ Saqlash» -> summary
 
 The choices are kept in the wizard data (font_title, font_body, text_color); see
 services/presentation.theme_key_from_data and services/deck/themes.apply_style.
@@ -110,7 +110,7 @@ def menu_caption(data: dict, note: str = "") -> str:
             f"🔤 Matn shrifti: <b>{escape_html(_font_name(data.get('font_body')))}</b>\n"
             f"🎨 Yozuv rangi: <b>{escape_html(_color_name(data.get('text_color')))}</b>\n\n"
             f"<i>{len(fonts.library_fonts())} ta shrift va {len(COLORS)} xil rang bor. Rasmda — muqovangiz shu ko‘rinishda "
-            "bo‘ladi.</i>\n👉 Tayyor bo‘lsa <b>«➡️ Davom etish»</b>ni bosing.")
+            "bo‘ladi.</i>\n👉 Tayyor bo‘lsa <b>«✅ Saqlash»</b>ni bosing.")
 
 
 def menu_keyboard(data: dict) -> InlineKeyboardMarkup:
@@ -121,7 +121,7 @@ def menu_keyboard(data: dict) -> InlineKeyboardMarkup:
     ]
     if _has_style(data):
         rows.append([InlineKeyboardButton(text="♻️ Shablondagi holiga qaytarish", callback_data="st_reset")])
-    rows.append([InlineKeyboardButton(text="➡️ Davom etish", callback_data="st_go")])
+    rows.append([InlineKeyboardButton(text="✅ Saqlash", callback_data="st_go")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
@@ -235,20 +235,16 @@ async def style_reset(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data == "st_go")
 async def style_continue(callback: CallbackQuery, state: FSMContext):
-    from bot.handlers.create_pres import SUBJECT_PROMPT
-    from bot.keyboards.reply import get_subject_keyboard
-    cur = await state.get_state()
-    if getattr(cur, "state", cur) != PresentationForm.style.state:
-        if await _in_wizard(callback, state):
-            await _ack(callback, "✅ Saqlandi")
+    """«✅ Saqlash»: back to the order summary (or the next question still missing)."""
+    if not await _in_wizard(callback, state):
         return
+    from bot.handlers.create_pres import _next_step
     await _ack(callback, "✅ Dizayn saqlandi")
     try:
         await callback.message.edit_reply_markup(reply_markup=None)
     except Exception:  # noqa: BLE001
         pass
-    await state.set_state(PresentationForm.subject)
-    await callback.message.answer(SUBJECT_PROMPT, parse_mode="HTML", reply_markup=get_subject_keyboard())
+    await _next_step(callback.message, state, callback.from_user.id)
 
 
 # ---------------------------------------------------------------------- fonts

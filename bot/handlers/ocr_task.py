@@ -1,5 +1,6 @@
 import logging
 from aiogram import Router, F
+from aiogram.filters import StateFilter
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from config import settings
@@ -8,9 +9,8 @@ from database import repository
 from bot.states.forms import PresentationForm
 from bot.utils import escape_html
 from services import ai_service
-from services.deck import themes
-from bot.keyboards.reply import get_cancel_keyboard, get_subject_keyboard, CANCEL_TEXTS
-from bot.handlers.create_pres import SUBJECT_PROMPT
+from bot.keyboards.reply import get_cancel_keyboard, CANCEL_TEXTS
+from bot.handlers.create_pres import TOPIC_PROMPT, _next_step
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -18,7 +18,8 @@ router = Router()
 IMAGE_DOC = F.document.mime_type.startswith("image/")
 
 
-@router.message(PresentationForm.ocr_photo_upload, F.photo | IMAGE_DOC)
+# the photo can be sent at the topic question too («📸 Yoki topshiriq rasmini yuboring»)
+@router.message(StateFilter(PresentationForm.ocr_photo_upload, PresentationForm.topic), F.photo | IMAGE_DOC)
 async def handle_ocr_task_photo(message: Message, state: FSMContext):
     msg_wait = await message.answer("🔍 <b>Topshiriq rasmi tahlil qilinmoqda (Vision AI)...</b>", parse_mode="HTML")
 
@@ -37,15 +38,11 @@ async def handle_ocr_task_photo(message: Message, state: FSMContext):
     except Exception:  # noqa: BLE001
         pass
 
-    data = await state.get_data()
-    template_id = data.get("template_id") or themes.DEFAULT_THEME
     if ocr_result.get("ok") is False or not (ocr_result.get("topic") or "").strip():
         # nothing reliable was read: never invent a topic, ask the user instead
-        await state.update_data(template_id=template_id)
-        await state.set_state(PresentationForm.subject)
+        await state.set_state(PresentationForm.topic)
         await message.answer("⚠️ Rasmdan topshiriqni o‘qib bo‘lmadi (rasm xira yoki AI vaqtincha ishlamayapti).\n\n"
-                             "Keling, ma’lumotlarni qo‘lda kiritamiz.\n\n" + SUBJECT_PROMPT,
-                             parse_mode="HTML", reply_markup=get_subject_keyboard())
+                             + TOPIC_PROMPT, parse_mode="HTML", reply_markup=get_cancel_keyboard())
         return
 
     async with AsyncSessionLocal() as session:
@@ -69,22 +66,18 @@ async def handle_ocr_task_photo(message: Message, state: FSMContext):
         language=language,
         additional_notes=requirements,
         ocr_notes=requirements,
-        template_id=template_id
     )
 
-    confirm_msg = (
-        f"🤖 <b>AI Topshiriq rasmini tahlil qildi:</b>\n\n"
+    note = (
+        f"🤖 <b>Topshiriq rasmidan o‘qildi:</b>\n\n"
         f"📚 <b>Fan:</b> {escape_html(subject)}\n"
         f"📌 <b>Mavzu:</b> {escape_html(topic)}\n"
         f"📑 <b>Slaydlar soni:</b> {slide_count} ta\n"
-        f"🌐 <b>Til:</b> {escape_html(language)}\n"
         f"📝 <b>Talablar:</b> {escape_html(requirements) or '—'}\n\n"
-        f"Endi prezentatsiya muallifi ma'lumotlarini kiriting.\n\n"
-        f"<b>Ism va familiyangizni kiriting:</b>"
+        f"<i>Noto‘g‘ri bo‘lsa, keyin «⚙️ Qo‘shimcha sozlamalar»da tuzatasiz.</i>"
     )
-
-    await state.set_state(PresentationForm.author_name)
-    await message.answer(confirm_msg, parse_mode="HTML", reply_markup=get_cancel_keyboard())
+    # next: the template (if not chosen yet), then the order summary
+    await _next_step(message, state, message.from_user.id, note=note, remove_keyboard=True)
 
 
 @router.message(PresentationForm.ocr_photo_upload, ~F.text.in_(CANCEL_TEXTS))

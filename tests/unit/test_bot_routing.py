@@ -113,8 +113,9 @@ async def test_a_photo_where_text_is_expected_gets_a_hint_not_a_crash(env):
 async def test_slide_count_accepts_natural_answers(env, typed):
     *_, ctx = env
     await ctx.set_state(PresentationForm.slide_count)
+    await ctx.update_data(topic="Biosfera")
     await _feed(env, _msg(typed))
-    assert await ctx.get_state() == PresentationForm.author_name.state
+    assert await ctx.get_state() == PresentationForm.template_selection.state   # next: the template
     assert (await ctx.get_data())["slide_count"] == 12
 
 
@@ -122,9 +123,12 @@ async def test_slide_count_accepts_natural_answers(env, typed):
 async def test_skip_button_skips_the_teacher(env):
     *_, ctx = env
     await ctx.set_state(PresentationForm.teacher_name)
-    await _feed(env, _msg("⏭ O‘tkazib yuborish"))
+    await ctx.update_data(topic="Biosfera", slide_count=10, template_id="05_nature_organic", teacher_name="Old",
+                          _return="more")
+    texts = await _feed(env, _msg("⏭ O‘tkazib yuborish"))
     assert (await ctx.get_data())["teacher_name"] == ""
-    assert await ctx.get_state() == PresentationForm.date.state
+    assert await ctx.get_state() == PresentationForm.confirmation.state    # back to «⚙️ Qo‘shimcha sozlamalar»
+    assert any("Qo‘shimcha sozlamalar" in t for t in texts)
 
 
 @pytest.mark.asyncio
@@ -175,7 +179,7 @@ async def test_menu_button_mid_wizard_restarts_cleanly(env):
     await ctx.set_state(PresentationForm.institution)
     await ctx.update_data(subject="old")
     await _feed(env, _msg("🎨 Presentation yaratish"))
-    assert await ctx.get_state() == PresentationForm.template_selection.state
+    assert await ctx.get_state() == PresentationForm.topic.state       # the new order starts with the topic
     assert await ctx.get_data() == {}
 
 
@@ -201,16 +205,45 @@ async def test_start_flood_is_throttled_by_the_middleware(patched_handlers_db):
 
 @pytest.mark.asyncio
 async def test_whole_wizard_with_buttons(env):
-    *_, ctx = env
-    await ctx.set_state(PresentationForm.subject)
-    for text in ["Biologiya", "Biosfera modeli", "10", "Ali Valiyev", "Maktab", "45-maktab", "9-sinf",
-                 "⏭ O‘tkazib yuborish", "📅 Bugun: 20.10.2026", "🇺🇿 O'zbekcha", "🚫 Yo‘q"]:
+    """The fast path: topic → slide count → template → summary; then optional extras from the summary."""
+    _, _, session, ctx = env
+    await _feed(env, _msg("🎨 Presentation yaratish"))
+    for text in ["Biosfera modeli", "10", "5"]:              # topic, slide count, template number
         await _feed(env, _msg(text))
     data = await ctx.get_data()
     assert await ctx.get_state() == PresentationForm.confirmation.state
-    assert (data["subject"], data["slide_count"], data["level"], data["institution"], data["course"],
-            data["teacher_name"], data["date"], data["additional_notes"]) == \
-        ("Biologiya", 10, "Maktab", "45-maktab", "9-sinf", "", "20.10.2026", "")
+    assert (data["topic"], data["slide_count"], data["template_id"], data["language"]) == \
+        ("Biosfera modeli", 10, "05_nature_organic", "uz")
+    assert any("TAQDIMOTINGIZ" in t for t in session.texts())
+
+    # «⚙️ Qo‘shimcha sozlamalar»: every detail is optional and comes back to the same menu
+    await _feed(env, _cb("px_more"))
+    await _feed(env, _cb("px_f:author_name"))
+    await _feed(env, _msg("Ali Valiyev"))
+    await _feed(env, _cb("px_f:level"))
+    for text in ["Maktab", "9-sinf"]:
+        await _feed(env, _msg(text))
+    await _feed(env, _cb("px_f:institution"))
+    await _feed(env, _msg("45-maktab"))
+    await _feed(env, _cb("px_f:date"))
+    await _feed(env, _msg("📅 Bugun: 20.10.2026"))
+    await _feed(env, _cb("px_l:ru"))
+    data = await ctx.get_data()
+    assert await ctx.get_state() == PresentationForm.confirmation.state
+    assert (data["author_name"], data["level"], data["course"], data["institution"], data["date"], data["language"]) == \
+        ("Ali Valiyev", "Maktab", "9-sinf", "45-maktab", "20.10.2026", "ru")
+    await _feed(env, _cb("px_done"))
+    assert await ctx.get_state() == PresentationForm.confirmation.state
+
+
+@pytest.mark.asyncio
+async def test_templates_button_shows_the_gallery_first(env):
+    *_, ctx = env
+    await _feed(env, _msg("🖼 Shablonlar"))
+    assert await ctx.get_state() == PresentationForm.template_selection.state
+    await _feed(env, _msg("5"))
+    assert await ctx.get_state() == PresentationForm.topic.state       # then the topic is asked
+    assert (await ctx.get_data())["template_id"] == "05_nature_organic"
 
 
 @pytest.mark.asyncio
