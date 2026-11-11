@@ -113,7 +113,7 @@ async def test_a_photo_where_text_is_expected_gets_a_hint_not_a_crash(env):
 async def test_slide_count_accepts_natural_answers(env, typed):
     *_, ctx = env
     await ctx.set_state(PresentationForm.slide_count)
-    await ctx.update_data(topic="Biosfera")
+    await ctx.update_data(topic="Biosfera", subject="Biologiya")
     await _feed(env, _msg(typed))
     assert await ctx.get_state() == PresentationForm.template_selection.state   # next: the template
     assert (await ctx.get_data())["slide_count"] == 12
@@ -208,12 +208,16 @@ async def test_whole_wizard_with_buttons(env):
     """The fast path: topic → slide count → template → summary; then optional extras from the summary."""
     _, _, session, ctx = env
     await _feed(env, _msg("🎨 Presentation yaratish"))
-    for text in ["Biosfera modeli", "10", "5"]:              # topic, slide count, template number
-        await _feed(env, _msg(text))
+    await _feed(env, _msg("Biosfera modeli"))                 # topic
+    assert await ctx.get_state() == PresentationForm.subject.state
+    from services import subjects
+    await _feed(env, _cb(f"px_s:{subjects.NAMES.index('Biologiya')}"))   # the subject button
+    await _feed(env, _cb("px_n:10"))                          # the slide count button
+    await _feed(env, _msg("5"))                               # template number
     data = await ctx.get_data()
     assert await ctx.get_state() == PresentationForm.confirmation.state
-    assert (data["topic"], data["slide_count"], data["template_id"], data["language"]) == \
-        ("Biosfera modeli", 10, "05_nature_organic", "uz")
+    assert (data["topic"], data["subject"], data["slide_count"], data["template_id"], data["language"]) == \
+        ("Biosfera modeli", "Biologiya", 10, "05_nature_organic", "uz")
     assert any("TAQDIMOTINGIZ" in t for t in session.texts())
 
     # «⚙️ Qo‘shimcha sozlamalar»: every detail is optional and comes back to the same menu

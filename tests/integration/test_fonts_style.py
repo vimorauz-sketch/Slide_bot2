@@ -62,7 +62,7 @@ async def test_picking_fonts_and_colour_then_continuing(monkeypatch, patched_han
     monkeypatch.setattr(style, "preview_path", no_preview)
     state = FakeFSMContext()
     await state.set_state(PresentationForm.confirmation)       # opened from the order summary
-    await state.update_data(template_id="05_nature_organic", topic="Fotosintez", slide_count=8)
+    await state.update_data(template_id="05_nature_organic", topic="Fotosintez", subject="", slide_count=8)
     user = FakeUser(id=5)
 
     cb = FakeCallbackQuery(data="st_f:t", from_user=user)

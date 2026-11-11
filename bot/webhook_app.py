@@ -94,6 +94,58 @@ async def webapp_select_handler(request: web.Request) -> web.Response:
     return web.json_response({"ok": ok}, status=200 if ok else 404)
 
 
+async def webapp_home_handler(request: web.Request) -> web.StreamResponse:
+    """«Nima tayyorlaymiz?» — the Mini App home with every product."""
+    if not request.path.endswith("/"):
+        raise web.HTTPFound(request.path + "/")
+    return web.FileResponse(os.path.join(WEBAPP_DIR, "home", "index.html"), headers={"Cache-Control": "no-cache"})
+
+
+async def webapp_home_api(request: web.Request) -> web.Response:
+    """Products with their prices, and how many free presentations the user (from initData) has."""
+    from config import settings
+    from services import credits, products
+    from services.webapp_auth import validate_init_data
+    try:
+        body = await request.json()
+    except (ValueError, json.JSONDecodeError):
+        body = {}
+    free = 0
+    data = validate_init_data(str(body.get("init_data", "")), settings.BOT_TOKEN, max_age=2 * 3600)
+    if data and isinstance(data.get("user"), dict):
+        try:
+            free = (await credits.available(int(data["user"]["id"]))).total
+        except Exception:  # noqa: BLE001 - the page works without it
+            free = 0
+    return web.json_response({"products": await products.catalog(), "free": free})
+
+
+async def webapp_start_api(request: web.Request) -> web.Response:
+    """The Mini App home asks to start a product: the wizard opens in the user's chat."""
+    from config import settings
+    from services import products
+    from services.webapp_auth import validate_init_data
+    _check_rate(request)
+    try:
+        body = await request.json()
+    except (ValueError, json.JSONDecodeError):
+        return web.json_response({"ok": False, "error": "bad_json"}, status=400)
+    data = validate_init_data(str(body.get("init_data", "")), settings.BOT_TOKEN, max_age=2 * 3600)
+    if not data or not isinstance(data.get("user"), dict):
+        return web.json_response({"ok": False, "error": "unauthorized"}, status=403)
+    product = str(body.get("product", ""))
+    if product not in products.ACTIVE:
+        return web.json_response({"ok": False, "error": "soon"}, status=404)
+    bot, dp = request.app.get(BOT_KEY), request.app.get(DP_KEY)
+    if bot is None or dp is None:
+        return web.json_response({"ok": False, "error": "bot_unavailable"}, status=503)
+    from bot.handlers.create_pres import start_product
+    user_id = int(data["user"]["id"])
+    state = dp.fsm.get_context(bot=bot, chat_id=user_id, user_id=user_id)
+    ok = await start_product(bot, user_id, state, product)
+    return web.json_response({"ok": ok})
+
+
 async def webapp_preview_handler(request: web.Request) -> web.StreamResponse:
     """Preview slide n of any template/colour key (rendered once, then cached)."""
     from services.gallery import preview_path
@@ -321,6 +373,10 @@ def create_webhook_app(bot=None, dp=None) -> web.Application:
         app.router.add_get("/webapp", webapp_index_handler)
         app.router.add_get("/webapp/", webapp_index_handler)
         app.router.add_post("/webapp/api/select", webapp_select_handler)
+        app.router.add_get("/webapp/home", webapp_home_handler)
+        app.router.add_get("/webapp/home/", webapp_home_handler)
+        app.router.add_post("/webapp/api/home", webapp_home_api)
+        app.router.add_post("/webapp/api/start", webapp_start_api)
         app.router.add_get(r"/webapp/preview/{key}/{n:\d+}.webp", webapp_preview_handler)
         app.router.add_get(r"/webapp/cover/{key}.webp", webapp_cover_handler)
         app.router.add_get("/webapp/api/fonts", fonts_api_handler)

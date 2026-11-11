@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>SlideLab</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root {
+  --bg: var(--tg-theme-bg-color, #0f1117);
+  --bg2: var(--tg-theme-secondary-bg-color, #181b24);
+  --text: var(--tg-theme-text-color, #f3f4f8);
+  --hint: var(--tg-theme-hint-color, #8b90a3);
+  --accent: var(--tg-theme-button-color, #6c5cff);
+  --on-accent: var(--tg-theme-button-text-color, #ffffff);
+  --card: color-mix(in srgb, var(--bg2) 80%, var(--text) 4%);
+  --line: color-mix(in srgb, var(--text) 10%, transparent);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.4 -apple-system, "SF Pro Text", "Segoe UI", Roboto, Inter, sans-serif; }
+body { padding: 0 0 calc(24px + env(safe-area-inset-bottom)); }
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; padding: 0; text-align: left; }
+
+header { padding: 20px 16px 8px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.logo { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; font-size: 22px; flex: none;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 40%, #ff7ab6)); color: #fff; }
+.hello { color: var(--hint); font-size: 13px; }
+.free { flex: none; font-size: 12.5px; font-weight: 700; padding: 6px 10px; border-radius: 999px;
+  background: color-mix(in srgb, #22c55e 18%, transparent); color: color-mix(in srgb, #22c55e 80%, var(--text)); }
+h1 { margin: 18px 0 4px; font-size: 23px; letter-spacing: -.02em; }
+.sub { color: var(--hint); font-size: 14px; margin: 0; }
+
+.section { color: var(--hint); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 18px 16px 8px; }
+.list { display: grid; gap: 10px; padding: 0 16px; }
+@media (min-width: 640px) { .list { grid-template-columns: 1fr 1fr; } }
+.item { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px; border-radius: 16px;
+  background: var(--card); border: 1px solid var(--line); transition: transform .12s; }
+.item:active { transform: scale(.98); }
+.ic { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 24px; flex: none;
+  background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.txt { flex: 1; min-width: 0; }
+.nm { font-weight: 700; font-size: 16px; }
+.ds { color: var(--hint); font-size: 12.5px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr { flex: none; text-align: right; font-weight: 700; font-size: 12.5px; color: var(--accent); max-width: 40%; }
+.ds { white-space: normal; }
+.go { display: block; color: var(--hint); font-weight: 500; font-size: 11.5px; margin-top: 2px; }
+.soon { opacity: .58; }
+.soon .ic { background: var(--bg2); }
+.soon .pr { color: var(--hint); font-weight: 600; font-size: 12px; }
+.note { color: var(--hint); font-size: 12.5px; padding: 14px 16px 0; }
+.err { margin: 16px; padding: 12px 14px; border-radius: 12px; background: color-mix(in srgb, #ef4444 14%, transparent); display: none; }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="brand"><div class="logo">✨</div><div><div style="font-weight:750">SlideLab</div><div class="hello" id="hello">Talabalar yordamchisi</div></div></div>
+    <div class="free" id="free" hidden></div>
+  </div>
+  <h1>Nima tayyorlaymiz?</h1>
+  <p class="sub">Turini tanlang — mavzu va qolganini chatda bir necha bosishda sozlaysiz.</p>
+</header>
+
+<div class="section">Hozir tayyorlash mumkin</div>
+<div class="list" id="ready"></div>
+<div class="section">Tez orada</div>
+<div class="list" id="soon"></div>
+<p class="note">Narxlar eng kichik hajm uchun. Aniq narx tanlovingizga qarab chatda ko‘rsatiladi.</p>
+<div class="err" id="err"></div>
+
+<script>
+(function () {
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+  var initData = (tg && tg.initData) || "";
+  var user = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+  if (user && user.first_name) document.getElementById("hello").textContent = "Salom, " + user.first_name + "!";
+
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function showError(text) { var e = document.getElementById("err"); e.textContent = text; e.style.display = "block"; }
+
+  function card(p) {
+    var b = el("button", "item" + (p.active ? "" : " soon"));
+    b.appendChild(el("div", "ic", p.emoji));
+    var t = el("div", "txt"); t.appendChild(el("div", "nm", p.name)); t.appendChild(el("div", "ds", p.desc)); b.appendChild(t);
+    var pr = el("div", "pr", p.price);
+    if (p.active) pr.appendChild(el("span", "go", "Boshlash →"));
+    b.appendChild(pr);
+    b.addEventListener("click", function () { choose(p); });
+    return b;
+  }
+
+  function choose(p) {
+    if (!p.active) {
+      if (tg && tg.showAlert) tg.showAlert("«" + p.name + "» tez orada qo‘shiladi! Hozircha taqdimot yoki referat tayyorlay olaman.");
+      return;
+    }
+    try { tg.HapticFeedback.impactOccurred("light"); } catch (e) {}
+    var payload = { action: "start", product: p.key };
+    var viaInline = !!(tg && tg.initDataUnsafe && tg.initDataUnsafe.query_id);
+    if (tg && !viaInline && tg.sendData) {          // opened from the keyboard button: the answer comes as web_app_data
+      try { tg.sendData(JSON.stringify(payload)); return; } catch (e) {}
+    }
+    fetch("../api/start", { method: "POST", headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ init_data: initData, product: p.key }) })
+      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (r.ok) { try { tg.close(); } catch (e) {} }
+        else showError("Boshlab bo‘lmadi. Botga qaytib, menyudan tanlang.");
+      })
+      .catch(function () { showError("Internet bilan muammo. Qaytadan urinib ko‘ring."); });
+  }
+
+  fetch("../api/home", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ init_data: initData }) })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var ready = document.getElementById("ready"), soon = document.getElementById("soon");
+      (data.products || []).forEach(function (p) { (p.active ? ready : soon).appendChild(card(p)); });
+      if (data.free > 0) { var f = document.getElementById("free"); f.textContent = "🎁 " + data.free + " ta bepul"; f.hidden = false; }
+    })
+    .catch(function () { showError("Ro‘yxatni yuklab bo‘lmadi. Sahifani qayta oching."); });
+})();
+</script>
+</body>
+</html>

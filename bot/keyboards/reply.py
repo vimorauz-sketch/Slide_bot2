@@ -5,6 +5,19 @@ SKIP_TEXT = "⏭ O‘tkazib yuborish"
 CANCEL_TEXTS = {CANCEL_TEXT, "❌ Отмена", "❌ Cancel"}
 SKIP_TEXTS = {SKIP_TEXT, "-", "—", "–"}
 
+HOME_BUTTON = {"uz": "🚀 Nima tayyorlaymiz?", "ru": "🚀 Что подготовим?", "en": "🚀 What shall we make?"}
+
+
+def _home_row(lang: str):
+    """The Mini App home («Nima tayyorlaymiz?») on top of the menu, when the bot has a public https address."""
+    try:
+        from bot.handlers.create_pres import home_url
+        url = home_url()
+    except Exception:  # noqa: BLE001 - the menu works without it
+        url = ""
+    return [[KeyboardButton(text=HOME_BUTTON.get(lang, HOME_BUTTON["uz"]), web_app=WebAppInfo(url=url))]] if url else []
+
+
 def get_main_menu_keyboard(lang: str = "uz") -> ReplyKeyboardMarkup:
     if lang == "ru":
         kb = [
@@ -24,7 +37,7 @@ def get_main_menu_keyboard(lang: str = "uz") -> ReplyKeyboardMarkup:
             [KeyboardButton(text="🖼 Shablonlar"), KeyboardButton(text="🎁 Referal")],
             [KeyboardButton(text="👤 Profil"), KeyboardButton(text="💰 Narxlar"), KeyboardButton(text="❓ Yordam")]
         ]
-    return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
+    return ReplyKeyboardMarkup(keyboard=_home_row(lang) + kb, resize_keyboard=True)
 
 SUBJECTS = ["Biologiya", "Kimyo", "Fizika", "Matematika", "Tarix", "Geografiya", "Informatika",
             "Ona tili va adabiyot", "Ingliz tili", "Rus tili", "Iqtisodiyot", "Huquq", "Pedagogika",
