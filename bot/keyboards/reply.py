@@ -114,3 +114,9 @@ def get_webapp_keyboard(webapp_url: str) -> ReplyKeyboardMarkup:
                   [KeyboardButton(text=CANCEL_TEXT)]],
         resize_keyboard=True
     )
+
+
+def get_gallery_keyboard(webapp_url: str) -> ReplyKeyboardMarkup:
+    """The design step: the bottom button opens the gallery Mini App (its choice comes back as web_app_data)."""
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="🎨 Galereya", web_app=WebAppInfo(url=webapp_url))]],
+                               resize_keyboard=True)
