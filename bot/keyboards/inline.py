@@ -1,17 +1,15 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 def get_template_selection_inline_keyboard(webapp_url: str = "") -> InlineKeyboardMarkup:
-    kb = []
+    """The design step: one quick choice, then the ways to browse, then AI."""
+    kb = [[InlineKeyboardButton(text="⚡ Tezkor — tavsiya etilgan dizayn", callback_data="tpl_auto")]]
     if webapp_url:
-        from services.deck import themes
-        n = len(themes.list_theme_ids())
-        kb.append([InlineKeyboardButton(text=f"🎨 Dizayn laboratoriyasi — {n} shablon", web_app=WebAppInfo(url=webapp_url))])
-    kb += [
-        [InlineKeyboardButton(text="⚡ Tavsiya etilgan shablon — tezkor", callback_data="tpl_auto")],
-        [InlineKeyboardButton(text="📂 Kategoriyalar", callback_data="gal_cats"),
-         InlineKeyboardButton(text="🗂 Barcha shablonlar", callback_data="gal_l:all:0")],
-        [InlineKeyboardButton(text="🤖 AI orqali maxsus dizayn yaratish", callback_data="tpl_ai_custom")],
-    ]
+        kb.append([InlineKeyboardButton(text="🎨 Galereya", web_app=WebAppInfo(url=webapp_url)),
+                   InlineKeyboardButton(text="📂 Bo‘limlar", callback_data="gal_cats")])
+    else:
+        kb.append([InlineKeyboardButton(text="🗂 Hammasini ko‘rish", callback_data="gal_l:all:0"),
+                   InlineKeyboardButton(text="📂 Bo‘limlar", callback_data="gal_cats")])
+    kb.append([InlineKeyboardButton(text="🤖 AI o‘zi dizayn chizsin", callback_data="tpl_ai_custom")])
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
 
@@ -34,7 +32,7 @@ def get_gallery_list_keyboard(items, category: str, page: int, pages: int) -> In
     if page < pages - 1:
         nav.append(InlineKeyboardButton(text="▶️", callback_data=f"gal_l:{category}:{page + 1}"))
     kb.append(nav)
-    kb.append([InlineKeyboardButton(text="📂 Kategoriyalar", callback_data="gal_cats"),
+    kb.append([InlineKeyboardButton(text="📂 Bo‘limlar", callback_data="gal_cats"),
                InlineKeyboardButton(text="🏠 Boshiga", callback_data="gal_home")])
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
