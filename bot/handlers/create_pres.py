@@ -21,7 +21,7 @@ from bot.keyboards.inline import (
 from services.payment.orders import payment_mode
 from typing import Optional
 from bot.keyboards.reply import (
-    get_level_keyboard, get_course_keyboard, get_cancel_keyboard, get_webapp_keyboard,
+    get_level_keyboard, get_course_keyboard, get_cancel_keyboard,
     get_skip_keyboard, get_main_menu_keyboard, SKIP_TEXTS, get_subject_keyboard, get_slide_count_keyboard,
     get_date_keyboard, class_options, YES_TEXT, NO_TEXT
 )
@@ -98,14 +98,11 @@ async def webapp_link(bot) -> str:
 
 def _picker_caption(with_webapp: bool) -> str:
     n = len(themes.list_theme_ids())
-    lines = [f"🖼 <b>{n} TA SHABLON — HAR BIRIDA 10 XIL RANG</b>\n",
-             "Har bir shablonning tuzilishi, rasmlari va shriftlari o‘ziga xos.\n",
-             "📷 <b>201–400: Real foto</b> — slaydlarga mavzuga mos haqiqiy fotosuratlar qo‘yiladi.\n"]
-    if with_webapp:
-        lines.append("🎨 <b>Dizayn laboratoriyasi</b>da shablonga kirib, slaydlarini va barcha ranglarini ko‘ring.\n")
-    lines.append(f"👉 Shablon raqamini yuboring (<code>1</code> – <code>{n}</code>), kategoriyalardan tanlang "
-                 "yoki <b>«⚡ Tavsiya etilgan shablon»</b>ni bosing — eng ko‘p tanlanadigani darhol qo‘yiladi.")
-    return "\n".join(lines)
+    browse = "«🎨 Galereya»" if with_webapp else "«🗂 Hammasini ko‘rish»"
+    return (f"🖼 <b>Dizaynni tanlang</b> — {n} ta shablon bor\n\n"
+            f"⚡ <b>Tezkor</b> — eng ko‘p tanlanadigan chiroyli shablon darhol qo‘yiladi.\n"
+            f"🎨 <b>Ko‘rib tanlash</b> — {browse} yoki «📂 Bo‘limlar» (har birida 10 xil rang).\n"
+            f"🔢 Raqamini bilsangiz, shunchaki yozing: <code>37</code>")
 
 
 async def apply_template_choice(bot, chat_id: int, state: FSMContext, key, style: Optional[dict] = None) -> bool:
@@ -512,10 +509,8 @@ async def _send_picker(out, step: bool = False) -> None:
         _webapp_disabled = True
         url = ""
         await send("")
-    if url:
-        await out.answer("👇 Galereyani pastdagi tugma orqali ham ochishingiz mumkin.", reply_markup=get_webapp_keyboard(url))
-    elif step:
-        await out.answer("👆 Shablonni tanlang yoki uning raqamini yozing.", reply_markup=get_cancel_keyboard())
+    if step:  # the slide count buttons go away; cancelling stays possible
+        await out.answer("👆 Dizaynni yuqoridagi tugmalardan tanlang.", reply_markup=get_cancel_keyboard())
 
 
 def _template_label(data: dict) -> str:
