@@ -12,10 +12,10 @@ async def make_test_session_factory():
     With TEST_DATABASE_URL (e.g. postgres://user@localhost:5433/slidelab_test) the same tests run
     against PostgreSQL instead: the schema is dropped and created again for every test.
     """
+    import database.models  # noqa: F401  (registers every table, whichever test file runs first)
     pg = os.getenv("TEST_DATABASE_URL", "")
     if pg:
         from database.connection import normalize_db_url
-        import database.models  # noqa: F401
         url, args = normalize_db_url(pg)
         engine = create_async_engine(url, echo=False, connect_args=args)
         async with engine.begin() as conn:

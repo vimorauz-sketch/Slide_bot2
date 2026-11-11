@@ -7,10 +7,10 @@ def get_template_selection_inline_keyboard(webapp_url: str = "") -> InlineKeyboa
         n = len(themes.list_theme_ids())
         kb.append([InlineKeyboardButton(text=f"🎨 Dizayn laboratoriyasi — {n} shablon", web_app=WebAppInfo(url=webapp_url))])
     kb += [
+        [InlineKeyboardButton(text="⚡ Tavsiya etilgan shablon — tezkor", callback_data="tpl_auto")],
         [InlineKeyboardButton(text="📂 Kategoriyalar", callback_data="gal_cats"),
          InlineKeyboardButton(text="🗂 Barcha shablonlar", callback_data="gal_l:all:0")],
         [InlineKeyboardButton(text="🤖 AI orqali maxsus dizayn yaratish", callback_data="tpl_ai_custom")],
-        [InlineKeyboardButton(text="📸 Topshiriq rasmini yuborish", callback_data="tpl_ocr_photo")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb)
 
@@ -48,8 +48,12 @@ def get_gallery_colors_keyboard(colors) -> InlineKeyboardMarkup:
 
 
 def get_confirmation_inline_keyboard(order_id: str) -> InlineKeyboardMarkup:
+    """The order summary: create now, or (optionally) add details, change the design, see the plan."""
     kb = [
-        [InlineKeyboardButton(text="✅ Tasdiqlash va yaratish", callback_data=f"confirm_pres_{order_id}")],
+        [InlineKeyboardButton(text="✅ Yaratish", callback_data=f"confirm_pres_{order_id}")],
+        [InlineKeyboardButton(text="⚙️ Qo‘shimcha sozlamalar", callback_data="px_more")],
+        [InlineKeyboardButton(text="🖼 Shablon", callback_data="px_tpl"),
+         InlineKeyboardButton(text="🔤 Shrift va rang", callback_data="st_menu")],
         [InlineKeyboardButton(text="📋 Avval rejani ko‘rish", callback_data="show_plan")],
         [InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_pres")]
     ]

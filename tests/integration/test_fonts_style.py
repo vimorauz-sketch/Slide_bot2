@@ -56,13 +56,13 @@ def test_only_readable_colours_are_offered():
 
 
 @pytest.mark.asyncio
-async def test_picking_fonts_and_colour_then_continuing(monkeypatch):
+async def test_picking_fonts_and_colour_then_continuing(monkeypatch, patched_handlers_db):
     async def no_preview(data):
         return None
     monkeypatch.setattr(style, "preview_path", no_preview)
     state = FakeFSMContext()
-    await state.set_state(PresentationForm.style)
-    await state.update_data(template_id="05_nature_organic")
+    await state.set_state(PresentationForm.confirmation)       # opened from the order summary
+    await state.update_data(template_id="05_nature_organic", topic="Fotosintez", slide_count=8)
     user = FakeUser(id=5)
 
     cb = FakeCallbackQuery(data="st_f:t", from_user=user)
@@ -83,7 +83,8 @@ async def test_picking_fonts_and_colour_then_continuing(monkeypatch):
 
     go = FakeCallbackQuery(data="st_go", from_user=user)
     await style.style_continue(go, state)
-    assert await state.get_state() == PresentationForm.subject
+    assert await state.get_state() == PresentationForm.confirmation   # back to the summary
+    assert any("TAQDIMOTINGIZ" in (c.get("text") or "") for c in go.message.calls)
 
     await style.style_reset(FakeCallbackQuery(data="st_reset", from_user=user), state)
     assert not (await state.get_data()).get("font_title")
@@ -130,5 +131,5 @@ async def test_mini_app_send_data_carries_fonts_and_colour(monkeypatch, patched_
                                                          "font_body": "g:lora", "text_color": "#1E3A8A"}))
     await create_pres.process_webapp_choice(msg, state)
     data = await state.get_data()
-    assert await state.get_state() == PresentationForm.style
+    assert await state.get_state() == PresentationForm.topic
     assert (data["font_title"], data["font_body"], data["text_color"]) == ("g:caveat", "g:lora", "#1E3A8A")

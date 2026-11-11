@@ -203,3 +203,34 @@ async def test_two_photo_sources_are_asked_at_once_and_the_preferred_one_wins(mo
     started.clear()
     assert (await again.resolve(None, "forest", "", "photo", "text_image"))["provider"] == "pixabay"
     assert started == []                              # cached: no network at all
+
+
+async def test_a_failing_photo_source_is_skipped_for_a_while(monkeypatch):
+    """Wikimedia / Openverse refusing every request (403) must not cost a timeout on every slide."""
+    from services.deck import images
+    calls = []
+
+    class Resp:
+        status = 403
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *a):
+            return False
+
+    class Session:
+        def get(self, url, **kw):
+            calls.append(url)
+            return Resp()
+
+    url = "https://commons.wikimedia.org/w/api.php"
+    for _ in range(images.FAIL_LIMIT):
+        assert await images._get_json(Session(), url, {}, {}) is None
+    assert images.source_down(url)
+    for _ in range(5):
+        assert await images._get_json(Session(), url, {}, {}) is None
+    assert len(calls) == images.FAIL_LIMIT                      # no more requests while it is skipped
+    assert not images.source_down("https://api.pexels.com/v1/search")   # other sources are unaffected
+    monkeypatch.setattr(images.time, "monotonic", lambda: 10 ** 9)     # the cooldown is over
+    assert not images.source_down(url)

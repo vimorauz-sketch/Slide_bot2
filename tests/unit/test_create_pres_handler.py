@@ -22,14 +22,14 @@ def _message(text, user_id=111):
     ("21", "021_paper_craft"),
     ("№ 200", "200_electric"),
 ])
-async def test_valid_template_number_advances_to_subject_state(entered, expected_id):
+async def test_valid_template_number_then_asks_the_topic(entered, expected_id):
     state = FakeFSMContext()
     await state.set_state(PresentationForm.template_selection)
     message = _message(entered)
 
     await create_pres.process_template_number_text(message, state)
 
-    assert await state.get_state() == PresentationForm.style  # fonts/colour menu first
+    assert await state.get_state() == PresentationForm.topic  # the next missing answer
     assert (await state.get_data())["template_id"] == expected_id
 
 
@@ -66,13 +66,13 @@ async def test_template_selection_callback_routes_to_ocr_upload():
 
 
 @pytest.mark.asyncio
-async def test_template_selection_callback_with_a_real_template_sets_subject_state(patched_handlers_db):
+async def test_template_selection_callback_with_a_real_template_asks_the_topic(patched_handlers_db):
     state = FakeFSMContext()
     cb = FakeCallbackQuery(data="tpl_05_nature_organic")
 
     await create_pres.process_template_selection(cb, state)
 
-    assert await state.get_state() == PresentationForm.style  # fonts/colour menu first
+    assert await state.get_state() == PresentationForm.topic
     assert (await state.get_data())["template_id"] == "05_nature_organic"
 
 
@@ -104,7 +104,7 @@ async def test_webapp_data_selects_theme_and_starts_wizard(patched_handlers_db):
     message = _message("")
     message.web_app_data = SimpleNamespace(data=json.dumps({"theme": "082_suzani~cherry"}))
     await create_pres.process_webapp_choice(message, state)
-    assert await state.get_state() == PresentationForm.style  # fonts/colour menu first
+    assert await state.get_state() == PresentationForm.topic
     assert (await state.get_data())["template_id"] == "082_suzani~cherry"
 
 
@@ -153,7 +153,7 @@ async def test_deep_link_payload_selects_template_and_colour(patched_handlers_db
     state = FakeFSMContext()
     ok = await create_pres.apply_template_choice(_message("").bot, 1, state, "150_apollo--emerald")
     assert ok and (await state.get_data())["template_id"] == "150_apollo~emerald"
-    assert await state.get_state() == PresentationForm.style  # fonts/colour menu first
+    assert await state.get_state() == PresentationForm.topic
 
 
 # ---------------------------------------------------------------------------
@@ -196,11 +196,12 @@ async def test_slide_count_rejects_above_maximum(patched_handlers_db):
 @pytest.mark.asyncio
 async def test_slide_count_accepts_value_within_bounds(patched_handlers_db):
     state = FakeFSMContext()
+    await state.update_data(topic="Fotosintez")
     message = _message("10")
 
     await create_pres.process_slide_count(message, state)
 
-    assert await state.get_state() == PresentationForm.author_name
+    assert await state.get_state() == PresentationForm.template_selection  # next: the template
     assert (await state.get_data())["slide_count"] == 10
 
 
@@ -242,36 +243,41 @@ async def test_teacher_name_is_stored_when_provided():
 # Order confirmation summary: HTML-escaping regression guard
 # ---------------------------------------------------------------------------
 
+def _texts(message):
+    return [c.get("text") or c.get("caption") or "" for c in message.calls]
+
+
 @pytest.mark.asyncio
 async def test_confirmation_summary_escapes_dangerous_user_text(patched_handlers_db):
     state = FakeFSMContext()
     await state.update_data(
-        subject="Biologiya <script>", topic="5 < 3 & test", slide_count=5,
+        subject="Biologiya <script>", topic="5 < 3 & test", slide_count=5, template_id="05_nature_organic",
         author_name="A & B", institution="Maktab <1>", language="uz"
     )
     message = _message("-")
 
-    await create_pres.process_additional_notes(message, state)
+    await create_pres._show_summary(message, state, 111)
 
-    summary_text = message.calls_for("answer")[-1]["text"]
+    summary_text = _texts(message)[-1]
     assert "<script>" not in summary_text
-    assert "&lt;script&gt;" in summary_text
+    assert "&lt;script&gt;" in summary_text and "A &amp; B" in summary_text
     assert await state.get_state() == PresentationForm.confirmation
 
 
 @pytest.mark.asyncio
-async def test_confirmation_summary_computes_total_price(patched_handlers_db):
+async def test_confirmation_summary_computes_total_price_and_offers_the_extras(patched_handlers_db):
     state = FakeFSMContext()
-    await state.update_data(
-        subject="S", topic="T", slide_count=10,
-        author_name="A", institution="I", language="uz"
-    )
+    await state.update_data(topic="T", slide_count=10, template_id="05_nature_organic")
     message = _message("-")
 
-    await create_pres.process_additional_notes(message, state)
+    await create_pres._show_summary(message, state, 111)
 
     data = await state.get_data()
     assert data["total_price"] == 10 * 350  # default DEFAULT_PRICE_PER_SLIDE
+    assert data["language"] == "uz"         # the default language is filled in
+    markup = [c for c in message.calls if c.get("reply_markup") is not None][-1]["reply_markup"]
+    buttons = [b.callback_data for row in markup.inline_keyboard for b in row]
+    assert {"confirm_pres_temp_order", "px_more", "px_tpl", "st_menu", "show_plan", "cancel_pres"} <= set(buttons)
 
 
 # ---------------------------------------------------------------------------
@@ -295,18 +301,20 @@ async def test_cancel_clears_state_and_confirms_to_user():
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_start_pres_wizard_resets_state_and_shows_template_selection(patched_handlers_db):
+async def test_start_pres_wizard_resets_state_and_asks_the_topic(patched_handlers_db):
     state = FakeFSMContext()
     await state.update_data(leftover="from a previous attempt")
 
-    await create_pres.start_pres_wizard(_message("🎨 Presentation yaratish"), state)
+    message = _message("🎨 Presentation yaratish")
+    await create_pres.start_pres_wizard(message, state)
 
-    assert await state.get_state() == PresentationForm.template_selection
+    assert await state.get_state() == PresentationForm.topic      # the topic comes first now
     assert await state.get_data() == {}
+    assert "mavzusini" in message.calls_for("answer")[0]["text"]
 
 
 @pytest.mark.asyncio
-async def test_custom_design_prompt_generates_spec_and_advances_to_subject(no_openai_key):
+async def test_custom_design_prompt_generates_spec_and_asks_the_topic(no_openai_key):
     state = FakeFSMContext()
 
     await create_pres.process_custom_design_prompt(_message("Ko'k va oq rangli dizayn"), state)
@@ -315,7 +323,7 @@ async def test_custom_design_prompt_generates_spec_and_advances_to_subject(no_op
     assert data["template_id"] == "custom_ai"
     assert "custom_design_spec" in data
     assert data["custom_design_spec"]["primary_color"].startswith("#")
-    assert await state.get_state() == PresentationForm.style  # fonts/colour menu first
+    assert await state.get_state() == PresentationForm.topic
 
 
 @pytest.mark.asyncio
@@ -330,74 +338,86 @@ async def test_process_topic_advances_to_slide_count_with_pricing_info(patched_h
     assert "Narxi" in message.calls_for("answer")[0]["text"]
 
 
-@pytest.mark.asyncio
-async def test_author_name_is_followed_by_the_level_buttons():
+async def _extras_state(**extra):
     state = FakeFSMContext()
-    await create_pres.process_author_name(_message("Ali Valiyev"), state)
-    assert await state.get_state() == PresentationForm.level
+    await state.update_data(topic="Fotosintez", slide_count=8, template_id="05_nature_organic", language="uz",
+                            _return="more", **extra)
+    return state
 
 
 @pytest.mark.asyncio
-async def test_level_is_followed_by_the_optional_institution():
-    state = FakeFSMContext()
-    message = _message("Maktab")
-    await create_pres.process_level(message, state)
-    assert await state.get_state() == PresentationForm.institution
-    assert "ixtiyoriy" in message.calls_for("answer")[0]["text"]
+@pytest.mark.parametrize("handler,field,typed,stored", [
+    ("process_author_name", "author_name", "Ali Valiyev", "Ali Valiyev"),
+    ("process_institution", "institution", "TATU", "TATU"),
+    ("process_institution", "institution", "⏭ O‘tkazib yuborish", ""),
+    ("process_teacher_name", "teacher_name", "Karimova B.", "Karimova B."),
+    ("process_teacher_name", "teacher_name", "-", ""),
+    ("process_subject", "subject", "Biologiya", "Biologiya"),
+    ("process_additional_notes", "additional_notes", "Rasmlar ko‘p bo‘lsin", "Rasmlar ko‘p bo‘lsin"),
+    ("process_date", "date", "📅 Bugun: 20.10.2026", "20.10.2026"),
+    ("process_date", "date", "📅 2026-yil", "2026-yil"),
+    ("process_date", "date", "25.10.2026", "25.10.2026"),
+    ("process_date", "date", "⏭ O‘tkazib yuborish", ""),
+])
+async def test_extras_are_saved_and_lead_back_to_the_extras_menu(handler, field, typed, stored):
+    state = await _extras_state()
+    message = _message(typed)
+    await getattr(create_pres, handler)(message, state)
+    assert (await state.get_data())[field] == stored
+    assert await state.get_state() == PresentationForm.confirmation
+    assert "Qo‘shimcha sozlamalar" in message.calls_for("answer")[-1]["text"]
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("level,first_button", [("Maktab", "1-sinf"), ("Universitet", "1-kurs"),
                                                 ("Akademik litsey", "1-kurs")])
-async def test_institution_then_class_buttons_match_the_level(level, first_button):
-    state = FakeFSMContext()
-    await state.update_data(level=level)
-    message = _message("TATU")
-    await create_pres.process_institution(message, state)
+async def test_level_then_class_buttons_match_the_level(level, first_button):
+    state = await _extras_state()
+    message = _message(level)
+    await create_pres.process_level(message, state)
     assert await state.get_state() == PresentationForm.course
-    assert (await state.get_data())["institution"] == "TATU"
     kb = message.calls_for("answer")[0]["reply_markup"]
     assert kb.keyboard[0][0].text == first_button
-
-
-@pytest.mark.asyncio
-async def test_institution_can_be_skipped_and_other_level_skips_the_class():
-    state = FakeFSMContext()
-    await state.update_data(level="Boshqa")
-    await create_pres.process_institution(_message("⏭ O‘tkazib yuborish"), state)
+    await create_pres.process_course(_message(first_button), state)
     data = await state.get_data()
-    assert data["institution"] == "" and data["course"] == ""
-    assert await state.get_state() == PresentationForm.teacher_name
+    assert (data["level"], data["course"]) == (level, first_button)
+    assert await state.get_state() == PresentationForm.confirmation
 
 
 @pytest.mark.asyncio
-async def test_process_course_advances_to_teacher_name():
-    state = FakeFSMContext()
-
-    await create_pres.process_course(_message("3-kurs"), state)
-
-    assert await state.get_state() == PresentationForm.teacher_name
-    assert (await state.get_data())["course"] == "3-kurs"
+async def test_other_level_skips_the_class():
+    state = await _extras_state()
+    await create_pres.process_level(_message("Boshqa"), state)
+    assert (await state.get_data())["course"] == ""
+    assert await state.get_state() == PresentationForm.confirmation
 
 
 @pytest.mark.asyncio
-async def test_teacher_is_followed_by_the_date_with_a_today_button():
-    state = FakeFSMContext()
-    message = _message("Karimova B.")
-    await create_pres.process_teacher_name(message, state)
+async def test_extras_buttons_open_the_right_question_and_language_is_a_button(patched_handlers_db):
+    state = await _extras_state()
+    await state.set_state(PresentationForm.confirmation)
+    cb = FakeCallbackQuery(data="px_f:date")
+    await create_pres.extras_field(cb, state)
     assert await state.get_state() == PresentationForm.date
-    kb = message.calls_for("answer")[0]["reply_markup"]
+    kb = cb.message.calls_for("answer")[-1]["reply_markup"]
     assert kb.keyboard[0][0].text.startswith("📅 Bugun:")
 
+    await state.set_state(PresentationForm.confirmation)
+    cb = FakeCallbackQuery(data="px_f:language")
+    await create_pres.extras_field(cb, state)
+    kb = cb.message.calls_for("edit_text")[-1]["reply_markup"]
+    assert [b.callback_data for b in kb.inline_keyboard[0]] == ["px_l:uz", "px_l:ru", "px_l:en"]
+    await create_pres.extras_language(FakeCallbackQuery(data="px_l:en"), state)
+    assert (await state.get_data())["language"] == "en"
+
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("typed,stored", [("📅 Bugun: 20.10.2026", "20.10.2026"), ("📅 2026-yil", "2026-yil"),
-                                          ("25.10.2026", "25.10.2026"), ("⏭ O‘tkazib yuborish", "")])
-async def test_date_buttons_and_typed_dates(typed, stored):
-    state = FakeFSMContext()
-    await create_pres.process_date(_message(typed), state)
-    assert (await state.get_data())["date"] == stored
-    assert await state.get_state() == PresentationForm.language
+async def test_extras_buttons_from_an_old_menu_are_refused():
+    state = FakeFSMContext()                       # the order was finished or cancelled
+    cb = FakeCallbackQuery(data="px_f:author_name")
+    await create_pres.extras_field(cb, state)
+    assert cb.calls_for("answer")[0]["show_alert"]
+    assert await state.get_state() is None
 
 
 @pytest.mark.asyncio
@@ -407,32 +427,36 @@ async def test_date_buttons_and_typed_dates(typed, stored):
     ("🇬🇧 English", "en"),
     ("something unexpected", "uz"),  # safe default
 ])
-async def test_process_language_maps_button_text_to_language_code(button_text, expected_code):
+async def test_old_language_question_still_works_and_shows_the_summary(button_text, expected_code, patched_handlers_db):
+    """A user who was in the middle of the old, longer wizard when the bot was updated."""
     state = FakeFSMContext()
+    await state.update_data(topic="T", slide_count=5, template_id="05_nature_organic")
+    await state.set_state(PresentationForm.language)
 
     await create_pres.process_language(_message(button_text), state)
 
     assert (await state.get_data())["language"] == expected_code
-    assert await state.get_state() == PresentationForm.notes_choice
-
-
-@pytest.mark.asyncio
-async def test_notes_no_goes_straight_to_the_summary(patched_handlers_db):
-    state = FakeFSMContext()
-    await state.update_data(subject="S", topic="T", slide_count=5, author_name="A", language="uz")
-    await create_pres.process_notes_choice(_message("🚫 Yo‘q"), state)
-    assert (await state.get_data())["additional_notes"] == ""
     assert await state.get_state() == PresentationForm.confirmation
 
 
 @pytest.mark.asyncio
-async def test_notes_yes_asks_for_the_wishes(patched_handlers_db):
+async def test_recommended_template_is_the_most_chosen_one(patched_handlers_db):
+    from database import repository
+    async with patched_handlers_db() as s:
+        await repository.get_or_create_user(s, 5, "A", "a")
+        for tid in ("150_apollo", "150_apollo", "09_uzbek_heritage"):
+            await repository.create_presentation_order(s, 5, "T", "S", 8, tid, 2800)
+    assert await create_pres.recommended_template() == "150_apollo"
+
+
+@pytest.mark.asyncio
+async def test_recommended_template_button_goes_to_the_summary(patched_handlers_db):
     state = FakeFSMContext()
-    await state.update_data(subject="S", topic="T", slide_count=5, author_name="A", language="uz")
-    await create_pres.process_notes_choice(_message("✅ Ha, bor"), state)
-    assert await state.get_state() == PresentationForm.additional_notes
-    await create_pres.process_additional_notes(_message("Rasmlar ko‘p bo‘lsin"), state)
-    assert (await state.get_data())["additional_notes"] == "Rasmlar ko‘p bo‘lsin"
+    await state.update_data(topic="Fotosintez", slide_count=8)
+    await state.set_state(PresentationForm.template_selection)
+    cb = FakeCallbackQuery(data="tpl_auto")
+    await create_pres.process_template_selection(cb, state)
+    assert (await state.get_data())["template_id"]
     assert await state.get_state() == PresentationForm.confirmation
 
 
@@ -514,7 +538,7 @@ async def test_picker_falls_back_when_telegram_rejects_the_webapp_url(monkeypatc
     from aiogram.exceptions import TelegramBadRequest
     monkeypatch.setattr(create_pres.settings, "WEBAPP_URL", "https://bot.slidelab.uz/webapp/")
     monkeypatch.setattr(create_pres, "_webapp_disabled", False)
-    message = _message("🎨 Presentation yaratish")
+    message = _message("🖼 Shablonlar")
     sent = []
 
     async def answer_photo(photo, caption=None, reply_markup=None, parse_mode=None):
@@ -524,6 +548,6 @@ async def test_picker_falls_back_when_telegram_rejects_the_webapp_url(monkeypatc
         sent.append(reply_markup)
 
     message.answer_photo = answer_photo
-    await create_pres.start_pres_wizard(message, FakeFSMContext())
+    await create_pres.start_with_templates(message, FakeFSMContext())
     assert len(sent) == 1 and create_pres.webapp_url() == ""
     monkeypatch.setattr(create_pres, "_webapp_disabled", False)
