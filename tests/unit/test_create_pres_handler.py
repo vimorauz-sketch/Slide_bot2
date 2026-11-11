@@ -566,3 +566,28 @@ async def test_design_step_bottom_button_opens_the_gallery(monkeypatch, patched_
     buttons = [b for row in kb.keyboard for b in row]
     assert [b.text for b in buttons] == ["🎨 Galereya"]          # no «❌ Bekor qilish» here
     assert buttons[0].web_app.url.startswith("https://bot.slidelab.uz/webapp/")
+
+
+@pytest.mark.asyncio
+async def test_the_presentation_questions_show_no_cancel_button(patched_handlers_db):
+    """Cancelling is on the summary card (and /cancel): the questions themselves carry no «❌ Bekor qilish»."""
+    from bot.keyboards.reply import CANCEL_TEXT
+    state = FakeFSMContext()
+    m0 = _message("🎨 Presentation yaratish")
+    await create_pres.start_pres_wizard(m0, state)
+    m1 = _message("Fotosintez")
+    await create_pres.process_topic(m1, state)
+    m2 = _message("10")
+    await create_pres.process_slide_count(m2, state)
+    for m in (m0, m1, m2):
+        for call in m.calls:
+            kb = call.get("reply_markup")
+            for row in (getattr(kb, "keyboard", None) or []):
+                assert CANCEL_TEXT not in [b.text for b in row]
+    state2 = await _extras_state()
+    await state2.set_state(PresentationForm.confirmation)
+    for key in ("author_name", "subject", "level", "date", "institution"):
+        cb = FakeCallbackQuery(data=f"px_f:{key}")
+        await create_pres.extras_field(cb, state2)
+        kb = cb.message.calls_for("answer")[-1]["reply_markup"]
+        assert CANCEL_TEXT not in [b.text for row in kb.keyboard for b in row]

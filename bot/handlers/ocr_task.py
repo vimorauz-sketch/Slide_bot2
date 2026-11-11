@@ -9,7 +9,7 @@ from database import repository
 from bot.states.forms import PresentationForm
 from bot.utils import escape_html
 from services import ai_service
-from bot.keyboards.reply import get_cancel_keyboard, CANCEL_TEXTS
+from bot.keyboards.reply import CANCEL_TEXTS
 from bot.handlers.create_pres import TOPIC_PROMPT, _next_step
 
 logger = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ async def handle_ocr_task_photo(message: Message, state: FSMContext):
         # nothing reliable was read: never invent a topic, ask the user instead
         await state.set_state(PresentationForm.topic)
         await message.answer("⚠️ Rasmdan topshiriqni o‘qib bo‘lmadi (rasm xira yoki AI vaqtincha ishlamayapti).\n\n"
-                             + TOPIC_PROMPT, parse_mode="HTML", reply_markup=get_cancel_keyboard())
+                             + TOPIC_PROMPT, parse_mode="HTML")
         return
 
     async with AsyncSessionLocal() as session:

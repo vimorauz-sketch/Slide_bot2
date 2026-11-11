@@ -21,7 +21,7 @@ from bot.keyboards.inline import (
 from services.payment.orders import payment_mode
 from typing import Optional
 from bot.keyboards.reply import (
-    get_level_keyboard, get_course_keyboard, get_cancel_keyboard, get_gallery_keyboard,
+    get_level_keyboard, get_course_keyboard, get_gallery_keyboard,
     get_skip_keyboard, get_main_menu_keyboard, SKIP_TEXTS, get_subject_keyboard, get_slide_count_keyboard,
     get_date_keyboard, class_options, YES_TEXT, NO_TEXT
 )
@@ -377,7 +377,8 @@ async def process_custom_design_prompt(message: Message, state: FSMContext):
 # summary; the AI plan is optional too («📋 Avval rejani ko‘rish»). Any step can come first (a template
 # picked in the Mini App or a deep link starts the wizard): _next_step asks only what is still missing.
 TOPIC_PROMPT = ("📌 <b>Taqdimot mavzusini yozing:</b>\n\n(Masalan: <i>Fotosintez jarayoni va uning ahamiyati</i>)\n\n"
-                "📸 <i>Yoki o‘qituvchi bergan topshiriq rasmini yuboring — mavzu va talablarni o‘zim o‘qib olaman.</i>")
+                "📸 <i>Yoki o‘qituvchi bergan topshiriq rasmini yuboring — mavzu va talablarni o‘zim o‘qib olaman.</i>\n"
+                "<i>To‘xtatish kerak bo‘lsa — /cancel</i>")
 SUMMARY_NOTE_MAX = 160   # long wishes are shortened in the summary (a photo caption holds 1024 characters)
 DEFAULT_LANGUAGE = "uz"
 
@@ -452,7 +453,7 @@ async def _next_step(out, state: FSMContext, user_id: int, note: str = "", remov
     head = f"{note}\n\n" if note else ""
     if not data.get("topic"):
         await state.set_state(PresentationForm.topic)
-        await out.answer(head + TOPIC_PROMPT, parse_mode="HTML", reply_markup=get_cancel_keyboard())
+        await out.answer(head + TOPIC_PROMPT, parse_mode="HTML")   # no extra buttons: just type the topic
     elif not data.get("slide_count"):
         await _ask_slides(out, state, user_id, head)
     elif not data.get("template_id"):
@@ -480,7 +481,7 @@ async def _ask_slides(out, state: FSMContext, user_id: int, head: str = "") -> N
         f"Narxi: 1 slayd = {texts.som(price_per_slide)}\n\n"
         f"{free_line}"
         f"<i>Tugmani bosing yoki sonini yozing (masalan: 10):</i>",
-        parse_mode="HTML", reply_markup=get_slide_count_keyboard(min_slides, max_slides)
+        parse_mode="HTML", reply_markup=get_slide_count_keyboard(min_slides, max_slides, cancel=False)
     )
 
 
@@ -514,7 +515,7 @@ async def _send_picker(out, step: bool = False) -> None:
             await out.answer("👆 Dizaynni yuqoridan tanlang yoki pastdagi «🎨 Galereya»ni oching.",
                              reply_markup=get_gallery_keyboard(url))
         else:
-            await out.answer("👆 Dizaynni yuqoridagi tugmalardan tanlang.", reply_markup=get_cancel_keyboard())
+            await out.answer("👆 Dizaynni yuqoridagi tugmalardan tanlang.", reply_markup=ReplyKeyboardRemove())
 
 
 def _template_label(data: dict) -> str:
@@ -699,16 +700,16 @@ async def extras_field(callback: CallbackQuery, state: FSMContext):
     await state.set_state(_FIELD_STATES[key])
     prompt = EXTRA_FIELDS[key][1]
     if key == "subject":
-        markup = get_subject_keyboard()
+        markup = get_subject_keyboard(cancel=False)
     elif key == "level":
-        markup = get_level_keyboard()
+        markup = get_level_keyboard(cancel=False)
     elif key == "date":
         today, year = _today()
-        markup = get_date_keyboard(today, year)
+        markup = get_date_keyboard(today, year, cancel=False)
     elif key == "topic":
-        markup = get_cancel_keyboard()
+        markup = ReplyKeyboardRemove()
     else:
-        markup = get_skip_keyboard()
+        markup = get_skip_keyboard(cancel=False)
     if key not in ("topic", "subject") and "O‘tkazib" not in prompt:
         prompt += "\n\n<i>«⏭ O‘tkazib yuborish» — bo‘sh qoladi.</i>"
     await msg.answer(prompt, parse_mode="HTML", reply_markup=markup)
@@ -790,7 +791,7 @@ async def process_level(message: Message, state: FSMContext):
     await state.set_state(PresentationForm.course)
     school = "sinf" in class_options(level_text)[0]
     await message.answer("🎓 <b>Nechanchi sinfda o‘qiysiz?</b>" if school else "🎓 <b>Qaysi kursda o‘qiysiz?</b>",
-                         reply_markup=get_course_keyboard(level_text), parse_mode="HTML")
+                         reply_markup=get_course_keyboard(level_text, cancel=False), parse_mode="HTML")
 
 
 @router.message(PresentationForm.course, F.text)

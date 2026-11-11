@@ -43,20 +43,26 @@ def _kb(rows, placeholder: str = "") -> ReplyKeyboardMarkup:
                                input_field_placeholder=placeholder[:64] or None)
 
 
-def get_subject_keyboard() -> ReplyKeyboardMarkup:
+def _cancel_row(cancel: bool):
+    """The «❌ Bekor qilish» row. The presentation wizard leaves it out (cancelling is on the summary card
+    and /cancel); the referat wizard keeps it."""
+    return [[KeyboardButton(text=CANCEL_TEXT)]] if cancel else []
+
+
+def get_subject_keyboard(cancel: bool = True) -> ReplyKeyboardMarkup:
     """Popular subjects as buttons; any other subject can simply be typed."""
-    return _kb(_rows(SUBJECTS, 3) + [[KeyboardButton(text=CANCEL_TEXT)]], "Yoki fan nomini yozing…")
+    return _kb(_rows(SUBJECTS, 3) + _cancel_row(cancel), "Yoki fan nomini yozing…")
 
 
-def get_slide_count_keyboard(min_slides: int = 5, max_slides: int = 30) -> ReplyKeyboardMarkup:
+def get_slide_count_keyboard(min_slides: int = 5, max_slides: int = 30, cancel: bool = True) -> ReplyKeyboardMarkup:
     counts = [n for n in (5, 7, 8, 10, 12, 15, 20, 25, 30) if min_slides <= n <= max_slides]
     if not counts:
         counts = [min_slides]
-    return _kb(_rows([str(n) for n in counts], 4) + [[KeyboardButton(text=CANCEL_TEXT)]], "Yoki sonini yozing…")
+    return _kb(_rows([str(n) for n in counts], 4) + _cancel_row(cancel), "Yoki sonini yozing…")
 
 
-def get_level_keyboard() -> ReplyKeyboardMarkup:
-    return _kb(_rows(LEVELS[:4], 2) + [[KeyboardButton(text=LEVELS[4])], [KeyboardButton(text=CANCEL_TEXT)]])
+def get_level_keyboard(cancel: bool = True) -> ReplyKeyboardMarkup:
+    return _kb(_rows(LEVELS[:4], 2) + [[KeyboardButton(text=LEVELS[4])]] + _cancel_row(cancel))
 
 
 def class_options(level: str):
@@ -71,14 +77,14 @@ def class_options(level: str):
     return []
 
 
-def get_course_keyboard(level: str = "Universitet") -> ReplyKeyboardMarkup:
+def get_course_keyboard(level: str = "Universitet", cancel: bool = True) -> ReplyKeyboardMarkup:
     opts = class_options(level) or [f"{i}-kurs" for i in range(1, 5)]
-    return _kb(_rows(opts, 4) + [[KeyboardButton(text=SKIP_TEXT)], [KeyboardButton(text=CANCEL_TEXT)]])
+    return _kb(_rows(opts, 4) + [[KeyboardButton(text=SKIP_TEXT)]] + _cancel_row(cancel))
 
 
-def get_date_keyboard(today: str, year: str) -> ReplyKeyboardMarkup:
+def get_date_keyboard(today: str, year: str, cancel: bool = True) -> ReplyKeyboardMarkup:
     return _kb([[KeyboardButton(text=f"📅 Bugun: {today}"), KeyboardButton(text=f"📅 {year}-yil")],
-                [KeyboardButton(text=SKIP_TEXT)], [KeyboardButton(text=CANCEL_TEXT)]], "Yoki sanani yozing…")
+                [KeyboardButton(text=SKIP_TEXT)]] + _cancel_row(cancel), "Yoki sanani yozing…")
 
 
 def get_yes_no_keyboard() -> ReplyKeyboardMarkup:
@@ -99,12 +105,9 @@ def get_cancel_keyboard() -> ReplyKeyboardMarkup:
     )
 
 
-def get_skip_keyboard() -> ReplyKeyboardMarkup:
+def get_skip_keyboard(cancel: bool = True) -> ReplyKeyboardMarkup:
     """For optional answers (institution, teacher name)."""
-    return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text=SKIP_TEXT)], [KeyboardButton(text=CANCEL_TEXT)]],
-        resize_keyboard=True
-    )
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=SKIP_TEXT)]] + _cancel_row(cancel), resize_keyboard=True)
 
 
 def get_webapp_keyboard(webapp_url: str) -> ReplyKeyboardMarkup:
