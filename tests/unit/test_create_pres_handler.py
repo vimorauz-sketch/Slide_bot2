@@ -551,3 +551,18 @@ async def test_picker_falls_back_when_telegram_rejects_the_webapp_url(monkeypatc
     await create_pres.start_with_templates(message, FakeFSMContext())
     assert len(sent) == 1 and create_pres.webapp_url() == ""
     monkeypatch.setattr(create_pres, "_webapp_disabled", False)
+
+
+@pytest.mark.asyncio
+async def test_design_step_bottom_button_opens_the_gallery(monkeypatch, patched_handlers_db):
+    monkeypatch.setattr(create_pres.settings, "WEBAPP_URL", "https://bot.slidelab.uz/webapp/")
+    monkeypatch.setattr(create_pres, "_webapp_disabled", False)
+    state = FakeFSMContext()
+    await state.update_data(topic="Fotosintez")
+    message = _message("10")
+    await create_pres.process_slide_count(message, state)
+    assert await state.get_state() == PresentationForm.template_selection
+    kb = message.calls_for("answer")[-1]["reply_markup"]
+    buttons = [b for row in kb.keyboard for b in row]
+    assert [b.text for b in buttons] == ["🎨 Galereya"]          # no «❌ Bekor qilish» here
+    assert buttons[0].web_app.url.startswith("https://bot.slidelab.uz/webapp/")

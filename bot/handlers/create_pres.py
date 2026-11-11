@@ -21,7 +21,7 @@ from bot.keyboards.inline import (
 from services.payment.orders import payment_mode
 from typing import Optional
 from bot.keyboards.reply import (
-    get_level_keyboard, get_course_keyboard, get_cancel_keyboard,
+    get_level_keyboard, get_course_keyboard, get_cancel_keyboard, get_gallery_keyboard,
     get_skip_keyboard, get_main_menu_keyboard, SKIP_TEXTS, get_subject_keyboard, get_slide_count_keyboard,
     get_date_keyboard, class_options, YES_TEXT, NO_TEXT
 )
@@ -509,8 +509,12 @@ async def _send_picker(out, step: bool = False) -> None:
         _webapp_disabled = True
         url = ""
         await send("")
-    if step:  # the slide count buttons go away; cancelling stays possible
-        await out.answer("👆 Dizaynni yuqoridagi tugmalardan tanlang.", reply_markup=get_cancel_keyboard())
+    if step:  # the slide count buttons go away: the bottom button opens the gallery
+        if url:
+            await out.answer("👆 Dizaynni yuqoridan tanlang yoki pastdagi «🎨 Galereya»ni oching.",
+                             reply_markup=get_gallery_keyboard(url))
+        else:
+            await out.answer("👆 Dizaynni yuqoridagi tugmalardan tanlang.", reply_markup=get_cancel_keyboard())
 
 
 def _template_label(data: dict) -> str:
