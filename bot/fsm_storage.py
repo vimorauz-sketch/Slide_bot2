@@ -17,7 +17,7 @@ from typing import Any, Dict, Mapping, Optional
 
 from aiogram.fsm.state import State
 from aiogram.fsm.storage.base import BaseStorage, StateType, StorageKey
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 
 from database.connection import AsyncSessionLocal
 from database.models import FsmState
@@ -105,4 +105,30 @@ async def cleanup_old() -> int:
         return 0
 
 
-__all__ = ["DbStorage", "cleanup_old"]
+
+
+# States in which the bot itself is working (writing / drawing). After a restart that work is gone, so a
+# user left in one of them would hear «tayyorlanmoqda» forever and could not even cancel.
+WORKING_STATES = ("PresentationForm:generating", "PresentationForm:outline_wait", "ReferatForm:generating")
+
+
+async def reset_interrupted() -> list:
+    """Called at start: frees every user whose order was being made when the bot stopped.
+    Returns their chat ids (to tell them to start again)."""
+    chats = []
+    try:
+        async with AsyncSessionLocal() as s:
+            keys = (await s.execute(select(FsmState.key).where(FsmState.state.in_(WORKING_STATES)))).scalars().all()
+            if keys:
+                await s.execute(delete(FsmState).where(FsmState.key.in_(keys)))
+                await s.commit()
+        for k in keys:
+            parts = k.split(":")
+            if len(parts) > 1 and parts[1].lstrip("-").isdigit():
+                chats.append(int(parts[1]))
+    except Exception:  # noqa: BLE001
+        logger.exception("interrupted orders could not be reset")
+    return chats
+
+
+__all__ = ["DbStorage", "cleanup_old", "reset_interrupted"]

@@ -196,11 +196,23 @@ tests/
   `.gitignore`) — never commit real secrets.
 - Only **one** process should poll with a given `BOT_TOKEN` at a time (Telegram rejects
   concurrent `getUpdates` polling from the same token).
-- `storage/` (orders, `image_cache/`, `art_cache/`) grows unboundedly today (generated `.pptx`/`.pdf`/preview files are never cleaned
-  up) — plan a retention/cleanup job before long-term production use.
-- `slidelab.db` is a single SQLite file; back it up on a schedule appropriate for your traffic,
-  and be aware SQLite serializes writes (fine for small/medium bot traffic, a real bottleneck
-  under heavy concurrent write load).
+- `storage/`: order folders older than `STORAGE_KEEP_DAYS` (default 3) are deleted every 6 hours; their
+  PDF/PPTX are rebuilt from the database when needed.
+- Use PostgreSQL in production (see "Database on Railway") and turn on its backups.
+- After the test payment set `TEZCHECK_ACCEPT_TEST=false`, or anyone can "pay" with the test provider.
+- Add `PEXELS_API_KEY` (free): the keyless photo sources refuse requests from cloud servers.
+- Errors (level ERROR) are sent to the admins' Telegram; `ADMIN_ALERTS=0` turns that off.
+- A restart in the middle of a build frees the affected users and tells them to start again.
+
+## How an order goes
+
+**Presentation:** topic (or a photo of the assignment) → subject (guessed from the topic, one tap) →
+slide count (buttons with prices) → design (quick pick, gallery Mini App, sections, AI) → summary card
+(«✅ Yaratish»; name, school, teacher, date, language, wishes, fonts and the AI plan are optional).
+**Mini App home** (`/webapp/home/`, «🚀 Nima tayyorlaymiz?»): every product with its price; the ones
+without a generator yet are shown as «Tez orada» (`services/products.py`).
+**Anti-spam:** double taps are ignored, `/start` and menu buttons have a small allowance, repeated
+flooding is banned for longer each time (`bot/middlewares/throttling.py`; the dashboard's «Xavfsizlik»).
 
 ## Payments: TezCheck
 
@@ -276,7 +288,8 @@ Latin-only font for a similar Cyrillic one. Re-download or extend the library wi
 
 `https://<your-domain>/admin` — revenue and statistics, orders (mark paid, resend files, cancel, CSV),
 users (block, balance, message), TezCheck payments, broadcasts, settings (prices, limits, AI model,
-maintenance mode, admins) and system status. Sign in with the one-time link from `/admin` in the bot,
+maintenance mode, admins), security, system status, the **AI studio** (new slide / referat templates from
+a description, test decks, promo texts) and the template manager (hide, usage). Sign in with the one-time link from `/admin` in the bot,
 or with `ADMIN_LOGIN` / `ADMIN_PASSWORD`.
 
 ## Database on Railway

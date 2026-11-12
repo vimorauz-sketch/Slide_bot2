@@ -255,3 +255,46 @@ def test_mini_app_data_expires_after_two_hours():
     from services.webapp_auth import validate_init_data
     assert validate_init_data(_init_data("123:abc", 3600), "123:abc")
     assert validate_init_data(_init_data("123:abc", 3 * 3600), "123:abc") is None
+
+
+# ---------------------------------------------------------------------- restart in the middle of a build
+async def test_users_caught_mid_build_are_freed_at_start(patched_handlers_db, monkeypatch):
+    from bot import fsm_storage
+    monkeypatch.setattr(fsm_storage, "AsyncSessionLocal", patched_handlers_db)
+    st = fsm_storage.DbStorage()
+    busy, busy2, calm = (StorageKey(bot_id=1, chat_id=c, user_id=c) for c in (11, 12, 13))
+    await st.set_state(busy, "PresentationForm:generating")
+    await st.set_state(busy2, "ReferatForm:generating")
+    await st.set_state(calm, "PresentationForm:topic")
+    await st.update_data(calm, {"topic": "Fotosintez"})
+
+    assert sorted(await fsm_storage.reset_interrupted()) == [11, 12]
+    after = fsm_storage.DbStorage()                       # the new process
+    assert await after.get_state(busy) is None and await after.get_state(busy2) is None
+    assert await after.get_state(calm) == "PresentationForm:topic"     # half-filled orders are kept
+    assert await fsm_storage.reset_interrupted() == []
+
+
+async def test_errors_reach_the_admins_once(monkeypatch):
+    import logging
+    from services import admin_alerts, runtime
+    from tests.fixtures.telegram_fakes import FakeBot
+    monkeypatch.setattr(runtime, "admin_ids", lambda: {900})
+    monkeypatch.setattr(admin_alerts, "_seen", {})
+    monkeypatch.setattr(admin_alerts, "_sent_times", [])
+    bot = FakeBot()
+    task = admin_alerts.install(bot)
+    log = logging.getLogger("services.payment.orders")
+    try:
+        for _ in range(3):
+            log.error("order %s: paid %s < price %s — not accepted", "abc", 100, 3500)
+        log.error("Failed to fetch updates - Conflict: terminated by other getUpdates request")   # noise
+        log.warning("only a warning")
+        await asyncio.sleep(0.05)
+    finally:
+        task.cancel()
+        logging.getLogger().handlers[:] = [h for h in logging.getLogger().handlers
+                                           if not isinstance(h, admin_alerts._Handler)]
+        monkeypatch.setattr(admin_alerts, "_queue", None)
+    assert len(bot.sent_messages) == 1 and bot.sent_messages[0]["chat_id"] == 900
+    assert "not accepted" in bot.sent_messages[0]["text"]

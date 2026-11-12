@@ -27,8 +27,9 @@ async def main():
     await runtime.load()
     from bot.admin_web import auth as admin_auth
     await admin_auth.init_secret()   # the dashboard's session key (never derived from BOT_TOKEN)
-    from bot.fsm_storage import DbStorage, cleanup_old
+    from bot.fsm_storage import DbStorage, cleanup_old, reset_interrupted
     await cleanup_old()
+    interrupted = await reset_interrupted()   # orders that were being made when the bot stopped
     from services.payment import tezcheck
     if tezcheck.is_configured():
         logger.info("Payments: TezCheck connected (webhook secret %s, test payments %s)",
@@ -64,6 +65,17 @@ async def main():
     credits.set_bot(bot)  # referral bonus messages
     # wizard state in the database: a restart or redeploy no longer loses half-filled orders
     dp = Dispatcher(storage=DbStorage())
+
+    from services import admin_alerts
+    alerts_task = admin_alerts.install(bot)   # errors go to the admins' Telegram  # noqa: F841 (kept alive)
+    for chat_id in interrupted[:200]:
+        try:
+            await bot.send_message(chat_id, "♻️ Bot yangilandi va buyurtmangizni tayyorlash to‘xtab qoldi.\n\n"
+                                            "Iltimos, qaytadan boshlang: /start — bu bir daqiqa oladi.")
+        except Exception:  # noqa: BLE001 - the user blocked the bot
+            pass
+    if interrupted:
+        logger.warning("%d order(s) were interrupted by the restart; their users were told", len(interrupted))
 
     @dp.errors()
     async def on_error(event: ErrorEvent):
