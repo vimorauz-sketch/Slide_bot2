@@ -98,3 +98,55 @@ def test_a_calm_user_is_forgiven_and_an_admin_can_lift_a_ban():
         assert throttling.noisy_list()[0]["user_id"] == 4
     finally:
         throttling._instances.remove(m)
+
+
+def test_a_double_tap_is_ignored_silently():
+    c = Clock()
+    m = ThrottlingMiddleware(rate=1, burst=12, clock=c)
+    key = ("c", "confirm_pres_temp_order", 7)
+    assert m.allow(1, key=key) is None
+    c.t += 0.3
+    assert m.allow(1, key=key) == "silent"        # the second tap does nothing and says nothing
+    c.t += 0.3
+    assert m.allow(1, key=("c", "px_more", 7)) is None   # another button works at once
+    c.t += 3
+    assert m.allow(1, key=key) is None            # the same button later is a new press
+
+
+def test_hammering_one_button_counts_as_flooding():
+    c = Clock()
+    m = ThrottlingMiddleware(rate=1, burst=12, ban_seconds=300, clock=c)
+    verdicts = []
+    for _ in range(200):
+        verdicts.append(m.allow(2, key=("m", "🎨 Presentation yaratish")))
+        c.t += 0.2
+    assert verdicts[0] is None and set(verdicts[1:3]) == {"silent"}
+    assert "notice" in verdicts and "ban" in verdicts
+    assert sum(v is None for v in verdicts) == 1
+
+
+def test_menu_buttons_have_their_own_small_allowance():
+    c = Clock()
+    m = ThrottlingMiddleware(rate=1, burst=12, clock=c)
+    passed = sum(m.allow(3, key=("m", f"menu{i % 7}"), menu=True) is None for i in range(20))
+    assert passed == 5                             # 5 menu presses at once (12 for ordinary messages)
+    c.t += 15
+    assert m.allow(3, key=("m", "Fotosintez")) is None        # ordinary answers are not limited by it
+    passed = 0
+    for i in range(30):                            # then a menu button every 6 s for three minutes
+        c.t += 6
+        passed += m.allow(3, key=("m", f"menu{i % 7}"), menu=True) is None
+    assert 14 <= passed <= 17                      # about one per 12 seconds
+    assert m.buckets[3].banned_until <= c.t       # slow pressing is limited, never banned
+
+
+def test_every_new_ban_is_longer():
+    c = Clock()
+    m = ThrottlingMiddleware(rate=1, burst=12, ban_seconds=300, clock=c)
+    lengths = []
+    for _ in range(3):
+        while m.buckets.get(4) is None or m.buckets[4].banned_until <= c.t:
+            m.allow(4)
+        lengths.append(round(m.buckets[4].banned_until - c.t))
+        c.t = m.buckets[4].banned_until + 1
+    assert lengths == [300, 600, 1200]

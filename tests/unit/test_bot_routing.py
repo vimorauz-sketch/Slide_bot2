@@ -198,7 +198,7 @@ async def test_start_flood_is_throttled_by_the_middleware(patched_handlers_db):
     bot = Bot(TOKEN, session=session)
     for _ in range(500):
         await dp.feed_update(bot, _msg("/start"))
-    assert len(handled) == 4
+    assert len(handled) == 1          # the same /start again and again is one tap repeated
     notices = [t for t in session.texts() if "Juda" in t or "⛔" in t]
     assert 1 <= len(notices) <= 3
 
