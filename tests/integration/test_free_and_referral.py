@@ -175,10 +175,14 @@ async def test_wizard_tells_about_the_free_presentation_and_its_size(patched_han
     await _user(patched_handlers_db, 70)
     state = FakeFSMContext()
     await state.set_state(PresentationForm.topic)
-    msg = FakeMessage(text="Fotosintez", from_user=FakeUser(id=70))
-    await create_pres.process_topic(msg, state)
-    text = msg.calls_for("answer")[-1]["text"]
-    assert "Birinchi taqdimotingiz bepul" in text and "maksimum: 12" in text
+    await create_pres.process_topic(FakeMessage(text="Fotosintez", from_user=FakeUser(id=70)), state)
+    msg = FakeMessage(text="Biologiya", from_user=FakeUser(id=70))
+    await create_pres.process_subject(msg, state)           # the subject typed: then the slide count
+    sent = msg.calls_for("answer")[-1]
+    text = sent["text"]
+    assert "Birinchi taqdimotingiz bepul" in text and "5–12" in text
+    labels = [b.text for row in sent["reply_markup"].inline_keyboard for b in row]
+    assert "10 ta · 🎁 bepul" in labels and not any(lbl.startswith("15 ta") for lbl in labels)
     big = FakeMessage(text="20", from_user=FakeUser(id=70))
     await create_pres.process_slide_count(big, state)
     assert "12 slaydgacha" in big.calls_for("answer")[-1]["text"] or "Maksimum" in big.calls_for("answer")[-1]["text"]

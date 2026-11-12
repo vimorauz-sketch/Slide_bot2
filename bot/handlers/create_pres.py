@@ -21,8 +21,8 @@ from bot.keyboards.inline import (
 from services.payment.orders import payment_mode
 from typing import Optional
 from bot.keyboards.reply import (
-    get_level_keyboard, get_course_keyboard, get_cancel_keyboard, get_gallery_keyboard,
-    get_skip_keyboard, get_main_menu_keyboard, SKIP_TEXTS, get_subject_keyboard, get_slide_count_keyboard,
+    get_level_keyboard, get_course_keyboard, get_gallery_keyboard,
+    get_skip_keyboard, get_main_menu_keyboard, SKIP_TEXTS, get_subject_keyboard,
     get_date_keyboard, class_options, YES_TEXT, NO_TEXT
 )
 from services import ai_service
@@ -80,6 +80,29 @@ def webapp_url() -> str:
         logger.warning("WEBAPP_URL=%r ishlatilmaydi: Mini App uchun haqiqiy https:// manzil kerak (masalan https://bot.sizning-domen.uz/webapp/).", url)
         return ""
     return url if url.endswith("/") else url + "/"
+
+
+def home_url() -> str:
+    """The «Nima tayyorlaymiz?» Mini App home (webapp/home/), or "" without a usable WEBAPP_URL."""
+    base = webapp_url()
+    return base + "home/" if base else ""
+
+
+async def start_product(bot, user_id: int, state: FSMContext, product: str) -> bool:
+    """Opens a product's wizard in the chat (the Mini App home, its keyboard button and inline button)."""
+    out = _ChatOut(bot, user_id)
+    if product == "pres":
+        cur = await state.get_state()
+        if getattr(cur, "state", cur) == PresentationForm.generating.state:
+            await out.answer("⏳ Taqdimot allaqachon tayyorlanmoqda — tayyor bo‘lgach yuboriladi.")
+            return True
+        await _open_wizard(out, user_id, state)
+        return True
+    if product == "referat":
+        from bot.handlers.referat import open_referat
+        await open_referat(out, user_id, state)
+        return True
+    return False
 
 
 async def webapp_link(bot) -> str:
@@ -344,6 +367,10 @@ async def process_webapp_choice(message: Message, state: FSMContext):
     except (ValueError, AttributeError):
         style = {}
         payload, key = {}, message.web_app_data.data
+    if isinstance(payload, dict) and payload.get("action") == "start":  # the «Nima tayyorlaymiz?» home
+        if not await start_product(message.bot, message.chat.id, state, str(payload.get("product", ""))):
+            await message.answer("🛠 Bu bo‘lim tez orada ochiladi. Hozircha taqdimot yoki referat tayyorlay olaman.")
+        return
     if isinstance(payload, dict) and payload.get("referat"):  # the referat templates Mini App
         from bot.handlers.referat import apply_template_choice as referat_choice
         rstyle = {k: payload.get(k) for k in ("font_title", "font_body", "accent") if payload.get(k)}
@@ -377,7 +404,9 @@ async def process_custom_design_prompt(message: Message, state: FSMContext):
 # summary; the AI plan is optional too («📋 Avval rejani ko‘rish»). Any step can come first (a template
 # picked in the Mini App or a deep link starts the wizard): _next_step asks only what is still missing.
 TOPIC_PROMPT = ("📌 <b>Taqdimot mavzusini yozing:</b>\n\n(Masalan: <i>Fotosintez jarayoni va uning ahamiyati</i>)\n\n"
-                "📸 <i>Yoki o‘qituvchi bergan topshiriq rasmini yuboring — mavzu va talablarni o‘zim o‘qib olaman.</i>")
+                "📸 <i>Yoki o‘qituvchi bergan topshiriq rasmini yuboring — mavzu va talablarni o‘zim o‘qib olaman.</i>\n"
+                "<i>To‘xtatish kerak bo‘lsa — /cancel</i>")
+MIN_TOPIC_LETTERS = 5
 SUMMARY_NOTE_MAX = 160   # long wishes are shortened in the summary (a photo caption holds 1024 characters)
 DEFAULT_LANGUAGE = "uz"
 
@@ -447,12 +476,14 @@ async def _prefetch(user_id: int, state: FSMContext) -> None:
 
 
 async def _next_step(out, state: FSMContext, user_id: int, note: str = "", remove_keyboard: bool = False) -> None:
-    """Asks the first thing still missing (topic, slide count, template), else shows the summary."""
+    """Asks the first thing still missing (topic, subject, slide count, template), else shows the summary."""
     data = await state.get_data()
     head = f"{note}\n\n" if note else ""
     if not data.get("topic"):
         await state.set_state(PresentationForm.topic)
-        await out.answer(head + TOPIC_PROMPT, parse_mode="HTML", reply_markup=get_cancel_keyboard())
+        await out.answer(head + TOPIC_PROMPT, parse_mode="HTML")   # no extra buttons: just type the topic
+    elif "subject" not in data:            # "" = the user skipped it
+        await _ask_subject(out, state, head)
     elif not data.get("slide_count"):
         await _ask_slides(out, state, user_id, head)
     elif not data.get("template_id"):
@@ -464,24 +495,61 @@ async def _next_step(out, state: FSMContext, user_id: int, note: str = "", remov
         await _show_summary(out, state, user_id, note=note, remove_keyboard=remove_keyboard)
 
 
+SLIDE_CHOICES = (5, 7, 10, 12, 15, 18, 20, 25, 30)
+
+
+def _back_cancel_row(back: str):
+    from aiogram.types import InlineKeyboardButton
+    return [InlineKeyboardButton(text="⬅️ Orqaga", callback_data=f"px_back:{back}"),
+            InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_pres")]
+
+
+async def _ask_subject(out, state: FSMContext, head: str = "") -> None:
+    """«📚 Bu qaysi fan bo‘yicha?» — the subject guessed from the topic is marked ✅; one tap confirms it."""
+    from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+    from services import subjects
+    data = await state.get_data()
+    guessed = subjects.guess(data.get("topic", ""))
+    names = ([guessed] if guessed else []) + [n for n in subjects.NAMES if n != guessed]
+    btns = [InlineKeyboardButton(text=("✅ " if n == guessed else "") + n,
+                                 callback_data=f"px_s:{subjects.NAMES.index(n)}") for n in names]
+    rows = [btns[i:i + 2] for i in range(0, len(btns), 2)]
+    rows.append([InlineKeyboardButton(text="⬅️ Mavzuni o‘zgartirish", callback_data="px_back:topic"),
+                 InlineKeyboardButton(text="⏭ Fan muhim emas", callback_data="px_s:-")])
+    hint = (f"<i>Mavzudan taxminan «{escape_html(guessed)}» aniqlandi — tasdiqlang yoki boshqasini tanlang.</i>\n"
+            if guessed else "")
+    await state.set_state(PresentationForm.subject)
+    await out.answer(f"{head}📚 <b>Bu qaysi fan bo‘yicha?</b>\n\n{hint}"
+                     "<i>Fan tanlansa — matn shu sohaga aniqroq moslanadi. Ro‘yxatda yo‘q bo‘lsa, nomini yozing.</i>",
+                     parse_mode="HTML", reply_markup=InlineKeyboardMarkup(inline_keyboard=rows))
+
+
 async def _ask_slides(out, state: FSMContext, user_id: int, head: str = "") -> None:
+    """«📊 Nechta slayd bo‘lsin?» — buttons with the price of each size (free sizes say so)."""
+    from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
     await state.set_state(PresentationForm.slide_count)
     min_slides, max_slides, price_per_slide = await _limits()
     free_line = ""
     have = await credits.available(user_id)
+    free_max = credits.max_slides()
+    free_now = have.total > 0 and not await credits.daily_cap_reached()
     if have.total > 0:
-        free_max = credits.max_slides()
         if await _free_only(user_id) and free_max > 0:
             max_slides = max(min_slides, min(max_slides, free_max))
         free_line = texts.free_slide_hint(free_max, not await _free_only(user_id), trial=have.trial) + "\n\n"
+    counts = [n for n in SLIDE_CHOICES if min_slides <= n <= max_slides] or [min_slides]
+    btns = []
+    for n in counts:
+        free = free_now and credits.covers(n)
+        price = "🎁 bepul" if free else f"{n * price_per_slide:,}".replace(",", " ") + " so‘m"
+        btns.append(InlineKeyboardButton(text=f"{n} ta · {price}", callback_data=f"px_n:{n}"))
+    rows = [btns[i:i + 2] for i in range(0, len(btns), 2)]
+    rows.append(_back_cancel_row("subject"))
     await out.answer(
-        f"{head}📑 <b>Nechta slayd bo‘lishini xohlaysiz?</b>\n\n"
-        f"Minimum: {min_slides}, maksimum: {max_slides} slayd\n"
-        f"Narxi: 1 slayd = {texts.som(price_per_slide)}\n\n"
+        f"{head}📊 <b>Nechta slayd bo‘lsin?</b>\n\n"
         f"{free_line}"
-        f"<i>Tugmani bosing yoki sonini yozing (masalan: 10):</i>",
-        parse_mode="HTML", reply_markup=get_slide_count_keyboard(min_slides, max_slides)
-    )
+        f"<i>Tugmani bosing yoki sonini yozing ({min_slides}–{max_slides}).</i>",
+        parse_mode="HTML", reply_markup=InlineKeyboardMarkup(inline_keyboard=rows))
 
 
 async def _send_picker(out, step: bool = False) -> None:
@@ -514,7 +582,7 @@ async def _send_picker(out, step: bool = False) -> None:
             await out.answer("👆 Dizaynni yuqoridan tanlang yoki pastdagi «🎨 Galereya»ni oching.",
                              reply_markup=get_gallery_keyboard(url))
         else:
-            await out.answer("👆 Dizaynni yuqoridagi tugmalardan tanlang.", reply_markup=get_cancel_keyboard())
+            await out.answer("👆 Dizaynni yuqoridagi tugmalardan tanlang.", reply_markup=ReplyKeyboardRemove())
 
 
 def _template_label(data: dict) -> str:
@@ -627,13 +695,15 @@ async def _show_extras(out, state: FSMContext, callback: Optional[CallbackQuery]
     await out.answer(text, reply_markup=markup, parse_mode="HTML")
 
 
-async def _after_field(message: Message, state: FSMContext) -> None:
-    """After an answer: back to «⚙️ Qo‘shimcha sozlamalar» when the field was opened there, else the next step."""
+async def _after_field(message: Message, state: FSMContext, user_id: Optional[int] = None,
+                       remove_keyboard: bool = True) -> None:
+    """After an answer: back to «⚙️ Qo‘shimcha sozlamalar» when the field was opened there, else the next step.
+    remove_keyboard: the answer came from reply buttons that must go away (not after an inline button)."""
     data = await state.get_data()
     if data.get("_return") == "more":
-        await _show_extras(message, state, remove_keyboard=True)
+        await _show_extras(message, state, remove_keyboard=remove_keyboard)
     else:
-        await _next_step(message, state, message.from_user.id, remove_keyboard=True)
+        await _next_step(message, state, user_id or message.from_user.id, remove_keyboard=remove_keyboard)
 
 
 def _in_wizard_state(cur) -> bool:
@@ -696,22 +766,101 @@ async def extras_field(callback: CallbackQuery, state: FSMContext):
     if key == "slide_count":
         await _ask_slides(msg, state, uid)
         return
+    if key == "subject":
+        await _ask_subject(msg, state)
+        return
     await state.set_state(_FIELD_STATES[key])
     prompt = EXTRA_FIELDS[key][1]
     if key == "subject":
-        markup = get_subject_keyboard()
+        markup = get_subject_keyboard(cancel=False)
     elif key == "level":
-        markup = get_level_keyboard()
+        markup = get_level_keyboard(cancel=False)
     elif key == "date":
         today, year = _today()
-        markup = get_date_keyboard(today, year)
+        markup = get_date_keyboard(today, year, cancel=False)
     elif key == "topic":
-        markup = get_cancel_keyboard()
+        markup = ReplyKeyboardRemove()
     else:
-        markup = get_skip_keyboard()
+        markup = get_skip_keyboard(cancel=False)
     if key not in ("topic", "subject") and "O‘tkazib" not in prompt:
         prompt += "\n\n<i>«⏭ O‘tkazib yuborish» — bo‘sh qoladi.</i>"
     await msg.answer(prompt, parse_mode="HTML", reply_markup=markup)
+
+
+async def _drop_keys(state: FSMContext, *keys: str) -> None:
+    data = await state.get_data()
+    for k in keys:
+        data.pop(k, None)
+    await state.set_data(data)
+
+
+async def _close_question(callback: CallbackQuery, answer: str) -> None:
+    """The question message keeps the answer and loses its buttons (no second press on an old question)."""
+    try:
+        await callback.message.edit_text(answer, parse_mode="HTML")
+    except Exception:  # noqa: BLE001 - a photo or an old message: just drop the buttons
+        try:
+            await callback.message.edit_reply_markup(reply_markup=None)
+        except Exception:  # noqa: BLE001
+            pass
+
+
+@router.callback_query(F.data.startswith("px_s:"))
+async def subject_chosen(callback: CallbackQuery, state: FSMContext):
+    from services import subjects
+    code = callback.data.split(":", 1)[1]
+    if not _in_wizard_state(await state.get_state()):
+        await _safe_answer(callback, "Bu savol eskirgan — «🎨 Presentation yaratish» orqali qaytadan boshlang.", show_alert=True)
+        return
+    if code == "-":
+        name = ""
+    else:
+        try:
+            name = subjects.NAMES[int(code)]
+        except (ValueError, IndexError):
+            await _safe_answer(callback)
+            return
+    await _safe_answer(callback, f"✅ {name}" if name else "⏭")
+    await state.update_data(subject=name)
+    await _close_question(callback, f"📚 Fan: <b>{escape_html(name) if name else '—'}</b>")
+    await _after_field(callback.message, state, callback.from_user.id, remove_keyboard=False)
+
+
+@router.callback_query(F.data.startswith("px_n:"))
+async def slide_count_chosen(callback: CallbackQuery, state: FSMContext):
+    if not _in_wizard_state(await state.get_state()):
+        await _safe_answer(callback, "Bu savol eskirgan — «🎨 Presentation yaratish» orqali qaytadan boshlang.", show_alert=True)
+        return
+    try:
+        n = int(callback.data.split(":", 1)[1])
+    except ValueError:
+        await _safe_answer(callback)
+        return
+    error = await _slide_count_error(n, callback.from_user.id)
+    if error:
+        await _safe_answer(callback, error, show_alert=True)
+        return
+    await _safe_answer(callback, f"✅ {n} ta slayd")
+    await _close_question(callback, f"📊 Slaydlar: <b>{n} ta</b>")
+    await _save_slide_count(state, n, callback.from_user.id)
+    await _after_field(callback.message, state, callback.from_user.id, remove_keyboard=False)
+
+
+@router.callback_query(F.data.startswith("px_back:"))
+async def step_back(callback: CallbackQuery, state: FSMContext):
+    """«⬅️ Orqaga»: asks the previous question again (its old answer is forgotten)."""
+    step = callback.data.split(":", 1)[1]
+    if step not in ("topic", "subject") or not _in_wizard_state(await state.get_state()):
+        await _safe_answer(callback)
+        return
+    await _safe_answer(callback)
+    try:
+        await callback.message.delete()
+    except Exception:  # noqa: BLE001
+        pass
+    keys = ("topic", "subject", "slide_count") if step == "topic" else ("subject", "slide_count")
+    await _drop_keys(state, *keys)
+    await _next_step(callback.message, state, callback.from_user.id)
 
 
 @router.callback_query(F.data.startswith("px_l:"))
@@ -730,11 +879,34 @@ async def extras_language(callback: CallbackQuery, state: FSMContext):
 @router.message(PresentationForm.topic, F.text)
 async def process_topic(message: Message, state: FSMContext):
     topic = _clean(message.text)
-    if len(topic) < 3:
-        await message.answer("⚠️ Mavzuni to‘liqroq yozing (masalan: <i>Fotosintez jarayoni</i>).", parse_mode="HTML")
+    if sum(ch.isalpha() for ch in topic) < MIN_TOPIC_LETTERS:
+        await message.answer(f"✏️ <b>Mavzu juda qisqa!</b> Kamida {MIN_TOPIC_LETTERS} harf bo‘lishi kerak.\n\n"
+                             "(Masalan: <i>Fotosintez jarayoni va uning ahamiyati</i>)", parse_mode="HTML")
         return
+    data = await state.get_data()
     await state.update_data(topic=topic)
-    await _after_field(message, state)
+    if data.get("_return") != "more" and data.get("topic") != topic:
+        await _drop_keys(state, "subject")       # a new topic: the subject is guessed again
+    await _after_field(message, state, remove_keyboard=False)
+
+
+async def _slide_count_error(slide_count: int, user_id: int) -> str:
+    min_slides, max_slides, _ = await _limits()
+    if slide_count < min_slides:
+        return f"⚠️ Minimum buyurtma miqdori: {min_slides} ta slayd."
+    if slide_count > max_slides:
+        return f"⚠️ Maksimum buyurtma miqdori: {max_slides} ta slayd."
+    if not credits.covers(slide_count) and await _free_only(user_id):
+        return texts.free_too_big_text(credits.max_slides())
+    return ""
+
+
+async def _save_slide_count(state: FSMContext, slide_count: int, user_id: int) -> None:
+    await state.update_data(slide_count=slide_count)
+    if not (await state.get_data()).get("language"):
+        await state.update_data(language=DEFAULT_LANGUAGE)
+    # topic + slide count are enough to start writing: the text is ready sooner, while the template is chosen
+    await _prefetch(user_id, state)
 
 
 @router.message(PresentationForm.slide_count, F.text)
@@ -743,34 +915,19 @@ async def process_slide_count(message: Message, state: FSMContext):
     if not m:
         await message.answer("⚠️ Iltimos, faqat raqam kiriting (Masalan: 10):")
         return
-
     slide_count = int(m.group(1))
-    min_slides, max_slides, _ = await _limits()
-
-    if slide_count < min_slides:
-        await message.answer(f"⚠️ Minimum buyurtma miqdori: {min_slides} ta slayd. Qayta kiriting:")
+    error = await _slide_count_error(slide_count, message.from_user.id)
+    if error:
+        await message.answer(error + (" Qayta kiriting:" if error.startswith("⚠️") else ""), parse_mode="HTML")
         return
-
-    if slide_count > max_slides:
-        await message.answer(f"⚠️ Maksimum buyurtma miqdori: {max_slides} ta slayd. Qayta kiriting:")
-        return
-
-    if not credits.covers(slide_count) and await _free_only(message.from_user.id):
-        await message.answer(texts.free_too_big_text(credits.max_slides()), parse_mode="HTML")
-        return
-
-    await state.update_data(slide_count=slide_count)
-    if not (await state.get_data()).get("language"):
-        await state.update_data(language=DEFAULT_LANGUAGE)
-    # topic + slide count are enough to start writing: the text is ready sooner, while the template is chosen
-    await _prefetch(message.from_user.id, state)
-    await _after_field(message, state)
+    await _save_slide_count(state, slide_count, message.from_user.id)
+    await _after_field(message, state, remove_keyboard=False)
 
 
 @router.message(PresentationForm.subject, F.text)
 async def process_subject(message: Message, state: FSMContext):
     await state.update_data(subject="" if message.text.strip() in SKIP_TEXTS else _clean(message.text))
-    await _after_field(message, state)
+    await _after_field(message, state, remove_keyboard=(await state.get_data()).get("_return") == "more")
 
 
 @router.message(PresentationForm.author_name, F.text)
@@ -790,7 +947,7 @@ async def process_level(message: Message, state: FSMContext):
     await state.set_state(PresentationForm.course)
     school = "sinf" in class_options(level_text)[0]
     await message.answer("🎓 <b>Nechanchi sinfda o‘qiysiz?</b>" if school else "🎓 <b>Qaysi kursda o‘qiysiz?</b>",
-                         reply_markup=get_course_keyboard(level_text), parse_mode="HTML")
+                         reply_markup=get_course_keyboard(level_text, cancel=False), parse_mode="HTML")
 
 
 @router.message(PresentationForm.course, F.text)

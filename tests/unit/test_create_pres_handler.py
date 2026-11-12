@@ -196,7 +196,7 @@ async def test_slide_count_rejects_above_maximum(patched_handlers_db):
 @pytest.mark.asyncio
 async def test_slide_count_accepts_value_within_bounds(patched_handlers_db):
     state = FakeFSMContext()
-    await state.update_data(topic="Fotosintez")
+    await state.update_data(topic="Fotosintez", subject="Biologiya")
     message = _message("10")
 
     await create_pres.process_slide_count(message, state)
@@ -327,15 +327,76 @@ async def test_custom_design_prompt_generates_spec_and_asks_the_topic(no_openai_
 
 
 @pytest.mark.asyncio
-async def test_process_topic_advances_to_slide_count_with_pricing_info(patched_handlers_db):
+async def test_process_topic_asks_the_subject_with_the_guess_marked(patched_handlers_db):
     state = FakeFSMContext()
     message = _message("Fotosintez jarayoni")
 
     await create_pres.process_topic(message, state)
 
-    assert await state.get_state() == PresentationForm.slide_count
+    assert await state.get_state() == PresentationForm.subject
     assert (await state.get_data())["topic"] == "Fotosintez jarayoni"
-    assert "Narxi" in message.calls_for("answer")[0]["text"]
+    sent = message.calls_for("answer")[0]
+    assert "Bu qaysi fan" in sent["text"] and "Biologiya" in sent["text"]
+    assert sent["reply_markup"].inline_keyboard[0][0].text == "✅ Biologiya"   # the guess comes first
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("typed", ["S", "abc", "12345", "a1b2"])
+async def test_a_too_short_topic_is_refused(typed):
+    state = FakeFSMContext()
+    await state.set_state(PresentationForm.topic)
+    message = _message(typed)
+    await create_pres.process_topic(message, state)
+    assert "juda qisqa" in message.calls_for("answer")[0]["text"]
+    assert "topic" not in await state.get_data()
+
+
+@pytest.mark.asyncio
+async def test_subject_button_then_slide_buttons_with_prices(patched_handlers_db):
+    from services import subjects
+    state = FakeFSMContext()
+    await state.update_data(topic="Fotosintez jarayoni")
+    await state.set_state(PresentationForm.subject)
+    cb = FakeCallbackQuery(data=f"px_s:{subjects.NAMES.index('Biologiya')}")
+    await create_pres.subject_chosen(cb, state)
+    assert (await state.get_data())["subject"] == "Biologiya"
+    assert await state.get_state() == PresentationForm.slide_count
+    assert "Fan: <b>Biologiya</b>" in cb.message.calls_for("edit_text")[0]["text"]   # the old buttons are gone
+    kb = cb.message.calls_for("answer")[-1]["reply_markup"].inline_keyboard
+    labels = [b.text for row in kb for b in row]
+    assert "10 ta · 3 500 so‘m" in labels and "❌ Bekor qilish" in labels and "⬅️ Orqaga" in labels
+
+    cb = FakeCallbackQuery(data="px_n:10")
+    await create_pres.slide_count_chosen(cb, state)
+    assert (await state.get_data())["slide_count"] == 10
+    assert await state.get_state() == PresentationForm.template_selection
+
+
+@pytest.mark.asyncio
+async def test_skip_subject_and_back_button(patched_handlers_db):
+    state = FakeFSMContext()
+    await state.update_data(topic="Abcdef ghij")
+    await state.set_state(PresentationForm.subject)
+    await create_pres.subject_chosen(FakeCallbackQuery(data="px_s:-"), state)
+    assert (await state.get_data())["subject"] == "" and await state.get_state() == PresentationForm.slide_count
+    cb = FakeCallbackQuery(data="px_back:subject")
+    await create_pres.step_back(cb, state)
+    assert await state.get_state() == PresentationForm.subject     # asked again
+    assert "subject" not in await state.get_data()
+    await create_pres.step_back(FakeCallbackQuery(data="px_back:topic"), state)
+    assert await state.get_state() == PresentationForm.topic and "topic" not in await state.get_data()
+
+
+@pytest.mark.asyncio
+async def test_free_sizes_say_free_on_the_buttons(patched_handlers_db):
+    from services import runtime
+    runtime._values["free_trial"] = "1"
+    state = FakeFSMContext()
+    await state.update_data(topic="Fotosintez", subject="Biologiya")
+    message = _message("x", user_id=4242)
+    await create_pres._ask_slides(message, state, 4242)
+    labels = [b.text for row in message.calls_for("answer")[0]["reply_markup"].inline_keyboard for b in row]
+    assert "10 ta · 🎁 bepul" in labels and "20 ta · 7 000 so‘m" in labels
 
 
 async def _extras_state(**extra):
@@ -430,7 +491,7 @@ async def test_extras_buttons_from_an_old_menu_are_refused():
 async def test_old_language_question_still_works_and_shows_the_summary(button_text, expected_code, patched_handlers_db):
     """A user who was in the middle of the old, longer wizard when the bot was updated."""
     state = FakeFSMContext()
-    await state.update_data(topic="T", slide_count=5, template_id="05_nature_organic")
+    await state.update_data(topic="T", subject="", slide_count=5, template_id="05_nature_organic")
     await state.set_state(PresentationForm.language)
 
     await create_pres.process_language(_message(button_text), state)
@@ -452,25 +513,12 @@ async def test_recommended_template_is_the_most_chosen_one(patched_handlers_db):
 @pytest.mark.asyncio
 async def test_recommended_template_button_goes_to_the_summary(patched_handlers_db):
     state = FakeFSMContext()
-    await state.update_data(topic="Fotosintez", slide_count=8)
+    await state.update_data(topic="Fotosintez", subject="Biologiya", slide_count=8)
     await state.set_state(PresentationForm.template_selection)
     cb = FakeCallbackQuery(data="tpl_auto")
     await create_pres.process_template_selection(cb, state)
     assert (await state.get_data())["template_id"]
     assert await state.get_state() == PresentationForm.confirmation
-
-
-@pytest.mark.asyncio
-async def test_subject_and_slide_count_offer_buttons(patched_handlers_db):
-    state = FakeFSMContext()
-    m1 = _message("Biologiya")
-    await create_pres.process_subject(m1, state)
-    m2 = _message("Fotosintez")
-    await create_pres.process_topic(m2, state)
-    kb = m2.calls_for("answer")[0]["reply_markup"]
-    assert [b.text for b in kb.keyboard[0]] == ["5", "7", "8", "10"]
-    from bot.keyboards.reply import get_subject_keyboard
-    assert get_subject_keyboard().keyboard[0][0].text == "Biologiya"
 
 
 # ---------------------------------------------------------------------------
@@ -558,7 +606,7 @@ async def test_design_step_bottom_button_opens_the_gallery(monkeypatch, patched_
     monkeypatch.setattr(create_pres.settings, "WEBAPP_URL", "https://bot.slidelab.uz/webapp/")
     monkeypatch.setattr(create_pres, "_webapp_disabled", False)
     state = FakeFSMContext()
-    await state.update_data(topic="Fotosintez")
+    await state.update_data(topic="Fotosintez", subject="Biologiya")
     message = _message("10")
     await create_pres.process_slide_count(message, state)
     assert await state.get_state() == PresentationForm.template_selection
@@ -566,3 +614,30 @@ async def test_design_step_bottom_button_opens_the_gallery(monkeypatch, patched_
     buttons = [b for row in kb.keyboard for b in row]
     assert [b.text for b in buttons] == ["🎨 Galereya"]          # no «❌ Bekor qilish» here
     assert buttons[0].web_app.url.startswith("https://bot.slidelab.uz/webapp/")
+
+
+@pytest.mark.asyncio
+async def test_the_presentation_questions_show_no_cancel_button(patched_handlers_db):
+    """Cancelling is on the summary card (and /cancel): the questions themselves carry no «❌ Bekor qilish»."""
+    from bot.keyboards.reply import CANCEL_TEXT
+    state = FakeFSMContext()
+    m0 = _message("🎨 Presentation yaratish")
+    await create_pres.start_pres_wizard(m0, state)
+    m1 = _message("Fotosintez")
+    await create_pres.process_topic(m1, state)
+    await state.update_data(subject="Biologiya")
+    m2 = _message("10")
+    await create_pres.process_slide_count(m2, state)
+    for m in (m0, m1, m2):
+        for call in m.calls:
+            kb = call.get("reply_markup")
+            for row in (getattr(kb, "keyboard", None) or []):
+                assert CANCEL_TEXT not in [b.text for b in row]
+    state2 = await _extras_state()
+    await state2.set_state(PresentationForm.confirmation)
+    for key in ("author_name", "subject", "level", "date", "institution"):
+        cb = FakeCallbackQuery(data=f"px_f:{key}")
+        await create_pres.extras_field(cb, state2)
+        kb = cb.message.calls_for("answer")[-1]["reply_markup"]
+        rows = getattr(kb, "keyboard", None) or kb.inline_keyboard
+        assert CANCEL_TEXT not in [b.text for row in rows for b in row]

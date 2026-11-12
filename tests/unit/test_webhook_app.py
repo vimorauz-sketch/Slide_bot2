@@ -144,3 +144,62 @@ async def test_webapp_font_list_colours_font_files_and_styled_cover():
         assert r.status == 200 and r.headers["Content-Type"] == "image/jpeg"
         assert (await client.get("/webapp/styled/05_nature_organic.jpg?ft=g:nope")).status == 404
         assert (await client.get("/webapp/fonts/../../config.py")).status in (403, 404)
+
+
+async def test_mini_app_home_lists_products_and_starts_a_wizard(monkeypatch, patched_handlers_db):
+    from aiogram import Dispatcher
+    from config import settings
+    from tests.fixtures.telegram_fakes import FakeBot
+
+    monkeypatch.setattr(settings, "BOT_TOKEN", _TOKEN)
+    bot, dp = FakeBot(), Dispatcher()
+    bot.id = 123456
+    async with TestClient(TestServer(create_webhook_app(bot, dp))) as client:
+        r = await client.get("/webapp/home/")
+        assert r.status == 200 and "Nima tayyorlaymiz?" in await r.text()
+        r = await client.post("/webapp/api/home", json={"init_data": _init(777)})
+        data = await r.json()
+        by_key = {p["key"]: p for p in data["products"]}
+        assert by_key["pres"]["active"] and by_key["pres"]["price"] == "1 750 so‘mdan"   # 5 slides × 350
+        assert by_key["referat"]["active"] and not by_key["esse"]["active"]
+        assert by_key["krossvord"]["price"] == "Tez orada"
+
+        r = await client.post("/webapp/api/start", json={"init_data": _init(777), "product": "esse"})
+        assert r.status == 404                                     # not ready yet
+        r = await client.post("/webapp/api/start", json={"init_data": "hash=bad", "product": "pres"})
+        assert r.status == 403
+        r = await client.post("/webapp/api/start", json={"init_data": _init(777), "product": "pres"})
+        assert r.status == 200 and (await r.json())["ok"]
+    state = dp.fsm.get_context(bot=bot, chat_id=777, user_id=777)
+    assert await state.get_state() == "PresentationForm:topic"     # the wizard asks the topic in the chat
+    assert "mavzusini" in bot.sent_messages[-1]["text"] and bot.sent_messages[-1]["chat_id"] == 777
+
+
+async def test_mini_app_home_from_the_keyboard_button(patched_handlers_db):
+    import json
+    from types import SimpleNamespace
+    from bot.handlers import create_pres
+    from bot.states.forms import PresentationForm
+    from tests.fixtures.telegram_fakes import FakeFSMContext, FakeMessage, FakeUser
+    state = FakeFSMContext()
+    msg = FakeMessage(text="", from_user=FakeUser(id=5))
+    msg.web_app_data = SimpleNamespace(data=json.dumps({"action": "start", "product": "pres"}))
+    await create_pres.process_webapp_choice(msg, state)
+    assert await state.get_state() == PresentationForm.topic
+    msg = FakeMessage(text="", from_user=FakeUser(id=5))
+    msg.web_app_data = SimpleNamespace(data=json.dumps({"action": "start", "product": "esse"}))
+    await create_pres.process_webapp_choice(msg, FakeFSMContext())
+    assert any("tez orada" in t for t in [c.get("text", "") for c in msg.bot.sent_messages] +
+               [c["text"] for c in msg.calls_for("answer")])
+
+
+def test_main_menu_has_the_mini_app_on_top(monkeypatch):
+    from bot.handlers import create_pres
+    from bot.keyboards.reply import get_main_menu_keyboard
+    monkeypatch.setattr(create_pres.settings, "WEBAPP_URL", "https://bot.slidelab.uz/webapp/")
+    monkeypatch.setattr(create_pres, "_webapp_disabled", False)
+    kb = get_main_menu_keyboard("uz")
+    top = kb.keyboard[0][0]
+    assert top.text == "🚀 Nima tayyorlaymiz?" and top.web_app.url == "https://bot.slidelab.uz/webapp/home/"
+    monkeypatch.setattr(create_pres.settings, "WEBAPP_URL", "")
+    assert get_main_menu_keyboard("uz").keyboard[0][0].text == "🎨 Presentation yaratish"

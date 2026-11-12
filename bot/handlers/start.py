@@ -82,6 +82,13 @@ async def cmd_start(message: Message, state: FSMContext):
         reply_markup=get_main_menu_keyboard(lang),
         parse_mode="HTML"
     )
+    from bot.handlers.create_pres import home_url
+    url = home_url()
+    if url:  # the same Mini App as an inline button under the greeting
+        from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+        await message.answer("👇 Hammasi bir joyda: taqdimot, referat va boshqalar.",
+                             reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(
+                                 text="🚀 Nima tayyorlaymiz?", web_app=WebAppInfo(url=url))]]))
 
 @router.message(F.text.in_(["💰 Narxlar", "💰 Цены", "💰 Pricing"]))
 async def show_prices(message: Message):
